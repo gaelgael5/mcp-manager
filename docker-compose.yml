@@ -1,0 +1,67 @@
+networks:
+  langgraph-net:
+    driver: bridge
+
+services:
+  langgraph-postgres:
+    image: pgvector/pgvector:pg16
+    container_name: langgraph-postgres
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - /opt/langgraph-data/postgres:/var/lib/postgresql/data
+      - ./backend/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command:
+      - postgres
+      - -c
+      - shared_preload_libraries=vector
+      - -c
+      - max_connections=200
+      - -c
+      - shared_buffers=256MB
+      - -c
+      - effective_cache_size=1GB
+      - -c
+      - work_mem=16MB
+    healthcheck:
+      test: pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    networks:
+      - langgraph-net
+
+  mcp-backend:
+    build: ./backend
+    container_name: mcp-backend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      langgraph-postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@langgraph-postgres:5432/${POSTGRES_DB}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://192.168.10.80:11434}
+      OLLAMA_SUMMARY_MODEL: ${OLLAMA_SUMMARY_MODEL:-llama3.1}
+      CORS_ORIGINS: '["http://localhost:3001"]'
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+    networks:
+      - langgraph-net
+
+  mcp-frontend:
+    build: ./frontend
+    container_name: mcp-frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:80"
+    depends_on:
+      - mcp-backend
+    networks:
+      - langgraph-net

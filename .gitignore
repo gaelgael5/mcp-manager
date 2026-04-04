@@ -28,3 +28,7 @@ ENV/
 # OS
 Thumbs.db
 .DS_Store
+
+# Node
+node_modules/
+frontend/dist/

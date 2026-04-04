@@ -1,0 +1,34 @@
+import { Link } from "react-router-dom";
+import type { McpService } from "../../types";
+import { Badge } from "../ui/Badge";
+import { StatusBadge } from "../ui/StatusBadge";
+
+const sourceColors: Record<string, string> = {
+  docker_registry: "purple",
+  mcp_registry: "blue",
+};
+
+export function ServiceCard({ service }: { service: McpService }) {
+  return (
+    <Link to={`/services/${service.id}`} className="block rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="font-medium text-gray-900">{service.name}</h3>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            <Badge color={sourceColors[service.source_type] || "gray"}>{service.source_type}</Badge>
+            {service.transport && <Badge color="yellow">{service.transport}</Badge>}
+            {service.category && <Badge>{service.category}</Badge>}
+          </div>
+        </div>
+        <StatusBadge isDeprecated={service.is_deprecated} />
+      </div>
+      {service.tags.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {service.tags.slice(0, 5).map((tag) => (
+            <span key={tag} className="text-xs text-gray-500">#{tag}</span>
+          ))}
+        </div>
+      )}
+    </Link>
+  );
+}
