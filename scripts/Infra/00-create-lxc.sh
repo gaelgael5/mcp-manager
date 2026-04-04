@@ -368,8 +368,6 @@ echo "  -> Telechargement et execution de 01-install-docker.sh..."
 echo ""
 
 pct exec "${CTID}" -- bash -c "$(wget -qLO - "${DOCKER_SCRIPT_URL}" 2>/dev/null || echo 'echo ERREUR : impossible de telecharger ${DOCKER_SCRIPT_URL}')"
-pct exec "${CTID}" -- bash -c "$(wget -qLO - "${LANGGRAPH_SCRIPT_URL}" 2>/dev/null || echo 'echo ERREUR : impossible de telecharger ${LANGGRAPH_SCRIPT_URL}')"
-pct exec "${CTID}" -- bash -c "$(wget -qLO - "${RAG_SCRIPT_URL}" 2>/dev/null || echo 'echo ERREUR : impossible de telecharger ${RAG_SCRIPT_URL}')"
 
 # ── Recuperer l'IP finale ────────────────────────────────────────────────────
 CT_IP=$(pct exec "${CTID}" -- bash -c "ip -4 addr show eth0 2>/dev/null | grep inet | awk '{print \$2}' | cut -d/ -f1 | head -1")

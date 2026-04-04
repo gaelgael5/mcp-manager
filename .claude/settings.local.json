@@ -43,7 +43,12 @@
       "Bash(npm run:*)",
       "Bash(npx tsc:*)",
       "Bash(gh pr create --title 'feat: MCP Manager v1 — referentiel unifie de services MCP' --body ':*)",
-      "Bash(gh pr:*)"
+      "Bash(gh pr:*)",
+      "mcp__ssh-manager__ssh_list_servers",
+      "mcp__ssh-manager__ssh_profile",
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(file:*)"
     ]
   }
 }
