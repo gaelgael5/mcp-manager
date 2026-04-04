@@ -1,11 +1,11 @@
 networks:
-  langgraph-net:
+  mcp-manager-net:
     driver: bridge
 
 services:
-  langgraph-postgres:
+  mcp-manager-postgres:
     image: pgvector/pgvector:pg16
-    container_name: langgraph-postgres
+    container_name: mcp-manager-postgres
     restart: unless-stopped
     ports:
       - "127.0.0.1:5432:5432"
@@ -14,7 +14,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - /opt/langgraph-data/postgres:/var/lib/postgresql/data
+      - /opt/mcp-manager-data/postgres:/var/lib/postgresql/data
       - ./backend/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     command:
       - postgres
@@ -35,33 +35,33 @@ services:
       retries: 5
       start_period: 15s
     networks:
-      - langgraph-net
+      - mcp-manager-net
 
   mcp-backend:
     build: ./backend
     container_name: mcp-backend
     restart: unless-stopped
     ports:
-      - "127.0.0.1:8000:8000"
+      - "0.0.0.0:8000:8000"
     depends_on:
-      langgraph-postgres:
+      mcp-manager-postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@langgraph-postgres:5432/${POSTGRES_DB}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@mcp-manager-postgres:5432/${POSTGRES_DB}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://192.168.10.80:11434}
       OLLAMA_SUMMARY_MODEL: ${OLLAMA_SUMMARY_MODEL:-llama3.1}
-      CORS_ORIGINS: '["http://localhost:3001"]'
+      CORS_ORIGINS: '["http://localhost:3001","http://192.168.10.99:3001"]'
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
     networks:
-      - langgraph-net
+      - mcp-manager-net
 
   mcp-frontend:
     build: ./frontend
     container_name: mcp-frontend
     restart: unless-stopped
     ports:
-      - "127.0.0.1:3001:80"
+      - "0.0.0.0:3001:80"
     depends_on:
       - mcp-backend
     networks:
-      - langgraph-net
+      - mcp-manager-net

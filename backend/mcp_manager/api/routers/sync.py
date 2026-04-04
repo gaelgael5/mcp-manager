@@ -27,6 +27,9 @@ async def _run_sync_bg(source: str | None):
     from datetime import datetime, timezone
     try:
         from mcp_manager.connectors.registry import get_all_connectors, get_connector
+        import mcp_manager.connectors.docker_registry  # noqa: F401
+        import mcp_manager.connectors.mcp_registry  # noqa: F401
+        import mcp_manager.connectors.mcp_servers_repo  # noqa: F401
         from mcp_manager.db.session import SessionLocal
         from mcp_manager.db.models import McpService
         from sqlalchemy import select

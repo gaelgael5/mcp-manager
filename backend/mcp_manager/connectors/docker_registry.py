@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 GITHUB_API = "https://api.github.com"
 REPO_OWNER = "docker"
 REPO_NAME = "mcp-registry"
-SERVERS_PATH = "mcp-servers"
+SERVERS_PATH = "servers"
 
 
 @register_connector

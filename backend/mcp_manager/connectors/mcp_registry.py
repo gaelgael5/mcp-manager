@@ -42,15 +42,19 @@ class McpRegistryConnector(AbstractConnector):
                 if not servers:
                     break
 
-                for server_data in servers:
+                for entry in servers:
                     try:
+                        server_data = entry.get("server", entry)
                         service = self._parse_server_json(server_data)
+                        if not service.name:
+                            continue
                         raw_json = json.dumps(server_data, sort_keys=True)
                         service.doc_hash = hashlib.sha256(raw_json.encode()).hexdigest()
                         services.append(service)
                     except Exception:
                         logger.exception(
-                            "Failed to parse server %s", server_data.get("name", "unknown")
+                            "Failed to parse server %s",
+                            entry.get("server", entry).get("name", "unknown"),
                         )
 
                 cursor = data.get("metadata", {}).get("nextCursor")
