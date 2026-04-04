@@ -1,0 +1,10 @@
+[project]
+name = "mcp-manager"
+version = "0.1.0"
+description = ""
+requires-python = ">=3.10"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
