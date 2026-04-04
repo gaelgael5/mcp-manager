@@ -1,0 +1,22 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiFetch } from "./client";
+import type { SyncStatus } from "../types";
+
+export function useSyncStatus() {
+  return useQuery({
+    queryKey: ["sync-status"],
+    queryFn: () => apiFetch<SyncStatus>("/services/sync/status"),
+    refetchInterval: 5000,
+  });
+}
+
+export function useTriggerSync() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (source?: string) => {
+      const qs = source ? `?source=${source}` : "";
+      return apiFetch<{ status: string }>(`/services/sync${qs}`, { method: "POST" });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
+  });
+}
