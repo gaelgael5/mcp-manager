@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS mcp_services (
     transport       VARCHAR(20),
     category        VARCHAR(100),
     tags            TEXT[],
+    package_info    JSONB DEFAULT '{}',
+    source_origins  TEXT[] DEFAULT '{}',
     is_deprecated   BOOLEAN DEFAULT FALSE,
     created_at      TIMESTAMPTZ DEFAULT now(),
     updated_at      TIMESTAMPTZ DEFAULT now(),
