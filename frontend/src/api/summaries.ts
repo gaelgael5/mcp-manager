@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "./client";
 import type { McpSummary, PaginatedResponse } from "../types";
 
@@ -10,5 +10,18 @@ export function useSummaries(mcp_service_id?: string) {
     queryKey: ["summaries", qs],
     queryFn: () => apiFetch<PaginatedResponse<McpSummary>>(`/summaries?${qs}`),
     enabled: !!mcp_service_id,
+  });
+}
+
+export function useGenerateSummary(mcp_service_id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      apiFetch<{ status: string }>(`/summaries/generate/${mcp_service_id}`, { method: "POST" }),
+    onSuccess: () => {
+      setTimeout(() => {
+        qc.invalidateQueries({ queryKey: ["summaries"] });
+      }, 5000);
+    },
   });
 }

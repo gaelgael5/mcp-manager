@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from mcp_manager.api.deps import get_db
@@ -54,3 +54,81 @@ async def summaries_stats(db: AsyncSession = Depends(get_db)):
     by_culture = {row[0]: row[1] for row in by_culture_result}
 
     return {"total": total, "outdated": outdated, "by_culture": by_culture}
+
+
+@router.post("/summaries/generate/{service_id}")
+async def generate_for_service(
+    service_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    """Generate summaries (en + fr) for a single service."""
+    result = await db.execute(select(McpService).where(McpService.id == service_id))
+    service = result.scalar_one_or_none()
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+
+    background_tasks.add_task(_generate_summaries_for_service, service_id)
+    return {"status": "started", "service_id": str(service_id)}
+
+
+async def _generate_summaries_for_service(service_id: uuid.UUID) -> None:
+    import logging
+    from mcp_manager.db.session import SessionLocal
+    from mcp_manager.connectors.registry import get_connector
+    from mcp_manager.connectors.base import RawMcpService
+    from mcp_manager.summarizer.summarizer import generate_summary, CULTURES
+
+    import mcp_manager.connectors.docker_registry  # noqa: F401
+    import mcp_manager.connectors.mcp_registry  # noqa: F401
+    import mcp_manager.connectors.mcp_servers_repo  # noqa: F401
+
+    logger = logging.getLogger(__name__)
+
+    async with SessionLocal() as db:
+        result = await db.execute(select(McpService).where(McpService.id == service_id))
+        service = result.scalar_one_or_none()
+        if not service:
+            return
+
+        connector = get_connector(service.source_type)
+        if not connector:
+            logger.warning("No connector for source_type: %s", service.source_type)
+            return
+
+        raw = RawMcpService(
+            name=service.name,
+            source_url=service.source_url,
+            source_type=service.source_type,
+            doc_url=service.doc_url,
+        )
+        doc_content = await connector.fetch_doc_content(raw)
+        if not doc_content:
+            logger.warning("No doc content for service: %s", service.name)
+            return
+
+        for culture in CULTURES:
+            summary_text = await generate_summary(doc_content, culture)
+            if not summary_text:
+                continue
+
+            existing = await db.execute(
+                select(McpSummary).where(
+                    McpSummary.mcp_service_id == service.id,
+                    McpSummary.culture == culture,
+                )
+            )
+            summary_row = existing.scalar_one_or_none()
+            if summary_row:
+                summary_row.summary = summary_text
+                summary_row.source_hash = service.doc_hash
+            else:
+                db.add(McpSummary(
+                    mcp_service_id=service.id,
+                    culture=culture,
+                    summary=summary_text,
+                    source_hash=service.doc_hash,
+                ))
+
+        await db.commit()
+        logger.info("Summaries generated for: %s", service.name)

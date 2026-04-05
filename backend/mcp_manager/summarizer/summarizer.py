@@ -1,46 +1,38 @@
 import logging
+import os
 
 from mcp_manager.summarizer.cleaner import clean_markdown
 from mcp_manager.summarizer.ollama_client import ollama_generate
 
 logger = logging.getLogger(__name__)
 
-CULTURES = {
-    "en": "English",
-    "fr": "French",
-}
+CULTURES = {"en", "fr"}
 
-PROMPT_TEMPLATE = """Summarize this MCP (Model Context Protocol) server documentation in {language}.
+PROMPTS_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "prompts")
 
-Include:
-- What the server does
-- Key tools/capabilities it exposes
-- Prerequisites and requirements
-- Typical use cases
 
-Be concise: maximum 300 words. No marketing language. No badges or links.
-
-Documentation:
----
-{content}
----
-
-Summary in {language}:"""
+def _load_prompt(culture: str) -> str:
+    path = os.path.join(PROMPTS_DIR, f"summarize_{culture}.md")
+    with open(path, encoding="utf-8") as f:
+        return f.read()
 
 
 async def generate_summary(raw_content: str | None, culture: str) -> str | None:
     if not raw_content or not raw_content.strip():
         return None
 
-    language = CULTURES.get(culture, culture)
-    cleaned = clean_markdown(raw_content)
+    if culture not in CULTURES:
+        logger.warning("Unknown culture: %s", culture)
+        return None
 
+    cleaned = clean_markdown(raw_content)
     if not cleaned:
         return None
 
     if len(cleaned) > 8000:
         cleaned = cleaned[:8000] + "\n\n[truncated]"
 
-    prompt = PROMPT_TEMPLATE.format(language=language, content=cleaned)
+    template = _load_prompt(culture)
+    prompt = template.replace("{content}", cleaned)
     result = await ollama_generate(prompt)
     return result if result else None
