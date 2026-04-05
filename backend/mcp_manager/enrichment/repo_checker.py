@@ -51,27 +51,24 @@ async def run_repo_check() -> dict[str, int]:
         logger.info("Repo check: %d services to verify", len(services))
 
         async with httpx.AsyncClient(timeout=10.0) as client:
-            batch_size = 200
-            for i in range(0, len(services), batch_size):
-                batch = services[i:i + batch_size]
+            for i, svc in enumerate(services):
+                async with semaphore:
+                    ok = await check_repo(client, svc.source_url)
+                svc.repo_status = "ok" if ok else "404"
+                if ok:
+                    stats["ok"] += 1
+                else:
+                    stats["not_found"] += 1
+                stats["checked"] += 1
 
-                async def check_one(svc):
-                    async with semaphore:
-                        ok = await check_repo(client, svc.source_url)
-                        svc.repo_status = "ok" if ok else "404"
-                        if ok:
-                            stats["ok"] += 1
-                        else:
-                            stats["not_found"] += 1
-                        stats["checked"] += 1
+                if (i + 1) % 100 == 0:
+                    await db.commit()
+                    logger.info(
+                        "Repo check progress: %d/%d (ok: %d, 404: %d)",
+                        stats["checked"], len(services), stats["ok"], stats["not_found"],
+                    )
 
-                await asyncio.gather(*[check_one(svc) for svc in batch])
-                await db.commit()
-
-                logger.info(
-                    "Repo check progress: %d/%d (ok: %d, 404: %d)",
-                    stats["checked"], len(services), stats["ok"], stats["not_found"],
-                )
+            await db.commit()
 
     logger.info(
         "Repo check done: %d checked, %d ok, %d not found",
