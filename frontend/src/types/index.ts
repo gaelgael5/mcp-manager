@@ -26,10 +26,17 @@ export interface McpSummary {
   updated_at: string;
 }
 
+export interface InstallMode {
+  runtime: string;
+  action_type: string;
+  template: string;
+}
+
 export interface InstallTarget {
   id: string;
   name: string;
   description: string | null;
+  modes: InstallMode[];
   created_at: string;
 }
 

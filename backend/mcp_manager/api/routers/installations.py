@@ -63,7 +63,7 @@ async def update_installation(installation_id: uuid.UUID, body: InstallationUpda
 @router.post("/installations/generate/{service_id}")
 async def generate_installations(service_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     """Generate installation recipes for all targets for a single service."""
-    from mcp_manager.exporters.engine import generate_installation_data
+    from mcp_manager.exporters.engine import generate_from_modes, generate_installation_data
 
     result = await db.execute(select(McpService).where(McpService.id == service_id))
     service = result.scalar_one_or_none()
@@ -73,20 +73,29 @@ async def generate_installations(service_id: uuid.UUID, db: AsyncSession = Depen
     targets_result = await db.execute(select(InstallTarget))
     targets = targets_result.scalars().all()
 
-    # Get package_info if available
     pkg = service.package_info or {}
 
     generated = []
     for target in targets:
-        data = generate_installation_data(
-            registry_type=pkg.get("registry_type"),
-            package_identifier=pkg.get("package_identifier"),
-            runtime_hint=pkg.get("runtime_hint"),
-            transport=service.transport,
-            target_name=target.name,
-            service_name=service.name,
-            env_vars=pkg.get("env_vars", {}),
-        )
+        # Use target modes from DB if available, else fallback to legacy
+        if target.modes:
+            data = generate_from_modes(
+                modes=target.modes,
+                runtime_hint=pkg.get("runtime_hint"),
+                package_identifier=pkg.get("package_identifier"),
+                service_name=service.name,
+                env_vars=pkg.get("env_vars", {}),
+            )
+        else:
+            data = generate_installation_data(
+                registry_type=pkg.get("registry_type"),
+                package_identifier=pkg.get("package_identifier"),
+                runtime_hint=pkg.get("runtime_hint"),
+                transport=service.transport,
+                target_name=target.name,
+                service_name=service.name,
+                env_vars=pkg.get("env_vars", {}),
+            )
         if not data:
             continue
 
