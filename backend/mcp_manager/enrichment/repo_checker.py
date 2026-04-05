@@ -11,7 +11,12 @@ from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
 
-CONCURRENCY = 10  # Stay well under 5000/h with token
+CONCURRENCY = 10
+
+
+class RateLimitExhausted(Exception):
+    def __init__(self, remaining: int):
+        self.remaining = remaining
 
 
 async def check_repo(client: httpx.AsyncClient, url: str) -> bool:
@@ -23,14 +28,11 @@ async def check_repo(client: httpx.AsyncClient, url: str) -> bool:
         headers["Authorization"] = f"token {settings.github_token}"
     try:
         resp = await client.get(api_url, headers=headers)
-        # Respect rate limit
+        # Respect rate limit — stop instead of sleeping long
         remaining = int(resp.headers.get("x-ratelimit-remaining", "100"))
-        if remaining < 50:
-            reset_at = int(resp.headers.get("x-ratelimit-reset", "0"))
-            import time
-            wait = max(0, reset_at - int(time.time())) + 5
-            logger.warning("Rate limit low (%d remaining), waiting %ds", remaining, wait)
-            await asyncio.sleep(wait)
+        if remaining < 20:
+            logger.warning("Rate limit low (%d remaining), stopping. Re-run later.", remaining)
+            raise RateLimitExhausted(remaining)
         return resp.status_code == 200
     except Exception:
         return False
@@ -58,19 +60,27 @@ async def run_repo_check() -> dict[str, int]:
                 if not rows:
                     break
 
-                for svc_id, source_url in rows:
-                    ok = await check_repo(client, source_url)
-                    status = "ok" if ok else "404"
-                    await db.execute(
-                        McpService.__table__.update()
-                        .where(McpService.id == svc_id)
-                        .values(repo_status=status)
+                try:
+                    for svc_id, source_url in rows:
+                        ok = await check_repo(client, source_url)
+                        status = "ok" if ok else "404"
+                        await db.execute(
+                            McpService.__table__.update()
+                            .where(McpService.id == svc_id)
+                            .values(repo_status=status)
+                        )
+                        if ok:
+                            stats["ok"] += 1
+                        else:
+                            stats["not_found"] += 1
+                        stats["checked"] += 1
+                except RateLimitExhausted:
+                    await db.commit()
+                    logger.info(
+                        "Repo check paused (rate limit): %d checked (ok: %d, 404: %d)",
+                        stats["checked"], stats["ok"], stats["not_found"],
                     )
-                    if ok:
-                        stats["ok"] += 1
-                    else:
-                        stats["not_found"] += 1
-                    stats["checked"] += 1
+                    return stats
 
                 await db.commit()
                 logger.info(
