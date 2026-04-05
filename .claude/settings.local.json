@@ -65,7 +65,8 @@
       "mcp__plugin_playwright_playwright__browser_evaluate",
       "mcp__plugin_playwright_playwright__browser_network_requests",
       "Bash(tar --exclude='.git' --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='dist' --exclude='.env' --exclude='.playwright-mcp' -czf /tmp/mcp-manager.tar.gz .)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(python3 -c \"import sys,json; [print\\(f' {t[\\\\\"name\\\\\"]}'\\) for t in json.load\\(sys.stdin\\)]\")"
     ]
   }
 }

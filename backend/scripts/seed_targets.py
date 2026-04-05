@@ -145,6 +145,164 @@ TARGETS = [
             {"runtime": "docker", "action_type": "docker_run", "template": "docker run -i --rm {env_flags} {package}"},
         ],
     },
+    # === IDE/editors — additional ===
+    {
+        "name": "Roo Code",
+        "description": "Roo Code extension (cline_mcp_settings.json)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"], "disabled": false}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"], "disabled": false}}}'},
+            {"runtime": "docker", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "docker", "args": ["run", "-i", "--rm", "{package}"], "disabled": false}}}'},
+        ],
+    },
+    {
+        "name": "Augment Code",
+        "description": "Augment Code extension (settings.json mcp.servers)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+        ],
+    },
+    {
+        "name": "Zencoder",
+        "description": "Zencoder AI (mcp_config.json)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+        ],
+    },
+    {
+        "name": "Warp",
+        "description": "Warp terminal AI (mcp.json)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+            {"runtime": "docker", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "docker", "args": ["run", "-i", "--rm", "{package}"]}}}'},
+        ],
+    },
+    # === Desktop/Chat apps ===
+    {
+        "name": "5ire",
+        "description": "5ire desktop app (mcpServers config)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+        ],
+    },
+    {
+        "name": "BoltAI",
+        "description": "BoltAI macOS app (mcpServers config)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+        ],
+    },
+    {
+        "name": "Witsy",
+        "description": "Witsy desktop app (mcpServers config)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+        ],
+    },
+    {
+        "name": "Tome",
+        "description": "Tome desktop app (mcpServers config)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+        ],
+    },
+    {
+        "name": "oterm",
+        "description": "oterm terminal (mcpServers config)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+        ],
+    },
+    {
+        "name": "Msty Studio",
+        "description": "Msty Studio desktop app (mcpServers config)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+        ],
+    },
+    {
+        "name": "TypingMind",
+        "description": "TypingMind app (mcpServers config)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+        ],
+    },
+    {
+        "name": "Glama App",
+        "description": "Glama desktop app (mcpServers config)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+        ],
+    },
+    {
+        "name": "HyperChat",
+        "description": "HyperChat app (mcpServers config)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+        ],
+    },
+    {
+        "name": "LibreChat",
+        "description": "LibreChat self-hosted (librechat.yaml mcpServers)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+            {"runtime": "docker", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "docker", "args": ["run", "-i", "--rm", "{package}"]}}}'},
+        ],
+    },
+    {
+        "name": "MooPoint",
+        "description": "MooPoint app (mcpServers config)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+        ],
+    },
+    # === Platforms ===
+    {
+        "name": "Claude.ai",
+        "description": "Claude.ai web app (remote MCP servers via streamable-http)",
+        "modes": [
+            {"runtime": "streamable-http", "action_type": "insert_in_file", "template": '{"url": "{package}", "transport": "streamable-http"}'},
+        ],
+    },
+    {
+        "name": "Microsoft Copilot Studio",
+        "description": "Microsoft Copilot Studio (mcpServers config)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+        ],
+    },
+    {
+        "name": "Goose",
+        "description": "Goose AI agent (~/.config/goose/config.yaml)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": "mcpServers:\n  {name}:\n    command: npx\n    args:\n      - -y\n      - {package}"},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": "mcpServers:\n  {name}:\n    command: uvx\n    args:\n      - {package}"},
+            {"runtime": "docker", "action_type": "insert_in_file", "template": "mcpServers:\n  {name}:\n    command: docker\n    args:\n      - run\n      - -i\n      - --rm\n      - {package}"},
+        ],
+    },
+    {
+        "name": "Postman",
+        "description": "Postman MCP debug (connect to running MCP server)",
+        "modes": [
+            {"runtime": "npx", "action_type": "cmd", "template": "npx -y {package}"},
+            {"runtime": "uvx", "action_type": "cmd", "template": "uvx {package}"},
+        ],
+    },
 ]
 
 
