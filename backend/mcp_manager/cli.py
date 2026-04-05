@@ -15,6 +15,20 @@ def sync(source: str | None = typer.Option(None, help="Sync a specific source on
     typer.echo(f"Sync complete: {result['new']} new, {result['updated']} updated, {result['unchanged']} unchanged")
 
 
+def _build_package_info(raw) -> dict:
+    """Build package_info dict from RawMcpService fields."""
+    info = {}
+    if raw.registry_type:
+        info["registry_type"] = raw.registry_type
+    if raw.package_identifier:
+        info["package_identifier"] = raw.package_identifier
+    if raw.runtime_hint:
+        info["runtime_hint"] = raw.runtime_hint
+    if raw.env_vars:
+        info["env_vars"] = raw.env_vars
+    return info
+
+
 async def _run_sync(source: str | None = None) -> dict[str, int]:
     from sqlalchemy import select
     from mcp_manager.db.session import SessionLocal
@@ -44,6 +58,8 @@ async def _run_sync(source: str | None = None) -> dict[str, int]:
                     )
                 )
                 existing = result.scalar_one_or_none()
+                pkg_info = _build_package_info(raw)
+
                 if not existing:
                     db.add(McpService(
                         name=raw.name, source_url=raw.source_url,
@@ -51,6 +67,7 @@ async def _run_sync(source: str | None = None) -> dict[str, int]:
                         doc_hash=raw.doc_hash, branch_hash=raw.branch_hash,
                         transport=raw.transport, category=raw.category,
                         tags=raw.tags, is_deprecated=raw.is_deprecated,
+                        package_info=pkg_info,
                     ))
                     stats["new"] += 1
                 elif existing.doc_hash != raw.doc_hash or existing.branch_hash != raw.branch_hash:
@@ -60,6 +77,11 @@ async def _run_sync(source: str | None = None) -> dict[str, int]:
                     existing.transport = raw.transport
                     existing.category = raw.category
                     existing.tags = raw.tags
+                    if pkg_info:
+                        existing.package_info = pkg_info
+                    stats["updated"] += 1
+                elif not existing.package_info and pkg_info:
+                    existing.package_info = pkg_info
                     stats["updated"] += 1
                 else:
                     stats["unchanged"] += 1
@@ -142,59 +164,91 @@ async def _run_summarize(force: bool = False) -> int:
 
 @app.command()
 def export(
-    target: str = typer.Option(..., help="Target name (claude_code, langgraph, docker_stdio)"),
-    output: str | None = typer.Option(None, help="Output file path"),
+    target: str = typer.Option("all", help="Target name or 'all' for all targets"),
 ):
-    """Export installation recipes for a target."""
+    """Generate installation recipes for services using target modes."""
     logging.basicConfig(level=logging.INFO)
-    result = asyncio.run(_run_export(target=target, output=output))
-    typer.echo(f"Exported {result} installations for {target}")
+    result = asyncio.run(_run_export(target=target))
+    typer.echo(f"Export complete: {result}")
 
 
-async def _run_export(target: str, output: str | None = None) -> int:
+async def _run_export(target: str) -> dict[str, int]:
     from sqlalchemy import select
     from mcp_manager.db.session import SessionLocal
     from mcp_manager.db.models import McpService, McpInstallation, InstallTarget
-    from mcp_manager.exporters.engine import generate_installation_data
+    from mcp_manager.exporters.engine import generate_from_modes, generate_installation_data
 
-    count = 0
+    stats: dict[str, int] = {}
+
     async with SessionLocal() as db:
-        target_result = await db.execute(select(InstallTarget).where(InstallTarget.name == target))
-        target_row = target_result.scalar_one_or_none()
-        if not target_row:
-            typer.echo(f"Unknown target: {target}", err=True)
-            raise typer.Exit(1)
+        # Get targets
+        if target == "all":
+            targets_result = await db.execute(select(InstallTarget))
+            targets = targets_result.scalars().all()
+        else:
+            targets_result = await db.execute(select(InstallTarget).where(InstallTarget.name == target))
+            t = targets_result.scalar_one_or_none()
+            if not t:
+                typer.echo(f"Unknown target: {target}", err=True)
+                raise typer.Exit(1)
+            targets = [t]
 
-        services_result = await db.execute(select(McpService).where(McpService.is_deprecated == False))
+        # Get all active services with package_info
+        services_result = await db.execute(
+            select(McpService).where(McpService.is_deprecated == False)
+        )
         services = services_result.scalars().all()
 
-        for service in services:
-            data = generate_installation_data(
-                registry_type=None, package_identifier=None,
-                runtime_hint=None, transport=service.transport,
-                target_name=target, service_name=service.name, env_vars={},
-            )
-            if not data:
-                continue
+        for t in targets:
+            count = 0
+            for service in services:
+                pkg = service.package_info or {}
 
-            existing = await db.execute(
-                select(McpInstallation).where(
-                    McpInstallation.mcp_service_id == service.id,
-                    McpInstallation.install_target_id == target_row.id,
+                # Use DB modes if available
+                if t.modes:
+                    data = generate_from_modes(
+                        modes=t.modes,
+                        runtime_hint=pkg.get("runtime_hint"),
+                        package_identifier=pkg.get("package_identifier"),
+                        service_name=service.name,
+                        env_vars=pkg.get("env_vars", {}),
+                    )
+                else:
+                    data = generate_installation_data(
+                        registry_type=pkg.get("registry_type"),
+                        package_identifier=pkg.get("package_identifier"),
+                        runtime_hint=pkg.get("runtime_hint"),
+                        transport=service.transport,
+                        target_name=t.name,
+                        service_name=service.name,
+                        env_vars=pkg.get("env_vars", {}),
+                    )
+
+                if not data:
+                    continue
+
+                existing = await db.execute(
+                    select(McpInstallation).where(
+                        McpInstallation.mcp_service_id == service.id,
+                        McpInstallation.install_target_id == t.id,
+                    )
                 )
-            )
-            install_row = existing.scalar_one_or_none()
-            if install_row:
-                install_row.action_type = data["action_type"]
-                install_row.data = data["data"]
-            else:
-                db.add(McpInstallation(
-                    mcp_service_id=service.id, install_target_id=target_row.id,
-                    action_type=data["action_type"], data=data["data"],
-                ))
-            count += 1
+                install_row = existing.scalar_one_or_none()
+                if install_row:
+                    install_row.action_type = data["action_type"]
+                    install_row.data = data["data"]
+                else:
+                    db.add(McpInstallation(
+                        mcp_service_id=service.id, install_target_id=t.id,
+                        action_type=data["action_type"], data=data["data"],
+                    ))
+                count += 1
+
+            stats[t.name] = count
+            logger.info("Export %s: %d recipes", t.name, count)
+
         await db.commit()
-    return count
+    return stats
 
 
 @app.command()

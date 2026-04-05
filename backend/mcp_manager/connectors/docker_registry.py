@@ -74,6 +74,14 @@ class DockerRegistryConnector(AbstractConnector):
         if data.get("type") == "remote":
             transport = remote.get("transport_type", "sse")
 
+        # Extract package info
+        image = data.get("image", "")
+        secrets = data.get("secrets", [])
+        env_vars = {s["env"]: s.get("name", "") for s in secrets if "env" in s}
+
+        # Determine runtime hint from image or type
+        runtime_hint = "docker" if image else None
+
         return RawMcpService(
             name=data.get("name", server_name),
             source_url=source.get("project", ""),
@@ -83,6 +91,10 @@ class DockerRegistryConnector(AbstractConnector):
             category=meta.get("category"),
             tags=meta.get("tags", []),
             branch_hash=source.get("commit"),
+            registry_type="oci" if image else None,
+            package_identifier=image or None,
+            runtime_hint=runtime_hint,
+            env_vars=env_vars,
         )
 
     async def fetch_doc_content(self, service: RawMcpService) -> str | None:
