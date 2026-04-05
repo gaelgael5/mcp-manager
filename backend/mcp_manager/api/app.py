@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from mcp_manager.config import settings
-from mcp_manager.api.routers import services, summaries, installations, targets, sync, stats, parameters, search
+from mcp_manager.api.routers import services, summaries, installations, targets, sync, stats, parameters, search, openapi_search
 
 def create_app() -> FastAPI:
     app = FastAPI(title="MCP Manager", version="0.1.0")
@@ -17,4 +17,5 @@ def create_app() -> FastAPI:
     app.include_router(stats.router, prefix="/api/v1")
     app.include_router(parameters.router, prefix="/api/v1")
     app.include_router(search.router, prefix="/api/v1")
+    app.include_router(openapi_search.router, prefix="/api/v1")
     return app

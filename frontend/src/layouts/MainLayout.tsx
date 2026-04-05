@@ -5,6 +5,7 @@ const links = [
   { to: "/services", label: "Services" },
   { to: "/targets", label: "Targets" },
   { to: "/sync", label: "Sync" },
+  { to: "/api-docs", label: "API" },
 ];
 
 export function MainLayout() {
