@@ -73,7 +73,16 @@ export interface Stats {
   total_services: number;
   by_source: Record<string, number>;
   by_category: Record<string, number>;
-  outdated_summaries: number;
+  by_repo_status: Record<string, number>;
+  indexation: {
+    with_summaries: number;
+    with_embeddings: number;
+    total_embeddings: number;
+    with_params: number;
+    with_installations: number;
+    needs_reindex: number;
+    outdated_summaries: number;
+  };
 }
 
 export interface SyncStatus {

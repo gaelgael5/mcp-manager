@@ -26,6 +26,31 @@ export function useServices(filters: ServiceFilters = {}) {
   });
 }
 
+interface SearchFilters {
+  q: string;
+  semantic?: boolean;
+  transport?: string;
+  category?: string;
+  source_type?: string;
+  repo_status?: string;
+  has_summaries?: string;
+  page?: number;
+  per_page?: number;
+}
+
+export function useSearchServices(filters: SearchFilters) {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([k, v]) => {
+    if (v !== undefined && v !== "" && v !== false) params.set(k, String(v));
+  });
+  const qs = params.toString();
+  return useQuery({
+    queryKey: ["search", qs],
+    queryFn: () => apiFetch<PaginatedResponse<McpService & { similarity?: number }>>(`/search?${qs}`),
+    enabled: !!filters.q,
+  });
+}
+
 export function useService(id: string) {
   return useQuery({
     queryKey: ["service", id],
