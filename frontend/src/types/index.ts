@@ -44,6 +44,17 @@ export interface McpInstallation {
   updated_at: string;
 }
 
+export interface McpParameter {
+  id: string;
+  mcp_service_id: string;
+  name: string;
+  description: string | null;
+  is_required: boolean;
+  is_secret: boolean;
+  source: string;
+  created_at: string;
+}
+
 export interface PaginatedResponse<T> {
   items: T[];
   total: number;

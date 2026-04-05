@@ -43,6 +43,7 @@ class McpService(Base):
 
     summaries: Mapped[list["McpSummary"]] = relationship(back_populates="service", cascade="all, delete-orphan")
     installations: Mapped[list["McpInstallation"]] = relationship(back_populates="service", cascade="all, delete-orphan")
+    parameters: Mapped[list["McpParameter"]] = relationship(back_populates="service", cascade="all, delete-orphan")
 
 
 class McpSummary(Base):
@@ -114,3 +115,27 @@ class McpInstallation(Base):
 
     service: Mapped["McpService"] = relationship(back_populates="installations")
     target: Mapped["InstallTarget"] = relationship(back_populates="installations")
+
+
+class McpParameter(Base):
+    __tablename__ = "mcp_parameters"
+    __table_args__ = (
+        UniqueConstraint("mcp_service_id", "name", name="uq_service_param_name"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    mcp_service_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("mcp_services.id", ondelete="CASCADE"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    is_required: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_secret: Mapped[bool] = mapped_column(Boolean, default=False)
+    source: Mapped[str] = mapped_column(String(20), default="manual")  # "registry", "ai", "manual"
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    service: Mapped["McpService"] = relationship(back_populates="parameters")
