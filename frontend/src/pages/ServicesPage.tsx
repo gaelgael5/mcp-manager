@@ -8,12 +8,40 @@ export function ServicesPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [sourceType, setSourceType] = useState("");
-  const { data, isLoading } = useServices({ page, search, source_type: sourceType || undefined });
+  const [transport, setTransport] = useState("");
+  const [repoStatus, setRepoStatus] = useState("");
+  const [hasSummaries, setHasSummaries] = useState("");
+  const [category, setCategory] = useState("");
+
+  const { data, isLoading } = useServices({
+    page, search,
+    source_type: sourceType || undefined,
+    transport: transport || undefined,
+    repo_status: repoStatus || undefined,
+    has_summaries: hasSummaries || undefined,
+    category: category || undefined,
+  });
+
+  // Reset page when filters change
+  const handleFilterChange = (setter: (v: string) => void) => (v: string) => {
+    setter(v);
+    setPage(1);
+  };
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">MCP Services</h1>
-      <FilterPanel search={search} onSearchChange={setSearch} sourceType={sourceType} onSourceTypeChange={setSourceType} />
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">MCP Services</h1>
+        {data && <span className="text-sm text-gray-500">{data.total.toLocaleString()} services</span>}
+      </div>
+      <FilterPanel
+        search={search} onSearchChange={handleFilterChange(setSearch)}
+        sourceType={sourceType} onSourceTypeChange={handleFilterChange(setSourceType)}
+        transport={transport} onTransportChange={handleFilterChange(setTransport)}
+        repoStatus={repoStatus} onRepoStatusChange={handleFilterChange(setRepoStatus)}
+        hasSummaries={hasSummaries} onHasSummariesChange={handleFilterChange(setHasSummaries)}
+        category={category} onCategoryChange={handleFilterChange(setCategory)}
+      />
       {isLoading ? (
         <p className="text-gray-500">Loading...</p>
       ) : (

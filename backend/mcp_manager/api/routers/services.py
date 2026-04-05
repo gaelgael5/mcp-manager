@@ -19,6 +19,8 @@ router = APIRouter(tags=["services"])
 async def list_services(
     page: int = Query(1, ge=1), per_page: int = Query(50, ge=1, le=200),
     source_type: str | None = None, category: str | None = None,
+    transport: str | None = None, repo_status: str | None = None,
+    has_summaries: bool | None = None,
     search: str | None = None, is_deprecated: bool | None = None,
     db: AsyncSession = Depends(get_db),
 ):
@@ -27,6 +29,21 @@ async def list_services(
         query = query.where(McpService.source_type == source_type)
     if category:
         query = query.where(McpService.category == category)
+    if transport:
+        query = query.where(McpService.transport == transport)
+    if repo_status == "404":
+        query = query.where(McpService.repo_status == "404")
+    elif repo_status == "ok":
+        query = query.where(McpService.repo_status == "ok")
+    elif repo_status == "none":
+        query = query.where(McpService.repo_status.is_(None))
+    if has_summaries is not None:
+        from sqlalchemy import exists
+        sub = select(McpSummary.id).where(McpSummary.mcp_service_id == McpService.id)
+        if has_summaries:
+            query = query.where(exists(sub))
+        else:
+            query = query.where(~exists(sub))
     if is_deprecated is not None:
         query = query.where(McpService.is_deprecated == is_deprecated)
     if search:

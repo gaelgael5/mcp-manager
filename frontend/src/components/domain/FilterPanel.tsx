@@ -5,23 +5,92 @@ interface FilterPanelProps {
   onSearchChange: (v: string) => void;
   sourceType: string;
   onSourceTypeChange: (v: string) => void;
+  transport: string;
+  onTransportChange: (v: string) => void;
+  repoStatus: string;
+  onRepoStatusChange: (v: string) => void;
+  hasSummaries: string;
+  onHasSummariesChange: (v: string) => void;
+  category: string;
+  onCategoryChange: (v: string) => void;
 }
 
-export function FilterPanel({ search, onSearchChange, sourceType, onSourceTypeChange }: FilterPanelProps) {
+export function FilterPanel({
+  search, onSearchChange,
+  sourceType, onSourceTypeChange,
+  transport, onTransportChange,
+  repoStatus, onRepoStatusChange,
+  hasSummaries, onHasSummariesChange,
+  category, onCategoryChange,
+}: FilterPanelProps) {
   return (
-    <div className="flex gap-4 items-end">
-      <div className="flex-1">
-        <SearchInput value={search} onChange={onSearchChange} placeholder="Search services..." />
+    <div className="space-y-3">
+      <div className="flex gap-3">
+        <div className="flex-1">
+          <SearchInput value={search} onChange={onSearchChange} placeholder="Search services..." />
+        </div>
       </div>
-      <select
-        value={sourceType}
-        onChange={(e) => onSourceTypeChange(e.target.value)}
-        className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-      >
-        <option value="">All sources</option>
-        <option value="docker_registry">Docker Registry</option>
-        <option value="mcp_registry">MCP Registry</option>
-      </select>
+      <div className="flex flex-wrap gap-2">
+        <select value={sourceType} onChange={(e) => onSourceTypeChange(e.target.value)} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
+          <option value="">All sources</option>
+          <option value="docker_registry">Docker Registry</option>
+          <option value="mcp_registry">MCP Registry</option>
+          <option value="glama">Glama</option>
+          <option value="pulsemcp">PulseMCP</option>
+          <option value="mcp_servers_repo">Reference</option>
+        </select>
+        <select value={transport} onChange={(e) => onTransportChange(e.target.value)} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
+          <option value="">All transports</option>
+          <option value="stdio">stdio</option>
+          <option value="sse">sse</option>
+          <option value="streamable-http">streamable-http</option>
+        </select>
+        <select value={repoStatus} onChange={(e) => onRepoStatusChange(e.target.value)} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
+          <option value="">All repo status</option>
+          <option value="ok">Repo OK</option>
+          <option value="404">Repo 404</option>
+          <option value="none">Not checked</option>
+        </select>
+        <select value={hasSummaries} onChange={(e) => onHasSummariesChange(e.target.value)} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
+          <option value="">All summaries</option>
+          <option value="true">Has summary</option>
+          <option value="false">No summary</option>
+        </select>
+        <select value={category} onChange={(e) => onCategoryChange(e.target.value)} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
+          <option value="">All categories</option>
+          <option value="ai">ai</option>
+          <option value="ai-ml">ai-ml</option>
+          <option value="analytics">analytics</option>
+          <option value="automation">automation</option>
+          <option value="blockchain">blockchain</option>
+          <option value="cloud">cloud</option>
+          <option value="commerce">commerce</option>
+          <option value="communication">communication</option>
+          <option value="data-analytics">data-analytics</option>
+          <option value="data-visualization">data-visualization</option>
+          <option value="database">database</option>
+          <option value="developer-tools">developer-tools</option>
+          <option value="development">development</option>
+          <option value="devops">devops</option>
+          <option value="documentation">documentation</option>
+          <option value="ecommerce">ecommerce</option>
+          <option value="education">education</option>
+          <option value="email">email</option>
+          <option value="finance">finance</option>
+          <option value="games">games</option>
+          <option value="healthcare">healthcare</option>
+          <option value="infrastructure">infrastructure</option>
+          <option value="integration">integration</option>
+          <option value="messaging">messaging</option>
+          <option value="monitoring">monitoring</option>
+          <option value="productivity">productivity</option>
+          <option value="search">search</option>
+          <option value="security">security</option>
+          <option value="social">social</option>
+          <option value="testing">testing</option>
+          <option value="web">web</option>
+        </select>
+      </div>
     </div>
   );
 }

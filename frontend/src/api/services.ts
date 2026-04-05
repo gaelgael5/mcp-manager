@@ -7,6 +7,9 @@ interface ServiceFilters {
   per_page?: number;
   source_type?: string;
   category?: string;
+  transport?: string;
+  repo_status?: string;
+  has_summaries?: string;
   search?: string;
   is_deprecated?: boolean;
 }

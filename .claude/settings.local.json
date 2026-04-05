@@ -60,7 +60,11 @@
       "mcp__plugin_superpowers-chrome_chrome__use_browser",
       "mcp__plugin_playwright_playwright__browser_run_code",
       "mcp__plugin_playwright_playwright__browser_navigate",
-      "Bash(./pip install:*)"
+      "Bash(./pip install:*)",
+      "mcp__plugin_playwright_playwright__browser_snapshot",
+      "mcp__plugin_playwright_playwright__browser_evaluate",
+      "mcp__plugin_playwright_playwright__browser_network_requests",
+      "Bash(tar --exclude='.git' --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='dist' --exclude='.env' --exclude='.playwright-mcp' -czf /tmp/mcp-manager.tar.gz .)"
     ]
   }
 }
