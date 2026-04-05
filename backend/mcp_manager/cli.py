@@ -197,5 +197,41 @@ async def _run_export(target: str, output: str | None = None) -> int:
     return count
 
 
+@app.command()
+def enrich(
+    pass_name: str | None = typer.Option(None, "--pass", help="Run a specific pass: url-resolve, dedup, categorize"),
+):
+    """Enrich service data: resolve URLs, deduplicate, auto-categorize."""
+    logging.basicConfig(level=logging.INFO)
+    asyncio.run(_run_enrich(pass_name=pass_name))
+
+
+async def _run_enrich(pass_name: str | None = None) -> None:
+    from mcp_manager.enrichment.url_resolver import run_url_resolve
+    from mcp_manager.enrichment.dedup import run_dedup
+    from mcp_manager.enrichment.categorizer import run_categorize
+
+    passes = {
+        "url-resolve": ("URL Resolve", run_url_resolve),
+        "dedup": ("Deduplication", run_dedup),
+        "categorize": ("Auto-categorize", run_categorize),
+    }
+
+    if pass_name:
+        if pass_name not in passes:
+            typer.echo(f"Unknown pass: {pass_name}. Available: {', '.join(passes.keys())}", err=True)
+            raise typer.Exit(1)
+        label, func = passes[pass_name]
+        typer.echo(f"Running {label}...")
+        result = await func()
+        typer.echo(f"{label} complete: {result}")
+    else:
+        for name, (label, func) in passes.items():
+            typer.echo(f"\n=== {label} ===")
+            result = await func()
+            typer.echo(f"{label}: {result}")
+        typer.echo("\nEnrichment complete.")
+
+
 if __name__ == "__main__":
     app()
