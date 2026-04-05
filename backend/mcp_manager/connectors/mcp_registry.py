@@ -110,34 +110,9 @@ class McpRegistryConnector(AbstractConnector):
         )
 
     async def fetch_doc_content(self, service: RawMcpService) -> str | None:
-        if not service.doc_url:
-            return None
-
-        # Try subfolder README first
-        readme_url = self._resolve_raw_readme_url(service.doc_url)
-        if readme_url:
-            async with httpx.AsyncClient(timeout=15.0) as client:
-                resp = await client.get(readme_url, headers=self._github_headers())
-                if resp.status_code == 200:
-                    return resp.text
-
-        # Fallback: root README of the repo
-        if service.source_url:
-            root_readme = (
-                service.source_url.replace("github.com", "raw.githubusercontent.com")
-                + "/main/README.md"
-            )
-            async with httpx.AsyncClient(timeout=15.0) as client:
-                resp = await client.get(root_readme, headers=self._github_headers())
-                if resp.status_code == 200:
-                    return resp.text
-
-        return None
-
-    def _resolve_raw_readme_url(self, doc_url: str) -> str | None:
-        if "github.com" not in doc_url:
-            return None
-        raw_url = doc_url.replace("github.com", "raw.githubusercontent.com").replace(
-            "/tree/", "/"
-        )
-        return f"{raw_url}/README.md"
+        from mcp_manager.connectors.github_readme import fetch_github_readme
+        # Try doc_url first (may have subfolder), then source_url
+        content = await fetch_github_readme(service.doc_url)
+        if not content and service.source_url != service.doc_url:
+            content = await fetch_github_readme(service.source_url)
+        return content

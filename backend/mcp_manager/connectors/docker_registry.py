@@ -98,26 +98,8 @@ class DockerRegistryConnector(AbstractConnector):
         )
 
     async def fetch_doc_content(self, service: RawMcpService) -> str | None:
-        if not service.doc_url:
-            return None
-        readme_url = service.doc_url.replace(
-            "github.com", "raw.githubusercontent.com"
-        ).replace("/tree/", "/") + "/README.md"
-
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.get(readme_url, headers=self._github_headers())
-            if resp.status_code == 200:
-                return resp.text
-
-        # Fallback: try root README
-        if "/tree/" in (service.doc_url or ""):
-            root_url = service.doc_url.rsplit("/tree/", 1)[0]
-            root_readme = root_url.replace(
-                "github.com", "raw.githubusercontent.com"
-            ) + "/main/README.md"
-            async with httpx.AsyncClient(timeout=15.0) as client:
-                resp = await client.get(root_readme, headers=self._github_headers())
-                if resp.status_code == 200:
-                    return resp.text
-
-        return None
+        from mcp_manager.connectors.github_readme import fetch_github_readme
+        content = await fetch_github_readme(service.doc_url)
+        if not content and service.source_url and service.source_url != service.doc_url:
+            content = await fetch_github_readme(service.source_url)
+        return content

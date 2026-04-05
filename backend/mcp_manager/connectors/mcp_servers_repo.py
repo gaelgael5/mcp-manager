@@ -114,14 +114,5 @@ class McpServersRepoConnector(AbstractConnector):
         )
 
     async def fetch_doc_content(self, service: RawMcpService) -> str | None:
-        if not service.doc_url:
-            return None
-        readme_url = service.doc_url.replace(
-            "github.com", "raw.githubusercontent.com"
-        ).replace("/tree/", "/") + "/README.md"
-
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.get(readme_url, headers=self._github_headers())
-            if resp.status_code == 200:
-                return resp.text
-        return None
+        from mcp_manager.connectors.github_readme import fetch_github_readme
+        return await fetch_github_readme(service.doc_url or service.source_url)

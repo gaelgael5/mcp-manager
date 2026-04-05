@@ -143,21 +143,5 @@ class PulseMcpConnector(AbstractConnector):
         )
 
     async def fetch_doc_content(self, service: RawMcpService) -> str | None:
-        """Fetch README from GitHub if source_url is set."""
-        if not service.source_url or "github.com" not in service.source_url:
-            return None
-
-        readme_url = (
-            service.source_url.replace("github.com", "raw.githubusercontent.com")
-            + "/main/README.md"
-        )
-        headers = {}
-        if settings.github_token:
-            headers["Authorization"] = f"token {settings.github_token}"
-
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.get(readme_url, headers=headers)
-            if resp.status_code == 200:
-                return resp.text
-
-        return None
+        from mcp_manager.connectors.github_readme import fetch_github_readme
+        return await fetch_github_readme(service.source_url)
