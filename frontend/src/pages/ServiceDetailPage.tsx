@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useService, useUpdateService } from "../api/services";
 import { useSummaries, useGenerateSummary } from "../api/summaries";
 import { useInstallations, useGenerateInstallations } from "../api/installations";
+import { useTargets } from "../api/targets";
 import { useParameters, useDetectParameters, useAddParameter, useDeleteParameter } from "../api/parameters";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
@@ -19,6 +20,7 @@ export function ServiceDetailPage() {
   const { data: installsData } = useInstallations(id);
   const generateSummary = useGenerateSummary(id!);
   const generateInstalls = useGenerateInstallations(id!);
+  const { data: targets } = useTargets();
   const updateService = useUpdateService(id!);
   const { data: parametersData } = useParameters(id!);
   const detectParams = useDetectParameters(id!);
@@ -131,7 +133,10 @@ export function ServiceDetailPage() {
         {!installCollapsed && (
           <div className="space-y-3">
             {hasInstalls ? (
-              installsData.items.map((inst) => <InstallCommand key={inst.id} installation={inst} />)
+              installsData.items.map((inst) => {
+                const targetName = targets?.find((t) => t.id === inst.install_target_id)?.name;
+                return <InstallCommand key={inst.id} installation={inst} targetName={targetName} />;
+              })
             ) : (
               <p className="text-sm text-gray-500">No installation recipes available.</p>
             )}
