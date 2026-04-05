@@ -31,6 +31,7 @@ async def _run_sync_bg(source: str | None):
         import mcp_manager.connectors.mcp_registry  # noqa: F401
         import mcp_manager.connectors.mcp_servers_repo  # noqa: F401
         import mcp_manager.connectors.pulsemcp  # noqa: F401
+        import mcp_manager.connectors.glama  # noqa: F401
         from mcp_manager.db.session import SessionLocal
         from mcp_manager.db.models import McpService
         from sqlalchemy import select
