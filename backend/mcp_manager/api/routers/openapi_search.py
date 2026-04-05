@@ -19,7 +19,8 @@ SEARCH_OPENAPI_SPEC = {
                 "description": "Full-text search with filters. Returns services with descriptions, parameters, and installation recipes.",
                 "operationId": "searchServices",
                 "parameters": [
-                    {"name": "q", "in": "query", "schema": {"type": "string"}, "description": "Full-text search in name and summaries"},
+                    {"name": "q", "in": "query", "schema": {"type": "string"}, "description": "Full-text search in name and summaries (or semantic query when semantic=true)"},
+                    {"name": "semantic", "in": "query", "schema": {"type": "boolean", "default": False}, "description": "Enable semantic search via pgvector embeddings (requires q). Returns results ranked by similarity."},
                     {"name": "transport", "in": "query", "schema": {"type": "string", "enum": ["stdio", "sse", "streamable-http"]}, "description": "Filter by transport type"},
                     {"name": "category", "in": "query", "schema": {"type": "string"}, "description": "Filter by category (database, devops, ai, etc.)"},
                     {"name": "source_type", "in": "query", "schema": {"type": "string", "enum": ["docker_registry", "mcp_registry", "glama", "pulsemcp", "mcp_servers_repo"]}, "description": "Filter by source"},
