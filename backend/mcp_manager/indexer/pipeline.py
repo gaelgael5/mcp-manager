@@ -42,12 +42,14 @@ async def run_index(limit: int = 100) -> dict[str, int]:
                 break
 
             for service in services:
+                indexed = False
                 try:
-                    await _index_one(db, service, stats)
+                    indexed = await _index_one(db, service, stats)
                 except Exception:
                     logger.exception("Failed to index %s", service.name)
 
-                service.needs_reindex = False
+                if indexed:
+                    service.needs_reindex = False
                 processed += 1
                 stats["processed"] += 1
 
@@ -62,14 +64,14 @@ async def run_index(limit: int = 100) -> dict[str, int]:
     return stats
 
 
-async def _index_one(db, service: McpService, stats: dict) -> None:
-    """Index a single service: fetch doc, embed, summarize, detect params, generate recipes."""
+async def _index_one(db, service: McpService, stats: dict) -> bool:
+    """Index a single service. Returns True if content was generated."""
 
     # 1. Fetch documentation
     connector = get_connector(service.source_type)
     if not connector:
         stats["skipped_no_doc"] += 1
-        return
+        return False
 
     raw = RawMcpService(
         name=service.name,
@@ -80,12 +82,12 @@ async def _index_one(db, service: McpService, stats: dict) -> None:
     doc_content = await connector.fetch_doc_content(raw)
     if not doc_content:
         stats["skipped_no_doc"] += 1
-        return
+        return False
 
     cleaned = clean_markdown(doc_content)
     if not cleaned:
         stats["skipped_no_doc"] += 1
-        return
+        return False
 
     # 2. Generate summaries (en/fr)
     for culture in CULTURES:
@@ -194,6 +196,7 @@ async def _index_one(db, service: McpService, stats: dict) -> None:
                 stats["recipes"] += 1
 
     service.repo_status = "ok"
+    return True
 
 
 async def _detect_params_from_doc(doc_content: str) -> list[dict]:
