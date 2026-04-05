@@ -36,12 +36,17 @@ async def search_services(
             page=page, per_page=per_page, db=db,
         )
 
-    # Standard text search path — uses PostgreSQL tsvector for performance
+    # Standard text search — tsvector rank OR ILIKE fallback
     query = select(McpService)
 
     if q:
         ts_query = func.plainto_tsquery("english", q)
-        query = query.where(McpService.search_vector.op("@@")(ts_query))
+        pattern = f"%{q}%"
+        query = query.where(
+            McpService.search_vector.op("@@")(ts_query)
+            | McpService.name.ilike(pattern)
+            | McpService.source_url.ilike(pattern)
+        )
 
     query = _apply_filters(query, transport, category, source_type, repo_status, has_summaries)
 
