@@ -63,13 +63,10 @@ async def generate_for_service(
 ):
     """Generate summaries (en + fr) for a single service. Synchronous — waits for Ollama."""
     import logging
+    import mcp_manager.connectors  # noqa: F401
     from mcp_manager.connectors.registry import get_connector
     from mcp_manager.connectors.base import RawMcpService
     from mcp_manager.summarizer.summarizer import generate_summary, CULTURES
-
-    import mcp_manager.connectors.docker_registry  # noqa: F401
-    import mcp_manager.connectors.mcp_registry  # noqa: F401
-    import mcp_manager.connectors.mcp_servers_repo  # noqa: F401
 
     logger = logging.getLogger(__name__)
 

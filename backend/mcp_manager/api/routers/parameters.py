@@ -64,13 +64,10 @@ async def delete_parameter(param_id: uuid.UUID, db: AsyncSession = Depends(get_d
 @router.post("/parameters/{service_id}/detect")
 async def detect_parameters(service_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     """Detect parameters from sources + AI analysis of documentation."""
+    import mcp_manager.connectors  # noqa: F401
     from mcp_manager.connectors.registry import get_connector
     from mcp_manager.connectors.base import RawMcpService
     from mcp_manager.summarizer.ollama_client import ollama_generate
-
-    import mcp_manager.connectors.docker_registry  # noqa: F401
-    import mcp_manager.connectors.mcp_registry  # noqa: F401
-    import mcp_manager.connectors.mcp_servers_repo  # noqa: F401
 
     result = await db.execute(select(McpService).where(McpService.id == service_id))
     service = result.scalar_one_or_none()

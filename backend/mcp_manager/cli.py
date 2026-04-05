@@ -35,12 +35,7 @@ async def _run_sync(source: str | None = None) -> dict[str, int]:
     from mcp_manager.db.models import McpService
     from mcp_manager.connectors.registry import get_all_connectors, get_connector
 
-    # Import connector modules to trigger registration
-    import mcp_manager.connectors.docker_registry  # noqa: F401
-    import mcp_manager.connectors.mcp_registry  # noqa: F401
-    import mcp_manager.connectors.mcp_servers_repo  # noqa: F401
-    import mcp_manager.connectors.pulsemcp  # noqa: F401
-    import mcp_manager.connectors.glama  # noqa: F401
+    import mcp_manager.connectors  # noqa: F401 — registers all connectors
 
     if source:
         connector = get_connector(source)
@@ -107,8 +102,6 @@ async def _run_summarize(force: bool = False) -> int:
     from mcp_manager.connectors.registry import get_connector
     from mcp_manager.connectors.base import RawMcpService
 
-    import mcp_manager.connectors.docker_registry  # noqa: F401
-    import mcp_manager.connectors.mcp_registry  # noqa: F401
 
     count = 0
     async with SessionLocal() as db:
