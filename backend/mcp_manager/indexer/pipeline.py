@@ -35,6 +35,9 @@ async def run_index(limit: int = 100) -> dict[str, int]:
             result = await db.execute(
                 select(McpService)
                 .where(McpService.needs_reindex == True)
+                .where(McpService.source_url != "")
+                .where(McpService.repo_status == "ok")
+                .order_by(McpService.updated_at.desc())
                 .limit(min(batch_size, limit - processed))
             )
             services = result.scalars().all()
