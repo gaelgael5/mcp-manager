@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useService } from "../api/services";
+import { useService, useUpdateService } from "../api/services";
 import { useSummaries, useGenerateSummary } from "../api/summaries";
 import { useInstallations } from "../api/installations";
 import { Card } from "../components/ui/Card";
@@ -12,20 +13,31 @@ import { InstallCommand } from "../components/domain/InstallCommand";
 export function ServiceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: service } = useService(id!);
-  const { data: summariesData, refetch: refetchSummaries } = useSummaries(id);
+  const { data: summariesData } = useSummaries(id);
   const { data: installsData } = useInstallations(id);
   const generateSummary = useGenerateSummary(id!);
+  const updateService = useUpdateService(id!);
+
+  const [editingUrl, setEditingUrl] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
 
   if (!service) return <p className="text-gray-500">Loading...</p>;
 
   const hasSummaries = summariesData?.items && summariesData.items.length > 0;
 
-  const handleGenerate = () => {
-    generateSummary.mutate(undefined, {
+  const handleSaveUrl = () => {
+    if (!urlInput.trim()) return;
+    updateService.mutate({ source_url: urlInput.trim() }, {
       onSuccess: () => {
-        setTimeout(() => refetchSummaries(), 8000);
+        setEditingUrl(false);
+        setUrlInput("");
       },
     });
+  };
+
+  const handleStartEdit = () => {
+    setUrlInput(service.source_url || "");
+    setEditingUrl(true);
   };
 
   return (
@@ -41,10 +53,31 @@ export function ServiceDetailPage() {
           {service.category && <Badge>{service.category}</Badge>}
           {service.tags.map((t) => <Badge key={t}>{t}</Badge>)}
         </div>
-        {service.source_url ? (
-          <a href={service.source_url} target="_blank" rel="noopener noreferrer" className="mt-2 block text-sm text-blue-600 hover:underline">{service.source_url}</a>
+
+        {editingUrl ? (
+          <div className="mt-2 flex items-center gap-2">
+            <input
+              type="url"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              placeholder="https://github.com/owner/repo"
+              className="flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              autoFocus
+              onKeyDown={(e) => { if (e.key === "Enter") handleSaveUrl(); if (e.key === "Escape") setEditingUrl(false); }}
+            />
+            <Button size="sm" onClick={handleSaveUrl} loading={updateService.isPending}>Save</Button>
+            <Button size="sm" variant="secondary" onClick={() => setEditingUrl(false)}>Cancel</Button>
+          </div>
+        ) : service.source_url ? (
+          <div className="mt-2 flex items-center gap-2">
+            <a href={service.source_url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">{service.source_url}</a>
+            <button onClick={handleStartEdit} className="text-xs text-gray-400 hover:text-gray-600">edit</button>
+          </div>
         ) : (
-          <p className="mt-2 text-sm text-gray-400">Remote service — no source code available</p>
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-sm text-gray-400">No repository URL</span>
+            <Button size="sm" variant="secondary" onClick={handleStartEdit}>Add URL</Button>
+          </div>
         )}
       </div>
 
@@ -55,16 +88,16 @@ export function ServiceDetailPage() {
             <Button
               variant={hasSummaries ? "secondary" : "primary"}
               size="sm"
-              onClick={handleGenerate}
+              onClick={() => generateSummary.mutate()}
               loading={generateSummary.isPending}
             >
               {hasSummaries ? "Regenerate Summary" : "Generate Summary"}
             </Button>
             {generateSummary.isSuccess && (
-              <span className="text-sm text-green-600">Generation started — refreshing in a few seconds...</span>
+              <span className="text-sm text-green-600">Summaries generated</span>
             )}
             {generateSummary.isError && (
-              <span className="text-sm text-red-600">Failed to start generation</span>
+              <span className="text-sm text-red-600">Failed to generate summary</span>
             )}
           </div>
         </div>

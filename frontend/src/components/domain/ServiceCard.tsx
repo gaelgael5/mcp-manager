@@ -9,15 +9,18 @@ const sourceColors: Record<string, string> = {
 };
 
 export function ServiceCard({ service }: { service: McpService }) {
+  const hasRepo = Boolean(service.source_url);
+
   return (
-    <Link to={`/services/${service.id}`} className="block rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow">
+    <Link to={`/services/${service.id}`} className={`block rounded-lg border p-4 hover:shadow-md transition-shadow ${hasRepo ? "border-gray-200 bg-white" : "border-gray-200 bg-gray-50 opacity-75"}`}>
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="font-medium text-gray-900">{service.name}</h3>
+          <h3 className={`font-medium ${hasRepo ? "text-gray-900" : "text-gray-500"}`}>{service.name}</h3>
           <div className="mt-1 flex flex-wrap gap-1.5">
             <Badge color={sourceColors[service.source_type] || "gray"}>{service.source_type}</Badge>
             {service.transport && <Badge color="yellow">{service.transport}</Badge>}
             {service.category && <Badge>{service.category}</Badge>}
+            {!hasRepo && <Badge color="red">no repo</Badge>}
           </div>
         </div>
         <StatusBadge isDeprecated={service.is_deprecated} />

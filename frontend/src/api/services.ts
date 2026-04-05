@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "./client";
 import type { McpService, PaginatedResponse } from "../types";
 
@@ -28,5 +28,20 @@ export function useService(id: string) {
     queryKey: ["service", id],
     queryFn: () => apiFetch<McpService>(`/services/${id}`),
     enabled: !!id,
+  });
+}
+
+export function useUpdateService(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { source_url?: string; doc_url?: string }) =>
+      apiFetch<McpService>(`/services/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["service", id] });
+      qc.invalidateQueries({ queryKey: ["services"] });
+    },
   });
 }

@@ -17,11 +17,9 @@ export function useGenerateSummary(mcp_service_id: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: () =>
-      apiFetch<{ status: string }>(`/summaries/generate/${mcp_service_id}`, { method: "POST" }),
+      apiFetch<{ status: string; cultures: string[] }>(`/summaries/generate/${mcp_service_id}`, { method: "POST" }),
     onSuccess: () => {
-      setTimeout(() => {
-        qc.invalidateQueries({ queryKey: ["summaries"] });
-      }, 5000);
+      qc.invalidateQueries({ queryKey: ["summaries"] });
     },
   });
 }

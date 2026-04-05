@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from mcp_manager.api.deps import get_db
@@ -59,22 +59,10 @@ async def summaries_stats(db: AsyncSession = Depends(get_db)):
 @router.post("/summaries/generate/{service_id}")
 async def generate_for_service(
     service_id: uuid.UUID,
-    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
-    """Generate summaries (en + fr) for a single service."""
-    result = await db.execute(select(McpService).where(McpService.id == service_id))
-    service = result.scalar_one_or_none()
-    if not service:
-        raise HTTPException(status_code=404, detail="Service not found")
-
-    background_tasks.add_task(_generate_summaries_for_service, service_id)
-    return {"status": "started", "service_id": str(service_id)}
-
-
-async def _generate_summaries_for_service(service_id: uuid.UUID) -> None:
+    """Generate summaries (en + fr) for a single service. Synchronous — waits for Ollama."""
     import logging
-    from mcp_manager.db.session import SessionLocal
     from mcp_manager.connectors.registry import get_connector
     from mcp_manager.connectors.base import RawMcpService
     from mcp_manager.summarizer.summarizer import generate_summary, CULTURES
@@ -85,50 +73,51 @@ async def _generate_summaries_for_service(service_id: uuid.UUID) -> None:
 
     logger = logging.getLogger(__name__)
 
-    async with SessionLocal() as db:
-        result = await db.execute(select(McpService).where(McpService.id == service_id))
-        service = result.scalar_one_or_none()
-        if not service:
-            return
+    result = await db.execute(select(McpService).where(McpService.id == service_id))
+    service = result.scalar_one_or_none()
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
 
-        connector = get_connector(service.source_type)
-        if not connector:
-            logger.warning("No connector for source_type: %s", service.source_type)
-            return
+    connector = get_connector(service.source_type)
+    if not connector:
+        raise HTTPException(status_code=400, detail=f"No connector for source_type: {service.source_type}")
 
-        raw = RawMcpService(
-            name=service.name,
-            source_url=service.source_url,
-            source_type=service.source_type,
-            doc_url=service.doc_url,
-        )
-        doc_content = await connector.fetch_doc_content(raw)
-        if not doc_content:
-            logger.warning("No doc content for service: %s", service.name)
-            return
+    raw = RawMcpService(
+        name=service.name,
+        source_url=service.source_url,
+        source_type=service.source_type,
+        doc_url=service.doc_url,
+    )
+    doc_content = await connector.fetch_doc_content(raw)
+    if not doc_content:
+        raise HTTPException(status_code=404, detail=f"No documentation found for {service.name}")
 
-        for culture in CULTURES:
-            summary_text = await generate_summary(doc_content, culture)
-            if not summary_text:
-                continue
+    generated = []
+    for culture in CULTURES:
+        logger.info("Generating %s summary for: %s", culture, service.name)
+        summary_text = await generate_summary(doc_content, culture)
+        if not summary_text:
+            continue
 
-            existing = await db.execute(
-                select(McpSummary).where(
-                    McpSummary.mcp_service_id == service.id,
-                    McpSummary.culture == culture,
-                )
+        existing = await db.execute(
+            select(McpSummary).where(
+                McpSummary.mcp_service_id == service.id,
+                McpSummary.culture == culture,
             )
-            summary_row = existing.scalar_one_or_none()
-            if summary_row:
-                summary_row.summary = summary_text
-                summary_row.source_hash = service.doc_hash
-            else:
-                db.add(McpSummary(
-                    mcp_service_id=service.id,
-                    culture=culture,
-                    summary=summary_text,
-                    source_hash=service.doc_hash,
-                ))
+        )
+        summary_row = existing.scalar_one_or_none()
+        if summary_row:
+            summary_row.summary = summary_text
+            summary_row.source_hash = service.doc_hash
+        else:
+            db.add(McpSummary(
+                mcp_service_id=service.id,
+                culture=culture,
+                summary=summary_text,
+                source_hash=service.doc_hash,
+            ))
+        generated.append(culture)
 
-        await db.commit()
-        logger.info("Summaries generated for: %s", service.name)
+    await db.commit()
+    logger.info("Summaries generated for %s: %s", service.name, generated)
+    return {"status": "done", "service_id": str(service_id), "cultures": generated}

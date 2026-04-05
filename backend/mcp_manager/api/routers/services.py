@@ -1,9 +1,15 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from mcp_manager.api.deps import get_db
 from mcp_manager.db.models import McpService
+
+
+class ServiceUpdate(BaseModel):
+    source_url: str | None = None
+    doc_url: str | None = None
 
 router = APIRouter(tags=["services"])
 
@@ -43,6 +49,23 @@ async def get_service(service_id: uuid.UUID, db: AsyncSession = Depends(get_db))
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
     return _serialize_service(service)
+
+@router.patch("/services/{service_id}")
+async def update_service(service_id: uuid.UUID, body: ServiceUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(McpService).where(McpService.id == service_id))
+    service = result.scalar_one_or_none()
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    if body.source_url is not None:
+        service.source_url = body.source_url
+        if not service.doc_url:
+            service.doc_url = body.source_url
+    if body.doc_url is not None:
+        service.doc_url = body.doc_url
+    await db.commit()
+    await db.refresh(service)
+    return _serialize_service(service)
+
 
 def _serialize_service(s: McpService) -> dict:
     return {
