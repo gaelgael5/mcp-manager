@@ -21,6 +21,8 @@ export function ServiceCard({ service }: { service: McpService }) {
             {service.transport && <Badge color="yellow">{service.transport}</Badge>}
             {service.category && <Badge>{service.category}</Badge>}
             {!hasRepo && <Badge color="red">no repo</Badge>}
+            {service.repo_status === "404" && <Badge color="red">404</Badge>}
+            {!service.has_summaries && <Badge color="yellow">no summary</Badge>}
           </div>
         </div>
         <StatusBadge isDeprecated={service.is_deprecated} />

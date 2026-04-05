@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from mcp_manager.api.deps import get_db
-from mcp_manager.db.models import McpService
+from mcp_manager.db.models import McpService, McpSummary
 
 
 class ServiceUpdate(BaseModel):
@@ -37,8 +37,19 @@ async def list_services(
     result = await db.execute(query)
     services = result.scalars().all()
 
+    # Batch fetch summary counts for these services
+    service_ids = [s.id for s in services]
+    summary_counts: dict[uuid.UUID, int] = {}
+    if service_ids:
+        sc_result = await db.execute(
+            select(McpSummary.mcp_service_id, func.count())
+            .where(McpSummary.mcp_service_id.in_(service_ids))
+            .group_by(McpSummary.mcp_service_id)
+        )
+        summary_counts = {row[0]: row[1] for row in sc_result}
+
     return {
-        "items": [_serialize_service(s) for s in services],
+        "items": [_serialize_service(s, summary_counts.get(s.id, 0)) for s in services],
         "total": total, "page": page, "per_page": per_page,
     }
 
@@ -48,7 +59,10 @@ async def get_service(service_id: uuid.UUID, db: AsyncSession = Depends(get_db))
     service = result.scalar_one_or_none()
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
-    return _serialize_service(service)
+    sc = await db.execute(
+        select(func.count()).select_from(McpSummary).where(McpSummary.mcp_service_id == service_id)
+    )
+    return _serialize_service(service, sc.scalar() or 0)
 
 @router.patch("/services/{service_id}")
 async def update_service(service_id: uuid.UUID, body: ServiceUpdate, db: AsyncSession = Depends(get_db)):
@@ -58,6 +72,7 @@ async def update_service(service_id: uuid.UUID, body: ServiceUpdate, db: AsyncSe
         raise HTTPException(status_code=404, detail="Service not found")
     if body.source_url is not None:
         service.source_url = body.source_url
+        service.repo_status = None  # Reset 404 status when URL changes
         if not service.doc_url:
             service.doc_url = body.source_url
     if body.doc_url is not None:
@@ -67,13 +82,15 @@ async def update_service(service_id: uuid.UUID, body: ServiceUpdate, db: AsyncSe
     return _serialize_service(service)
 
 
-def _serialize_service(s: McpService) -> dict:
+def _serialize_service(s: McpService, summary_count: int = 0) -> dict:
     return {
         "id": str(s.id), "name": s.name, "source_url": s.source_url,
         "doc_url": s.doc_url, "doc_hash": s.doc_hash, "branch_hash": s.branch_hash,
         "source_type": s.source_type, "transport": s.transport,
         "category": s.category, "tags": s.tags or [],
+        "repo_status": s.repo_status,
         "is_deprecated": s.is_deprecated,
+        "has_summaries": summary_count > 0,
         "created_at": s.created_at.isoformat() if s.created_at else None,
         "updated_at": s.updated_at.isoformat() if s.updated_at else None,
     }

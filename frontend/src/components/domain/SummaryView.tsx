@@ -4,6 +4,7 @@ import { Tabs } from "../ui/Tabs";
 
 export function SummaryView({ summaries }: { summaries: McpSummary[] }) {
   const [culture, setCulture] = useState("en");
+  const [collapsed, setCollapsed] = useState(false);
   const tabs = summaries.map((s) => ({ key: s.culture, label: s.culture.toUpperCase() }));
   const active = summaries.find((s) => s.culture === culture);
 
@@ -11,10 +12,20 @@ export function SummaryView({ summaries }: { summaries: McpSummary[] }) {
 
   return (
     <div>
-      <Tabs tabs={tabs} active={culture} onChange={setCulture} />
-      <div className="mt-3 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-        {active?.summary || "Select a language."}
+      <div className="flex items-center justify-between">
+        <Tabs tabs={tabs} active={culture} onChange={setCulture} />
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="text-xs text-gray-400 hover:text-gray-600"
+        >
+          {collapsed ? "Expand" : "Collapse"}
+        </button>
       </div>
+      {!collapsed && (
+        <div className="mt-3 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+          {active?.summary || "Select a language."}
+        </div>
+      )}
     </div>
   );
 }

@@ -48,7 +48,15 @@
       "mcp__ssh-manager__ssh_profile",
       "Bash(ssh:*)",
       "Bash(scp:*)",
-      "Bash(file:*)"
+      "Bash(file:*)",
+      "Bash(rsync:*)",
+      "Bash(tar --exclude='.git' --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='dist' --exclude='.env' -czf /tmp/mcp-manager.tar.gz .)",
+      "Bash(curl:*)",
+      "Bash(python3 -c \"import sys,json; [print\\(e['name'],e['type']\\) for e in json.load\\(sys.stdin\\)]\")",
+      "Bash(.venv/Scripts/python -m pytest tests/test_enrichment/test_dedup.py -v)",
+      "Bash(.venv/Scripts/python -m pytest tests/test_enrichment/test_categorizer.py -v)",
+      "Bash(.venv/Scripts/python -c \"from mcp_manager.cli import app; print\\('OK'\\)\")",
+      "Bash(tar --exclude='.git' --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='.env' -czf /tmp/mcp-manager.tar.gz .)"
     ]
   }
 }

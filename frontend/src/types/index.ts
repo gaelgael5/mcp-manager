@@ -9,7 +9,9 @@ export interface McpService {
   transport: string | null;
   category: string | null;
   tags: string[];
+  repo_status: string | null;
   is_deprecated: boolean;
+  has_summaries: boolean;
   created_at: string;
   updated_at: string;
 }

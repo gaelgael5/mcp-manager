@@ -90,7 +90,11 @@ async def generate_for_service(
     )
     doc_content = await connector.fetch_doc_content(raw)
     if not doc_content:
+        service.repo_status = "404"
+        await db.commit()
         raise HTTPException(status_code=404, detail=f"No documentation found for {service.name}")
+
+    service.repo_status = "ok"
 
     generated = []
     for culture in CULTURES:

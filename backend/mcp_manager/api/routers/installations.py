@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from mcp_manager.api.deps import get_db
-from mcp_manager.db.models import McpInstallation
+from mcp_manager.db.models import McpInstallation, McpService, InstallTarget
 
 router = APIRouter(tags=["installations"])
 
@@ -59,6 +59,59 @@ async def update_installation(installation_id: uuid.UUID, body: InstallationUpda
         inst.env_vars = body.env_vars
     await db.commit()
     return _serialize_installation(inst)
+
+@router.post("/installations/generate/{service_id}")
+async def generate_installations(service_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    """Generate installation recipes for all targets for a single service."""
+    from mcp_manager.exporters.engine import generate_installation_data
+
+    result = await db.execute(select(McpService).where(McpService.id == service_id))
+    service = result.scalar_one_or_none()
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+
+    targets_result = await db.execute(select(InstallTarget))
+    targets = targets_result.scalars().all()
+
+    # Get package_info if available
+    pkg = service.package_info or {}
+
+    generated = []
+    for target in targets:
+        data = generate_installation_data(
+            registry_type=pkg.get("registry_type"),
+            package_identifier=pkg.get("package_identifier"),
+            runtime_hint=pkg.get("runtime_hint"),
+            transport=service.transport,
+            target_name=target.name,
+            service_name=service.name,
+            env_vars=pkg.get("env_vars", {}),
+        )
+        if not data:
+            continue
+
+        existing = await db.execute(
+            select(McpInstallation).where(
+                McpInstallation.mcp_service_id == service.id,
+                McpInstallation.install_target_id == target.id,
+            )
+        )
+        install_row = existing.scalar_one_or_none()
+        if install_row:
+            install_row.action_type = data["action_type"]
+            install_row.data = data["data"]
+        else:
+            db.add(McpInstallation(
+                mcp_service_id=service.id,
+                install_target_id=target.id,
+                action_type=data["action_type"],
+                data=data["data"],
+            ))
+        generated.append(target.name)
+
+    await db.commit()
+    return {"status": "done", "service_id": str(service_id), "targets": generated}
+
 
 def _serialize_installation(i: McpInstallation) -> dict:
     return {

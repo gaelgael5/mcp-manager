@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useService, useUpdateService } from "../api/services";
 import { useSummaries, useGenerateSummary } from "../api/summaries";
-import { useInstallations } from "../api/installations";
+import { useInstallations, useGenerateInstallations } from "../api/installations";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -16,6 +16,7 @@ export function ServiceDetailPage() {
   const { data: summariesData } = useSummaries(id);
   const { data: installsData } = useInstallations(id);
   const generateSummary = useGenerateSummary(id!);
+  const generateInstalls = useGenerateInstallations(id!);
   const updateService = useUpdateService(id!);
 
   const [editingUrl, setEditingUrl] = useState(false);
@@ -24,6 +25,7 @@ export function ServiceDetailPage() {
   if (!service) return <p className="text-gray-500">Loading...</p>;
 
   const hasSummaries = summariesData?.items && summariesData.items.length > 0;
+  const hasInstalls = installsData?.items && installsData.items.length > 0;
 
   const handleSaveUrl = () => {
     if (!urlInput.trim()) return;
@@ -46,6 +48,7 @@ export function ServiceDetailPage() {
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold">{service.name}</h1>
           <StatusBadge isDeprecated={service.is_deprecated} />
+          {service.repo_status === "404" && <Badge color="red">404</Badge>}
         </div>
         <div className="mt-2 flex flex-wrap gap-2">
           <Badge color="purple">{service.source_type}</Badge>
@@ -104,11 +107,29 @@ export function ServiceDetailPage() {
       </Card>
 
       <Card title="Installation">
-        {installsData?.items && installsData.items.length > 0 ? (
-          <div className="space-y-3">
-            {installsData.items.map((inst) => <InstallCommand key={inst.id} installation={inst} />)}
+        <div className="space-y-3">
+          {hasInstalls ? (
+            installsData.items.map((inst) => <InstallCommand key={inst.id} installation={inst} />)
+          ) : (
+            <p className="text-sm text-gray-500">No installation recipes available.</p>
+          )}
+          <div className="flex items-center gap-3 pt-2">
+            <Button
+              variant={hasInstalls ? "secondary" : "primary"}
+              size="sm"
+              onClick={() => generateInstalls.mutate()}
+              loading={generateInstalls.isPending}
+            >
+              {hasInstalls ? "Regenerate Recipes" : "Generate Recipes"}
+            </Button>
+            {generateInstalls.isSuccess && (
+              <span className="text-sm text-green-600">Recipes generated</span>
+            )}
+            {generateInstalls.isError && (
+              <span className="text-sm text-red-600">Failed to generate recipes</span>
+            )}
           </div>
-        ) : <p className="text-sm text-gray-500">No installation recipes available.</p>}
+        </div>
       </Card>
     </div>
   );
