@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Markdown from "react-markdown";
 import type { McpSummary } from "../../types";
 import { Tabs } from "../ui/Tabs";
 
@@ -22,8 +23,8 @@ export function SummaryView({ summaries }: { summaries: McpSummary[] }) {
         </button>
       </div>
       {!collapsed && (
-        <div className="mt-3 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-          {active?.summary || "Select a language."}
+        <div className="mt-3 prose prose-sm prose-gray max-w-none">
+          <Markdown>{active?.summary || "Select a language."}</Markdown>
         </div>
       )}
     </div>
