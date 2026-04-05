@@ -3,6 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Index, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
+from pgvector.sqlalchemy import Vector
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -141,3 +142,26 @@ class McpParameter(Base):
     )
 
     service: Mapped["McpService"] = relationship(back_populates="parameters")
+
+
+EMBEDDING_DIM = 1024  # mxbai-embed-large
+
+
+class McpEmbedding(Base):
+    __tablename__ = "mcp_embeddings"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    mcp_service_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("mcp_services.id", ondelete="CASCADE"), nullable=False
+    )
+    chunk_type: Mapped[str] = mapped_column(String(20), nullable=False)  # "summary" or "doc_chunk"
+    chunk_index: Mapped[int] = mapped_column(default=0)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    embedding = mapped_column(Vector(EMBEDDING_DIM))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    service: Mapped["McpService"] = relationship()

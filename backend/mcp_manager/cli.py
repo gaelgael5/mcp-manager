@@ -284,5 +284,20 @@ async def _run_enrich(pass_name: str | None = None) -> None:
         typer.echo("\nEnrichment complete.")
 
 
+@app.command()
+def index(
+    limit: int = typer.Option(100, help="Max number of services to index per run"),
+):
+    """Run indexation pipeline on services flagged needs_reindex."""
+    logging.basicConfig(level=logging.INFO)
+    result = asyncio.run(_run_index(limit=limit))
+    typer.echo(f"Index complete: {result}")
+
+
+async def _run_index(limit: int) -> dict:
+    from mcp_manager.indexer.pipeline import run_index
+    return await run_index(limit=limit)
+
+
 if __name__ == "__main__":
     app()
