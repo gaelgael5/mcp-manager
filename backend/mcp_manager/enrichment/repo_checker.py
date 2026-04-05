@@ -37,38 +37,46 @@ async def check_repo(client: httpx.AsyncClient, url: str) -> bool:
 
 
 async def run_repo_check() -> dict[str, int]:
-    stats = {"checked": 0, "ok": 0, "not_found": 0, "skipped": 0}
-    semaphore = asyncio.Semaphore(CONCURRENCY)
+    stats = {"checked": 0, "ok": 0, "not_found": 0}
 
-    async with SessionLocal() as db:
-        result = await db.execute(
-            select(McpService).where(
-                McpService.source_url != "",
-                McpService.repo_status.is_(None),
-            )
-        )
-        services = result.scalars().all()
-        logger.info("Repo check: %d services to verify", len(services))
+    # Process in small batches to avoid OOM
+    batch_size = 50
+    offset = 0
 
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            for i, svc in enumerate(services):
-                async with semaphore:
-                    ok = await check_repo(client, svc.source_url)
-                svc.repo_status = "ok" if ok else "404"
-                if ok:
-                    stats["ok"] += 1
-                else:
-                    stats["not_found"] += 1
-                stats["checked"] += 1
-
-                if (i + 1) % 100 == 0:
-                    await db.commit()
-                    logger.info(
-                        "Repo check progress: %d/%d (ok: %d, 404: %d)",
-                        stats["checked"], len(services), stats["ok"], stats["not_found"],
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        while True:
+            async with SessionLocal() as db:
+                result = await db.execute(
+                    select(McpService.id, McpService.source_url)
+                    .where(
+                        McpService.source_url != "",
+                        McpService.repo_status.is_(None),
                     )
+                    .limit(batch_size)
+                )
+                rows = result.all()
+                if not rows:
+                    break
 
-            await db.commit()
+                for svc_id, source_url in rows:
+                    ok = await check_repo(client, source_url)
+                    status = "ok" if ok else "404"
+                    await db.execute(
+                        McpService.__table__.update()
+                        .where(McpService.id == svc_id)
+                        .values(repo_status=status)
+                    )
+                    if ok:
+                        stats["ok"] += 1
+                    else:
+                        stats["not_found"] += 1
+                    stats["checked"] += 1
+
+                await db.commit()
+                logger.info(
+                    "Repo check: %d checked (ok: %d, 404: %d)",
+                    stats["checked"], stats["ok"], stats["not_found"],
+                )
 
     logger.info(
         "Repo check done: %d checked, %d ok, %d not found",
