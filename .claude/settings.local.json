@@ -56,7 +56,11 @@
       "Bash(.venv/Scripts/python -m pytest tests/test_enrichment/test_dedup.py -v)",
       "Bash(.venv/Scripts/python -m pytest tests/test_enrichment/test_categorizer.py -v)",
       "Bash(.venv/Scripts/python -c \"from mcp_manager.cli import app; print\\('OK'\\)\")",
-      "Bash(tar --exclude='.git' --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='.env' -czf /tmp/mcp-manager.tar.gz .)"
+      "Bash(tar --exclude='.git' --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='.env' -czf /tmp/mcp-manager.tar.gz .)",
+      "mcp__plugin_superpowers-chrome_chrome__use_browser",
+      "mcp__plugin_playwright_playwright__browser_run_code",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "Bash(./pip install:*)"
     ]
   }
 }

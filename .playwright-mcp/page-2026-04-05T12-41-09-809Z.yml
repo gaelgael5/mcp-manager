@@ -1,0 +1,1726 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e4]:
+      - link "Pulse logo pulse" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "Pulse logo" [ref=e7]
+        - text: pulse
+      - generic [ref=e9]:
+        - link "MCP Servers icon MCP Servers" [ref=e10] [cursor=pointer]:
+          - /url: /servers
+          - img "MCP Servers icon" [ref=e11]
+          - text: MCP Servers
+        - link "MCP Clients icon MCP Clients" [ref=e12] [cursor=pointer]:
+          - /url: /clients
+          - img "MCP Clients icon" [ref=e13]
+          - text: MCP Clients
+        - link "Posts icon Posts" [ref=e14] [cursor=pointer]:
+          - /url: /posts
+          - img "Posts icon" [ref=e15]
+          - text: Posts
+        - link "Work With Us icon Work With Us" [ref=e16] [cursor=pointer]:
+          - /url: /work-with-us
+          - img "Work With Us icon" [ref=e17]
+          - text: Work With Us
+        - link "THE MCP newsletter icon THE MCP newsletter" [ref=e18] [cursor=pointer]:
+          - /url: /newsletter
+          - img "THE MCP newsletter icon" [ref=e19]
+          - text: THE MCP newsletter
+  - main [ref=e20]:
+    - generic [ref=e24]:
+      - generic [ref=e26]:
+        - paragraph [ref=e28]: "Last Update: il y a 4 heures"
+        - generic [ref=e30]: 11,152
+        - paragraph [ref=e31]: Servers
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - heading "MCP Server Directory" [level=1] [ref=e34]
+          - paragraph [ref=e35]:
+            - text: Built to work with a variety of
+            - link "MCP Clients" [ref=e36] [cursor=pointer]:
+              - /url: /clients
+            - text: .
+        - link "Submit icon Submit" [ref=e38] [cursor=pointer]:
+          - /url: /submit
+          - img "Submit icon" [ref=e39]
+          - generic [ref=e40]: Submit
+        - generic [ref=e41]:
+          - textbox "Search API, server name, provider name, etc." [ref=e43]
+          - button "Search" [ref=e44] [cursor=pointer]
+        - generic [ref=e46]:
+          - generic [ref=e48]:
+            - img "Trending up icon" [ref=e49]
+            - heading "Trending" [level=2] [ref=e50]
+          - generic [ref=e54]:
+            - link "Figma icon Figma" [ref=e55] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=figma
+              - img "Figma icon"
+              - heading "Figma" [level=3]
+            - link "Notion icon Notion" [ref=e56] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=notion
+              - img "Notion icon"
+              - heading "Notion" [level=3]
+            - link "GitHub icon GitHub" [ref=e57] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=github
+              - img "GitHub icon"
+              - heading "GitHub" [level=3]
+            - link "Supabase icon Supabase" [ref=e58] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=supabase
+              - img "Supabase icon"
+              - heading "Supabase" [level=3]
+            - link "Jira icon Jira" [ref=e59] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=jira
+              - img "Jira icon"
+              - heading "Jira" [level=3]
+            - link "Slack icon Slack" [ref=e60] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=slack
+              - img "Slack icon"
+              - heading "Slack" [level=3]
+            - link "Confluence icon Confluence" [ref=e61] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=confluence
+              - img "Confluence icon"
+              - heading "Confluence" [level=3]
+            - link "Google icon Google" [ref=e62] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=google
+              - img "Google icon"
+              - heading "Google" [level=3]
+            - link "Obsidian Notes icon Obsidian Notes" [ref=e63] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=obsidian
+              - img "Obsidian Notes icon"
+              - heading "Obsidian Notes" [level=3]
+            - link "Perplexity icon Perplexity" [ref=e64] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=perplexity
+              - img "Perplexity icon"
+              - heading "Perplexity" [level=3]
+            - link "Memory icon Memory" [ref=e65] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=memory
+              - img "Memory icon"
+              - heading "Memory" [level=3]
+            - link "Postgres icon Postgres" [ref=e66] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=postgres
+              - img "Postgres icon"
+              - heading "Postgres" [level=3]
+            - link "Git icon Git" [ref=e67] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=git
+              - img "Git icon"
+              - heading "Git" [level=3]
+            - link "YouTube icon YouTube" [ref=e68] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=youtube
+              - img "YouTube icon"
+              - heading "YouTube" [level=3]
+            - link "Google Calendar icon Google Calendar" [ref=e69] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=google+calendar
+              - img "Google Calendar icon"
+              - heading "Google Calendar" [level=3]
+            - link "Playwright icon Playwright" [ref=e70] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=playwright
+              - img "Playwright icon"
+              - heading "Playwright" [level=3]
+            - link "Image Generation/Manipulation icon Image Generation/Manipulation" [ref=e71] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=image
+              - img "Image Generation/Manipulation icon"
+              - heading "Image Generation/Manipulation" [level=3]
+            - link "PDF icon PDF" [ref=e72] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=pdf
+              - img "PDF icon"
+              - heading "PDF" [level=3]
+            - link "OpenAPI icon OpenAPI" [ref=e73] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=openapi
+              - img "OpenAPI icon"
+              - heading "OpenAPI" [level=3]
+            - link "SQL icon SQL" [ref=e74] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=sql
+              - img "SQL icon"
+              - heading "SQL" [level=3]
+            - link "Microsoft Excel icon Microsoft Excel" [ref=e75] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=excel
+              - img "Microsoft Excel icon"
+              - heading "Microsoft Excel" [level=3]
+            - link "Gmail icon Gmail" [ref=e76] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=gmail
+              - img "Gmail icon"
+              - heading "Gmail" [level=3]
+            - link "Unity icon Unity" [ref=e77] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=unity+editor
+              - img "Unity icon"
+              - heading "Unity" [level=3]
+            - link "Blender icon Blender" [ref=e78] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=blender
+              - img "Blender icon"
+              - heading "Blender" [level=3]
+            - link "AWS icon AWS" [ref=e79] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=aws
+              - img "AWS icon"
+              - heading "AWS" [level=3]
+            - link "Azure icon Azure" [ref=e80] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=azure
+              - img "Azure icon"
+              - heading "Azure" [level=3]
+            - link "Bitbucket icon Bitbucket" [ref=e81] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=bitbucket
+              - img "Bitbucket icon"
+              - heading "Bitbucket" [level=3]
+            - link "Brave icon Brave" [ref=e82] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=brave
+              - img "Brave icon"
+              - heading "Brave" [level=3]
+            - link "Google Chrome icon Google Chrome" [ref=e83] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=chrome
+              - img "Google Chrome icon"
+              - heading "Google Chrome" [level=3]
+            - link "Deepseek icon Deepseek" [ref=e84] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=deepseek
+              - img "Deepseek icon"
+              - heading "Deepseek" [level=3]
+            - link "FHIR icon FHIR" [ref=e85] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=fhir
+              - img "FHIR icon"
+              - heading "FHIR" [level=3]
+            - link "Firebase icon Firebase" [ref=e86] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=firebase
+              - img "Firebase icon"
+              - heading "Firebase" [level=3]
+            - link "Firecrawl icon Firecrawl" [ref=e87] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=firecrawl
+              - img "Firecrawl icon"
+              - heading "Firecrawl" [level=3]
+            - link "Gemini icon Gemini" [ref=e88] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=gemini
+              - img "Gemini icon"
+              - heading "Gemini" [level=3]
+            - link "Gitlab icon Gitlab" [ref=e89] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=gitlab
+              - img "Gitlab icon"
+              - heading "Gitlab" [level=3]
+            - link "Godot icon Godot" [ref=e90] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=godot
+              - img "Godot icon"
+              - heading "Godot" [level=3]
+            - link "Google Calendar icon Google Calendar" [ref=e91] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=google-calendar
+              - img "Google Calendar icon"
+              - heading "Google Calendar" [level=3]
+            - link "Grafana icon Grafana" [ref=e92] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=grafana
+              - img "Grafana icon"
+              - heading "Grafana" [level=3]
+            - link "Jetbrains icon Jetbrains" [ref=e93] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=jetbrains
+              - img "Jetbrains icon"
+              - heading "Jetbrains" [level=3]
+            - link "Kubernetes icon Kubernetes" [ref=e94] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=kubernetes
+              - img "Kubernetes icon"
+              - heading "Kubernetes" [level=3]
+            - link "LinkedIn icon LinkedIn" [ref=e95] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=linkedin
+              - img "LinkedIn icon"
+              - heading "LinkedIn" [level=3]
+            - link "Mongo icon Mongo" [ref=e96] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=mongo
+              - img "Mongo icon"
+              - heading "Mongo" [level=3]
+            - link "MySQL icon MySQL" [ref=e97] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=mysql
+              - img "MySQL icon"
+              - heading "MySQL" [level=3]
+            - link "Neo4j icon Neo4j" [ref=e98] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=neo4j
+              - img "Neo4j icon"
+              - heading "Neo4j" [level=3]
+            - link "Ollama icon Ollama" [ref=e99] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=ollama
+              - img "Ollama icon"
+              - heading "Ollama" [level=3]
+            - link "Outlook icon Outlook" [ref=e100] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=outlook
+              - img "Outlook icon"
+              - heading "Outlook" [level=3]
+            - link "Python icon Python" [ref=e101] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=python
+              - img "Python icon"
+              - heading "Python" [level=3]
+            - link "Qdrant icon Qdrant" [ref=e102] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=qdrant
+              - img "Qdrant icon"
+              - heading "Qdrant" [level=3]
+            - link "RAG icon RAG" [ref=e103] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=rag
+              - img "RAG icon"
+              - heading "RAG" [level=3]
+            - link "Reddit icon Reddit" [ref=e104] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=reddit
+              - img "Reddit icon"
+              - heading "Reddit" [level=3]
+            - link "Salesforce icon Salesforce" [ref=e105] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=salesforce
+              - img "Salesforce icon"
+              - heading "Salesforce" [level=3]
+            - link "Google Sheets icon Google Sheets" [ref=e106] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=sheets
+              - img "Google Sheets icon"
+              - heading "Google Sheets" [level=3]
+            - link "Shopify icon Shopify" [ref=e107] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=shopify
+              - img "Shopify icon"
+              - heading "Shopify" [level=3]
+            - link "Spotify icon Spotify" [ref=e108] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=spotify
+              - img "Spotify icon"
+              - heading "Spotify" [level=3]
+            - link "Sqlite icon Sqlite" [ref=e109] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=sqlite
+              - img "Sqlite icon"
+              - heading "Sqlite" [level=3]
+            - link "Stripe icon Stripe" [ref=e110] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=stripe
+              - img "Stripe icon"
+              - heading "Stripe" [level=3]
+            - link "Tavily icon Tavily" [ref=e111] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=tavily
+              - img "Tavily icon"
+              - heading "Tavily" [level=3]
+            - link "Unity icon Unity" [ref=e112] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=unity
+              - img "Unity icon"
+              - heading "Unity" [level=3]
+            - link "Vercel icon Vercel" [ref=e113] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=vercel
+              - img "Vercel icon"
+              - heading "Vercel" [level=3]
+            - link "WhatsApp icon WhatsApp" [ref=e114] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=whatsapp
+              - img "WhatsApp icon"
+              - heading "WhatsApp" [level=3]
+            - link "Microsoft Word icon Microsoft Word" [ref=e115] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=word
+              - img "Microsoft Word icon"
+              - heading "Microsoft Word" [level=3]
+            - link "X (Twitter) icon X (Twitter)" [ref=e116] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=x-twitter
+              - img "X (Twitter) icon"
+              - heading "X (Twitter)" [level=3]
+            - link "Zapier icon Zapier" [ref=e117] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=zapier
+              - img "Zapier icon"
+              - heading "Zapier" [level=3]
+            - link "Remote icon Remote" [ref=e118] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?other%5B%5D=remote
+              - img "Remote icon"
+              - heading "Remote" [level=3]
+            - link "Home Assistant icon Home Assistant" [ref=e119] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=home+assistant
+              - img "Home Assistant icon"
+              - heading "Home Assistant" [level=3]
+            - link "Figma icon Figma" [ref=e120] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=figma
+              - img "Figma icon"
+              - heading "Figma" [level=3]
+            - link "Notion icon Notion" [ref=e121] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=notion
+              - img "Notion icon"
+              - heading "Notion" [level=3]
+            - link "GitHub icon GitHub" [ref=e122] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=github
+              - img "GitHub icon"
+              - heading "GitHub" [level=3]
+            - link "Supabase icon Supabase" [ref=e123] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=supabase
+              - img "Supabase icon"
+              - heading "Supabase" [level=3]
+            - link "Jira icon Jira" [ref=e124] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=jira
+              - img "Jira icon"
+              - heading "Jira" [level=3]
+            - link "Slack icon Slack" [ref=e125] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=slack
+              - img "Slack icon"
+              - heading "Slack" [level=3]
+            - link "Confluence icon Confluence" [ref=e126] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=confluence
+              - img "Confluence icon"
+              - heading "Confluence" [level=3]
+            - link "Google icon Google" [ref=e127] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=google
+              - img "Google icon"
+              - heading "Google" [level=3]
+            - link "Obsidian Notes icon Obsidian Notes" [ref=e128] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=obsidian
+              - img "Obsidian Notes icon"
+              - heading "Obsidian Notes" [level=3]
+            - link "Perplexity icon Perplexity" [ref=e129] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=perplexity
+              - img "Perplexity icon"
+              - heading "Perplexity" [level=3]
+            - link "Memory icon Memory" [ref=e130] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=memory
+              - img "Memory icon"
+              - heading "Memory" [level=3]
+            - link "Postgres icon Postgres" [ref=e131] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=postgres
+              - img "Postgres icon"
+              - heading "Postgres" [level=3]
+            - link "Git icon Git" [ref=e132] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=git
+              - img "Git icon"
+              - heading "Git" [level=3]
+            - link "YouTube icon YouTube" [ref=e133] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=youtube
+              - img "YouTube icon"
+              - heading "YouTube" [level=3]
+            - link "Google Calendar icon Google Calendar" [ref=e134] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=google+calendar
+              - img "Google Calendar icon"
+              - heading "Google Calendar" [level=3]
+            - link "Playwright icon Playwright" [ref=e135] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=playwright
+              - img "Playwright icon"
+              - heading "Playwright" [level=3]
+            - link "Image Generation/Manipulation icon Image Generation/Manipulation" [ref=e136] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=image
+              - img "Image Generation/Manipulation icon"
+              - heading "Image Generation/Manipulation" [level=3]
+            - link "PDF icon PDF" [ref=e137] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=pdf
+              - img "PDF icon"
+              - heading "PDF" [level=3]
+            - link "OpenAPI icon OpenAPI" [ref=e138] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=openapi
+              - img "OpenAPI icon"
+              - heading "OpenAPI" [level=3]
+            - link "SQL icon SQL" [ref=e139] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=sql
+              - img "SQL icon"
+              - heading "SQL" [level=3]
+            - link "Microsoft Excel icon Microsoft Excel" [ref=e140] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=excel
+              - img "Microsoft Excel icon"
+              - heading "Microsoft Excel" [level=3]
+            - link "Gmail icon Gmail" [ref=e141] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=gmail
+              - img "Gmail icon"
+              - heading "Gmail" [level=3]
+            - link "Unity icon Unity" [ref=e142] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=unity+editor
+              - img "Unity icon"
+              - heading "Unity" [level=3]
+            - link "Blender icon Blender" [ref=e143] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=blender
+              - img "Blender icon"
+              - heading "Blender" [level=3]
+            - link "AWS icon AWS" [ref=e144] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=aws
+              - img "AWS icon"
+              - heading "AWS" [level=3]
+            - link "Azure icon Azure" [ref=e145] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=azure
+              - img "Azure icon"
+              - heading "Azure" [level=3]
+            - link "Bitbucket icon Bitbucket" [ref=e146] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=bitbucket
+              - img "Bitbucket icon"
+              - heading "Bitbucket" [level=3]
+            - link "Brave icon Brave" [ref=e147] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=brave
+              - img "Brave icon"
+              - heading "Brave" [level=3]
+            - link "Google Chrome icon Google Chrome" [ref=e148] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=chrome
+              - img "Google Chrome icon"
+              - heading "Google Chrome" [level=3]
+            - link "Deepseek icon Deepseek" [ref=e149] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=deepseek
+              - img "Deepseek icon"
+              - heading "Deepseek" [level=3]
+            - link "FHIR icon FHIR" [ref=e150] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=fhir
+              - img "FHIR icon"
+              - heading "FHIR" [level=3]
+            - link "Firebase icon Firebase" [ref=e151] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=firebase
+              - img "Firebase icon"
+              - heading "Firebase" [level=3]
+            - link "Firecrawl icon Firecrawl" [ref=e152] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=firecrawl
+              - img "Firecrawl icon"
+              - heading "Firecrawl" [level=3]
+            - link "Gemini icon Gemini" [ref=e153] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=gemini
+              - img "Gemini icon"
+              - heading "Gemini" [level=3]
+            - link "Gitlab icon Gitlab" [ref=e154] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=gitlab
+              - img "Gitlab icon"
+              - heading "Gitlab" [level=3]
+            - link "Godot icon Godot" [ref=e155] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=godot
+              - img "Godot icon"
+              - heading "Godot" [level=3]
+            - link "Google Calendar icon Google Calendar" [ref=e156] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=google-calendar
+              - img "Google Calendar icon"
+              - heading "Google Calendar" [level=3]
+            - link "Grafana icon Grafana" [ref=e157] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=grafana
+              - img "Grafana icon"
+              - heading "Grafana" [level=3]
+            - link "Jetbrains icon Jetbrains" [ref=e158] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=jetbrains
+              - img "Jetbrains icon"
+              - heading "Jetbrains" [level=3]
+            - link "Kubernetes icon Kubernetes" [ref=e159] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=kubernetes
+              - img "Kubernetes icon"
+              - heading "Kubernetes" [level=3]
+            - link "LinkedIn icon LinkedIn" [ref=e160] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=linkedin
+              - img "LinkedIn icon"
+              - heading "LinkedIn" [level=3]
+            - link "Mongo icon Mongo" [ref=e161] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=mongo
+              - img "Mongo icon"
+              - heading "Mongo" [level=3]
+            - link "MySQL icon MySQL" [ref=e162] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=mysql
+              - img "MySQL icon"
+              - heading "MySQL" [level=3]
+            - link "Neo4j icon Neo4j" [ref=e163] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=neo4j
+              - img "Neo4j icon"
+              - heading "Neo4j" [level=3]
+            - link "Ollama icon Ollama" [ref=e164] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=ollama
+              - img "Ollama icon"
+              - heading "Ollama" [level=3]
+            - link "Outlook icon Outlook" [ref=e165] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=outlook
+              - img "Outlook icon"
+              - heading "Outlook" [level=3]
+            - link "Python icon Python" [ref=e166] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=python
+              - img "Python icon"
+              - heading "Python" [level=3]
+            - link "Qdrant icon Qdrant" [ref=e167] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=qdrant
+              - img "Qdrant icon"
+              - heading "Qdrant" [level=3]
+            - link "RAG icon RAG" [ref=e168] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=rag
+              - img "RAG icon"
+              - heading "RAG" [level=3]
+            - link "Reddit icon Reddit" [ref=e169] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=reddit
+              - img "Reddit icon"
+              - heading "Reddit" [level=3]
+            - link "Salesforce icon Salesforce" [ref=e170] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=salesforce
+              - img "Salesforce icon"
+              - heading "Salesforce" [level=3]
+            - link "Google Sheets icon Google Sheets" [ref=e171] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=sheets
+              - img "Google Sheets icon"
+              - heading "Google Sheets" [level=3]
+            - link "Shopify icon Shopify" [ref=e172] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=shopify
+              - img "Shopify icon"
+              - heading "Shopify" [level=3]
+            - link "Spotify icon Spotify" [ref=e173] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=spotify
+              - img "Spotify icon"
+              - heading "Spotify" [level=3]
+            - link "Sqlite icon Sqlite" [ref=e174] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=sqlite
+              - img "Sqlite icon"
+              - heading "Sqlite" [level=3]
+            - link "Stripe icon Stripe" [ref=e175] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=stripe
+              - img "Stripe icon"
+              - heading "Stripe" [level=3]
+            - link "Tavily icon Tavily" [ref=e176] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=tavily
+              - img "Tavily icon"
+              - heading "Tavily" [level=3]
+            - link "Unity icon Unity" [ref=e177] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=unity
+              - img "Unity icon"
+              - heading "Unity" [level=3]
+            - link "Vercel icon Vercel" [ref=e178] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=vercel
+              - img "Vercel icon"
+              - heading "Vercel" [level=3]
+            - link "WhatsApp icon WhatsApp" [ref=e179] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=whatsapp
+              - img "WhatsApp icon"
+              - heading "WhatsApp" [level=3]
+            - link "Microsoft Word icon Microsoft Word" [ref=e180] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=word
+              - img "Microsoft Word icon"
+              - heading "Microsoft Word" [level=3]
+            - link "X (Twitter) icon X (Twitter)" [ref=e181] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=x-twitter
+              - img "X (Twitter) icon"
+              - heading "X (Twitter)" [level=3]
+            - link "Zapier icon Zapier" [ref=e182] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=zapier
+              - img "Zapier icon"
+              - heading "Zapier" [level=3]
+            - link "Remote icon Remote" [ref=e183] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?other%5B%5D=remote
+              - img "Remote icon"
+              - heading "Remote" [level=3]
+            - link "Home Assistant icon Home Assistant" [ref=e184] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=home+assistant
+              - img "Home Assistant icon"
+              - heading "Home Assistant" [level=3]
+            - link "Figma icon Figma" [ref=e185] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=figma
+              - img "Figma icon"
+              - heading "Figma" [level=3]
+            - link "Notion icon Notion" [ref=e186] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=notion
+              - img "Notion icon"
+              - heading "Notion" [level=3]
+            - link "GitHub icon GitHub" [ref=e187] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=github
+              - img "GitHub icon"
+              - heading "GitHub" [level=3]
+            - link "Supabase icon Supabase" [ref=e188] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=supabase
+              - img "Supabase icon"
+              - heading "Supabase" [level=3]
+            - link "Jira icon Jira" [ref=e189] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=jira
+              - img "Jira icon"
+              - heading "Jira" [level=3]
+            - link "Slack icon Slack" [ref=e190] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=slack
+              - img "Slack icon"
+              - heading "Slack" [level=3]
+            - link "Confluence icon Confluence" [ref=e191] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=confluence
+              - img "Confluence icon"
+              - heading "Confluence" [level=3]
+            - link "Google icon Google" [ref=e192] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=google
+              - img "Google icon"
+              - heading "Google" [level=3]
+            - link "Obsidian Notes icon Obsidian Notes" [ref=e193] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=obsidian
+              - img "Obsidian Notes icon"
+              - heading "Obsidian Notes" [level=3]
+            - link "Perplexity icon Perplexity" [ref=e194] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=perplexity
+              - img "Perplexity icon"
+              - heading "Perplexity" [level=3]
+            - link "Memory icon Memory" [ref=e195] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=memory
+              - img "Memory icon"
+              - heading "Memory" [level=3]
+            - link "Postgres icon Postgres" [ref=e196] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=postgres
+              - img "Postgres icon"
+              - heading "Postgres" [level=3]
+            - link "Git icon Git" [ref=e197] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=git
+              - img "Git icon"
+              - heading "Git" [level=3]
+            - link "YouTube icon YouTube" [ref=e198] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=youtube
+              - img "YouTube icon"
+              - heading "YouTube" [level=3]
+            - link "Google Calendar icon Google Calendar" [ref=e199] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=google+calendar
+              - img "Google Calendar icon"
+              - heading "Google Calendar" [level=3]
+            - link "Playwright icon Playwright" [ref=e200] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=playwright
+              - img "Playwright icon"
+              - heading "Playwright" [level=3]
+            - link "Image Generation/Manipulation icon Image Generation/Manipulation" [ref=e201] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=image
+              - img "Image Generation/Manipulation icon"
+              - heading "Image Generation/Manipulation" [level=3]
+            - link "PDF icon PDF" [ref=e202] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=pdf
+              - img "PDF icon"
+              - heading "PDF" [level=3]
+            - link "OpenAPI icon OpenAPI" [ref=e203] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=openapi
+              - img "OpenAPI icon"
+              - heading "OpenAPI" [level=3]
+            - link "SQL icon SQL" [ref=e204] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=sql
+              - img "SQL icon"
+              - heading "SQL" [level=3]
+            - link "Microsoft Excel icon Microsoft Excel" [ref=e205] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=excel
+              - img "Microsoft Excel icon"
+              - heading "Microsoft Excel" [level=3]
+            - link "Gmail icon Gmail" [ref=e206] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=gmail
+              - img "Gmail icon"
+              - heading "Gmail" [level=3]
+            - link "Unity icon Unity" [ref=e207] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=unity+editor
+              - img "Unity icon"
+              - heading "Unity" [level=3]
+            - link "Blender icon Blender" [ref=e208] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=blender
+              - img "Blender icon"
+              - heading "Blender" [level=3]
+            - link "AWS icon AWS" [ref=e209] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=aws
+              - img "AWS icon"
+              - heading "AWS" [level=3]
+            - link "Azure icon Azure" [ref=e210] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=azure
+              - img "Azure icon"
+              - heading "Azure" [level=3]
+            - link "Bitbucket icon Bitbucket" [ref=e211] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=bitbucket
+              - img "Bitbucket icon"
+              - heading "Bitbucket" [level=3]
+            - link "Brave icon Brave" [ref=e212] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=brave
+              - img "Brave icon"
+              - heading "Brave" [level=3]
+            - link "Google Chrome icon Google Chrome" [ref=e213] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=chrome
+              - img "Google Chrome icon"
+              - heading "Google Chrome" [level=3]
+            - link "Deepseek icon Deepseek" [ref=e214] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=deepseek
+              - img "Deepseek icon"
+              - heading "Deepseek" [level=3]
+            - link "FHIR icon FHIR" [ref=e215] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=fhir
+              - img "FHIR icon"
+              - heading "FHIR" [level=3]
+            - link "Firebase icon Firebase" [ref=e216] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=firebase
+              - img "Firebase icon"
+              - heading "Firebase" [level=3]
+            - link "Firecrawl icon Firecrawl" [ref=e217] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=firecrawl
+              - img "Firecrawl icon"
+              - heading "Firecrawl" [level=3]
+            - link "Gemini icon Gemini" [ref=e218] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=gemini
+              - img "Gemini icon"
+              - heading "Gemini" [level=3]
+            - link "Gitlab icon Gitlab" [ref=e219] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=gitlab
+              - img "Gitlab icon"
+              - heading "Gitlab" [level=3]
+            - link "Godot icon Godot" [ref=e220] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=godot
+              - img "Godot icon"
+              - heading "Godot" [level=3]
+            - link "Google Calendar icon Google Calendar" [ref=e221] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=google-calendar
+              - img "Google Calendar icon"
+              - heading "Google Calendar" [level=3]
+            - link "Grafana icon Grafana" [ref=e222] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=grafana
+              - img "Grafana icon"
+              - heading "Grafana" [level=3]
+            - link "Jetbrains icon Jetbrains" [ref=e223] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=jetbrains
+              - img "Jetbrains icon"
+              - heading "Jetbrains" [level=3]
+            - link "Kubernetes icon Kubernetes" [ref=e224] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=kubernetes
+              - img "Kubernetes icon"
+              - heading "Kubernetes" [level=3]
+            - link "LinkedIn icon LinkedIn" [ref=e225] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=linkedin
+              - img "LinkedIn icon"
+              - heading "LinkedIn" [level=3]
+            - link "Mongo icon Mongo" [ref=e226] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=mongo
+              - img "Mongo icon"
+              - heading "Mongo" [level=3]
+            - link "MySQL icon MySQL" [ref=e227] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=mysql
+              - img "MySQL icon"
+              - heading "MySQL" [level=3]
+            - link "Neo4j icon Neo4j" [ref=e228] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=neo4j
+              - img "Neo4j icon"
+              - heading "Neo4j" [level=3]
+            - link "Ollama icon Ollama" [ref=e229] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=ollama
+              - img "Ollama icon"
+              - heading "Ollama" [level=3]
+            - link "Outlook icon Outlook" [ref=e230] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=outlook
+              - img "Outlook icon"
+              - heading "Outlook" [level=3]
+            - link "Python icon Python" [ref=e231] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=python
+              - img "Python icon"
+              - heading "Python" [level=3]
+            - link "Qdrant icon Qdrant" [ref=e232] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=qdrant
+              - img "Qdrant icon"
+              - heading "Qdrant" [level=3]
+            - link "RAG icon RAG" [ref=e233] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=rag
+              - img "RAG icon"
+              - heading "RAG" [level=3]
+            - link "Reddit icon Reddit" [ref=e234] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=reddit
+              - img "Reddit icon"
+              - heading "Reddit" [level=3]
+            - link "Salesforce icon Salesforce" [ref=e235] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=salesforce
+              - img "Salesforce icon"
+              - heading "Salesforce" [level=3]
+            - link "Google Sheets icon Google Sheets" [ref=e236] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=sheets
+              - img "Google Sheets icon"
+              - heading "Google Sheets" [level=3]
+            - link "Shopify icon Shopify" [ref=e237] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=shopify
+              - img "Shopify icon"
+              - heading "Shopify" [level=3]
+            - link "Spotify icon Spotify" [ref=e238] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=spotify
+              - img "Spotify icon"
+              - heading "Spotify" [level=3]
+            - link "Sqlite icon Sqlite" [ref=e239] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=sqlite
+              - img "Sqlite icon"
+              - heading "Sqlite" [level=3]
+            - link "Stripe icon Stripe" [ref=e240] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=stripe
+              - img "Stripe icon"
+              - heading "Stripe" [level=3]
+            - link "Tavily icon Tavily" [ref=e241] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=tavily
+              - img "Tavily icon"
+              - heading "Tavily" [level=3]
+            - link "Unity icon Unity" [ref=e242] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=unity
+              - img "Unity icon"
+              - heading "Unity" [level=3]
+            - link "Vercel icon Vercel" [ref=e243] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=vercel
+              - img "Vercel icon"
+              - heading "Vercel" [level=3]
+            - link "WhatsApp icon WhatsApp" [ref=e244] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=whatsapp
+              - img "WhatsApp icon"
+              - heading "WhatsApp" [level=3]
+            - link "Microsoft Word icon Microsoft Word" [ref=e245] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=word
+              - img "Microsoft Word icon"
+              - heading "Microsoft Word" [level=3]
+            - link "X (Twitter) icon X (Twitter)" [ref=e246] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=x-twitter
+              - img "X (Twitter) icon"
+              - heading "X (Twitter)" [level=3]
+            - link "Zapier icon Zapier" [ref=e247] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=zapier
+              - img "Zapier icon"
+              - heading "Zapier" [level=3]
+            - link "Remote icon Remote" [ref=e248] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?other%5B%5D=remote
+              - img "Remote icon"
+              - heading "Remote" [level=3]
+            - link "Home Assistant icon Home Assistant" [ref=e249] [cursor=pointer]:
+              - /url: https://www.pulsemcp.com/servers?q=home+assistant
+              - img "Home Assistant icon"
+              - heading "Home Assistant" [level=3]
+      - generic [ref=e250]:
+        - link "PulseMCP Work With Us! Work With Us!" [ref=e254] [cursor=pointer]:
+          - /url: https://www.pulsemcp.com/work-with-us
+          - generic [ref=e255]:
+            - paragraph [ref=e256]: PulseMCP
+            - heading "Work With Us!" [level=3] [ref=e257]
+            - img "Work With Us!" [ref=e259]
+        - generic [ref=e262]:
+          - generic [ref=e263]:
+            - generic [ref=e264]:
+              - heading "Showing 1 - 42 of 11,152 servers" [level=2] [ref=e266]
+              - generic [ref=e267]:
+                - button "Filter icon Filters" [ref=e270] [cursor=pointer]:
+                  - img "Filter icon" [ref=e271]
+                  - generic [ref=e272]: Filters
+                  - img [ref=e273]
+                - 'button "Sort icon Sort: Last Updated" [ref=e277] [cursor=pointer]':
+                  - img "Sort icon" [ref=e278]
+                  - generic [ref=e279]: "Sort: Last Updated"
+                  - img [ref=e280]
+            - generic [ref=e282]:
+              - link "Cosense yosider Integrates with cosense to enable retrieval and analysis of project pages for knowledge base querying and... Classification Community icon community Est Visitors (All Time) 3.7k Release Date Dec 31, 2024" [ref=e284] [cursor=pointer]:
+                - /url: /servers/yosider-cosense
+                - generic [ref=e286]:
+                  - generic [ref=e287]:
+                    - heading "Cosense" [level=3] [ref=e289]
+                    - paragraph [ref=e290]: yosider
+                    - paragraph [ref=e291]: Integrates with cosense to enable retrieval and analysis of project pages for knowledge base querying and...
+                  - generic [ref=e293]:
+                    - generic [ref=e294]:
+                      - paragraph [ref=e295]: Classification
+                      - generic [ref=e296]:
+                        - img "Community icon" [ref=e298]
+                        - paragraph [ref=e299]: community
+                    - generic [ref=e300]:
+                      - paragraph [ref=e301]: Est Visitors (All Time)
+                      - paragraph [ref=e302]: 3.7k
+                    - generic [ref=e303]:
+                      - paragraph [ref=e304]: Release Date
+                      - paragraph [ref=e305]: Dec 31, 2024
+              - link "Google Search Console Amin Foroutan Integrates with Google Search Console API to provide website search performance analytics, indexing status... Classification Community icon community Est Visitors (All Time) 117k Release Date Mar 14, 2025" [ref=e307] [cursor=pointer]:
+                - /url: /servers/aminforou-gsc
+                - generic [ref=e309]:
+                  - generic [ref=e310]:
+                    - heading "Google Search Console" [level=3] [ref=e312]
+                    - paragraph [ref=e313]: Amin Foroutan
+                    - paragraph [ref=e314]: Integrates with Google Search Console API to provide website search performance analytics, indexing status...
+                  - generic [ref=e316]:
+                    - generic [ref=e317]:
+                      - paragraph [ref=e318]: Classification
+                      - generic [ref=e319]:
+                        - img "Community icon" [ref=e321]
+                        - paragraph [ref=e322]: community
+                    - generic [ref=e323]:
+                      - paragraph [ref=e324]: Est Visitors (All Time)
+                      - paragraph [ref=e325]: 117k
+                    - generic [ref=e326]:
+                      - paragraph [ref=e327]: Release Date
+                      - paragraph [ref=e328]: Mar 14, 2025
+              - link "Mac Messages Carter Lasalle Bridges Claude Desktop with macOS Messages app, enabling reading and sending iMessages through direct database access... Classification Community icon community Est Visitors (All Time) 17.2k Release Date Mar 13, 2025" [ref=e330] [cursor=pointer]:
+                - /url: /servers/carterlasalle-mac-messages
+                - generic [ref=e332]:
+                  - generic [ref=e333]:
+                    - heading "Mac Messages" [level=3] [ref=e335]
+                    - paragraph [ref=e336]: Carter Lasalle
+                    - paragraph [ref=e337]: Bridges Claude Desktop with macOS Messages app, enabling reading and sending iMessages through direct database access...
+                  - generic [ref=e339]:
+                    - generic [ref=e340]:
+                      - paragraph [ref=e341]: Classification
+                      - generic [ref=e342]:
+                        - img "Community icon" [ref=e344]
+                        - paragraph [ref=e345]: community
+                    - generic [ref=e346]:
+                      - paragraph [ref=e347]: Est Visitors (All Time)
+                      - paragraph [ref=e348]: 17.2k
+                    - generic [ref=e349]:
+                      - paragraph [ref=e350]: Release Date
+                      - paragraph [ref=e351]: Mar 13, 2025
+              - link "Kubernetes Manager Flux159 Manage Kubernetes cluster resources and deployments. Classification Community icon community Est Visitors (All Time) 263k Release Date Dec 8, 2024" [ref=e353] [cursor=pointer]:
+                - /url: /servers/flux159-mcp-server-kubernetes
+                - generic [ref=e355]:
+                  - generic [ref=e356]:
+                    - heading "Kubernetes Manager" [level=3] [ref=e358]
+                    - paragraph [ref=e359]: Flux159
+                    - paragraph [ref=e360]: Manage Kubernetes cluster resources and deployments.
+                  - generic [ref=e362]:
+                    - generic [ref=e363]:
+                      - paragraph [ref=e364]: Classification
+                      - generic [ref=e365]:
+                        - img "Community icon" [ref=e367]
+                        - paragraph [ref=e368]: community
+                    - generic [ref=e369]:
+                      - paragraph [ref=e370]: Est Visitors (All Time)
+                      - paragraph [ref=e371]: 263k
+                    - generic [ref=e372]:
+                      - paragraph [ref=e373]: Release Date
+                      - paragraph [ref=e374]: Dec 8, 2024
+              - link "Cognee Topoteretes AI-friendly database and knowledge-management capabilities via various database schemes. Classification Official repository icon official Est Visitors (All Time) — Release Date Dec 14, 2024" [ref=e376] [cursor=pointer]:
+                - /url: /servers/topoteretes-cognee-mcp
+                - generic [ref=e378]:
+                  - generic [ref=e379]:
+                    - heading "Cognee" [level=3] [ref=e381]
+                    - paragraph [ref=e382]: Topoteretes
+                    - paragraph [ref=e383]: AI-friendly database and knowledge-management capabilities via various database schemes.
+                  - generic [ref=e385]:
+                    - generic [ref=e386]:
+                      - paragraph [ref=e387]: Classification
+                      - generic [ref=e388]:
+                        - img "Official repository icon" [ref=e390]
+                        - paragraph [ref=e391]: official
+                    - generic [ref=e392]:
+                      - paragraph [ref=e393]: Est Visitors (All Time)
+                      - paragraph [ref=e394]: —
+                    - generic [ref=e395]:
+                      - paragraph [ref=e396]: Release Date
+                      - paragraph [ref=e397]: Dec 14, 2024
+              - link "Desktop Commander Eduard Ruzga Integrates terminal and filesystem capabilities for executing system commands, managing processes, and performing... Classification Official repository icon official Est Visitors (All Time) 1.1m Release Date Jan 8, 2025" [ref=e399] [cursor=pointer]:
+                - /url: /servers/desktop-commander
+                - generic [ref=e401]:
+                  - generic [ref=e402]:
+                    - heading "Desktop Commander" [level=3] [ref=e404]
+                    - paragraph [ref=e405]: Eduard Ruzga
+                    - paragraph [ref=e406]: Integrates terminal and filesystem capabilities for executing system commands, managing processes, and performing...
+                  - generic [ref=e408]:
+                    - generic [ref=e409]:
+                      - paragraph [ref=e410]: Classification
+                      - generic [ref=e411]:
+                        - img "Official repository icon" [ref=e413]
+                        - paragraph [ref=e414]: official
+                    - generic [ref=e415]:
+                      - paragraph [ref=e416]: Est Visitors (All Time)
+                      - paragraph [ref=e417]: 1.1m
+                    - generic [ref=e418]:
+                      - paragraph [ref=e419]: Release Date
+                      - paragraph [ref=e420]: Jan 8, 2025
+              - link "Telegram Eugene Evstafev Bridges Claude with Telegram messaging, enabling direct interaction with Telegram chats through tools for retrieving... Classification Community icon community Est Visitors (All Time) 169k Release Date Mar 21, 2025" [ref=e422] [cursor=pointer]:
+                - /url: /servers/chigwell-telegram
+                - generic [ref=e424]:
+                  - generic [ref=e425]:
+                    - heading "Telegram" [level=3] [ref=e427]
+                    - paragraph [ref=e428]: Eugene Evstafev
+                    - paragraph [ref=e429]: Bridges Claude with Telegram messaging, enabling direct interaction with Telegram chats through tools for retrieving...
+                  - generic [ref=e431]:
+                    - generic [ref=e432]:
+                      - paragraph [ref=e433]: Classification
+                      - generic [ref=e434]:
+                        - img "Community icon" [ref=e436]
+                        - paragraph [ref=e437]: community
+                    - generic [ref=e438]:
+                      - paragraph [ref=e439]: Est Visitors (All Time)
+                      - paragraph [ref=e440]: 169k
+                    - generic [ref=e441]:
+                      - paragraph [ref=e442]: Release Date
+                      - paragraph [ref=e443]: Mar 21, 2025
+              - link "Obsidian Local REST API j-shelfwood Bridges Obsidian vaults through the Local REST API, enabling intelligent note management, knowledge discovery, and... Classification Community icon community Est Visitors (All Time) 1.3k Release Date Aug 7, 2025" [ref=e445] [cursor=pointer]:
+                - /url: /servers/obsidian-local-rest-api
+                - generic [ref=e447]:
+                  - generic [ref=e448]:
+                    - heading "Obsidian Local REST API" [level=3] [ref=e450]
+                    - paragraph [ref=e451]: j-shelfwood
+                    - paragraph [ref=e452]: Bridges Obsidian vaults through the Local REST API, enabling intelligent note management, knowledge discovery, and...
+                  - generic [ref=e454]:
+                    - generic [ref=e455]:
+                      - paragraph [ref=e456]: Classification
+                      - generic [ref=e457]:
+                        - img "Community icon" [ref=e459]
+                        - paragraph [ref=e460]: community
+                    - generic [ref=e461]:
+                      - paragraph [ref=e462]: Est Visitors (All Time)
+                      - paragraph [ref=e463]: 1.3k
+                    - generic [ref=e464]:
+                      - paragraph [ref=e465]: Release Date
+                      - paragraph [ref=e466]: Aug 7, 2025
+              - link "Skyvern Skyvern AI Control your browser with Skyvern's browser automation platform. Classification Official repository icon official Est Visitors (All Time) 343k Release Date Apr 5, 2025" [ref=e468] [cursor=pointer]:
+                - /url: /servers/skyvern
+                - generic [ref=e470]:
+                  - generic [ref=e471]:
+                    - heading "Skyvern" [level=3] [ref=e473]
+                    - paragraph [ref=e474]: Skyvern AI
+                    - paragraph [ref=e475]: Control your browser with Skyvern's browser automation platform.
+                  - generic [ref=e477]:
+                    - generic [ref=e478]:
+                      - paragraph [ref=e479]: Classification
+                      - generic [ref=e480]:
+                        - img "Official repository icon" [ref=e482]
+                        - paragraph [ref=e483]: official
+                    - generic [ref=e484]:
+                      - paragraph [ref=e485]: Est Visitors (All Time)
+                      - paragraph [ref=e486]: 343k
+                    - generic [ref=e487]:
+                      - paragraph [ref=e488]: Release Date
+                      - paragraph [ref=e489]: Apr 5, 2025
+              - link "Hex SSH levnikolaevich Token-efficient SSH file editing with FNV-1a hash-verified anchors for preventing stale-context corruption on remote... Classification Community icon community Est Visitors (All Time) 58.5k Release Date Oct 24, 2025" [ref=e491] [cursor=pointer]:
+                - /url: /servers/gh-levnikolaevich-hex-ssh
+                - generic [ref=e493]:
+                  - generic [ref=e494]:
+                    - heading "Hex SSH" [level=3] [ref=e496]
+                    - paragraph [ref=e497]: levnikolaevich
+                    - paragraph [ref=e498]: Token-efficient SSH file editing with FNV-1a hash-verified anchors for preventing stale-context corruption on remote...
+                  - generic [ref=e500]:
+                    - generic [ref=e501]:
+                      - paragraph [ref=e502]: Classification
+                      - generic [ref=e503]:
+                        - img "Community icon" [ref=e505]
+                        - paragraph [ref=e506]: community
+                    - generic [ref=e507]:
+                      - paragraph [ref=e508]: Est Visitors (All Time)
+                      - paragraph [ref=e509]: 58.5k
+                    - generic [ref=e510]:
+                      - paragraph [ref=e511]: Release Date
+                      - paragraph [ref=e512]: Oct 24, 2025
+              - link "ADB (Android Debug Bridge) Martin Arellano Bridges AI with Android devices through ADB, enabling device management, shell commands, app installation, file... Classification Community icon community Est Visitors (All Time) 6.3k Release Date Apr 12, 2025" [ref=e514] [cursor=pointer]:
+                - /url: /servers/srmorete-adb
+                - generic [ref=e516]:
+                  - generic [ref=e517]:
+                    - heading "ADB (Android Debug Bridge)" [level=3] [ref=e519]
+                    - paragraph [ref=e520]: Martin Arellano
+                    - paragraph [ref=e521]: Bridges AI with Android devices through ADB, enabling device management, shell commands, app installation, file...
+                  - generic [ref=e523]:
+                    - generic [ref=e524]:
+                      - paragraph [ref=e525]: Classification
+                      - generic [ref=e526]:
+                        - img "Community icon" [ref=e528]
+                        - paragraph [ref=e529]: community
+                    - generic [ref=e530]:
+                      - paragraph [ref=e531]: Est Visitors (All Time)
+                      - paragraph [ref=e532]: 6.3k
+                    - generic [ref=e533]:
+                      - paragraph [ref=e534]: Release Date
+                      - paragraph [ref=e535]: Apr 12, 2025
+              - link "GitMCP (GitHub to MCP) Ido Salomon Transform any GitHub project (repositories or GitHub pages) into a documentation hub. Allows AI tools like Cursor to... Classification Community icon community Est Visitors (All Time) 1.5m Release Date Apr 4, 2025" [ref=e537] [cursor=pointer]:
+                - /url: /servers/idosal-git-mcp
+                - generic [ref=e539]:
+                  - generic [ref=e540]:
+                    - heading "GitMCP (GitHub to MCP)" [level=3] [ref=e542]
+                    - paragraph [ref=e543]: Ido Salomon
+                    - paragraph [ref=e544]: Transform any GitHub project (repositories or GitHub pages) into a documentation hub. Allows AI tools like Cursor to...
+                  - generic [ref=e546]:
+                    - generic [ref=e547]:
+                      - paragraph [ref=e548]: Classification
+                      - generic [ref=e549]:
+                        - img "Community icon" [ref=e551]
+                        - paragraph [ref=e552]: community
+                    - generic [ref=e553]:
+                      - paragraph [ref=e554]: Est Visitors (All Time)
+                      - paragraph [ref=e555]: 1.5m
+                    - generic [ref=e556]:
+                      - paragraph [ref=e557]: Release Date
+                      - paragraph [ref=e558]: Apr 4, 2025
+              - link "Talk to Figma Sonny Lazuardi Enables bidirectional communication with Figma designs through a plugin and WebSocket server, allowing creation and... Classification Community icon community Est Visitors (All Time) 1.3m Release Date Mar 21, 2025" [ref=e560] [cursor=pointer]:
+                - /url: /servers/sonnylazuardi-talk-to-figma
+                - generic [ref=e562]:
+                  - generic [ref=e563]:
+                    - heading "Talk to Figma" [level=3] [ref=e565]
+                    - paragraph [ref=e566]: Sonny Lazuardi
+                    - paragraph [ref=e567]: Enables bidirectional communication with Figma designs through a plugin and WebSocket server, allowing creation and...
+                  - generic [ref=e569]:
+                    - generic [ref=e570]:
+                      - paragraph [ref=e571]: Classification
+                      - generic [ref=e572]:
+                        - img "Community icon" [ref=e574]
+                        - paragraph [ref=e575]: community
+                    - generic [ref=e576]:
+                      - paragraph [ref=e577]: Est Visitors (All Time)
+                      - paragraph [ref=e578]: 1.3m
+                    - generic [ref=e579]:
+                      - paragraph [ref=e580]: Release Date
+                      - paragraph [ref=e581]: Mar 21, 2025
+              - link "ArXiv John Blazick Search and analyze academic papers from the arXiv repository. Classification Community icon community Est Visitors (All Time) 785k Release Date Nov 29, 2024" [ref=e583] [cursor=pointer]:
+                - /url: /servers/blazickjp-arxiv-mcp-server
+                - generic [ref=e585]:
+                  - generic [ref=e586]:
+                    - heading "ArXiv" [level=3] [ref=e588]
+                    - paragraph [ref=e589]: John Blazick
+                    - paragraph [ref=e590]: Search and analyze academic papers from the arXiv repository.
+                  - generic [ref=e592]:
+                    - generic [ref=e593]:
+                      - paragraph [ref=e594]: Classification
+                      - generic [ref=e595]:
+                        - img "Community icon" [ref=e597]
+                        - paragraph [ref=e598]: community
+                    - generic [ref=e599]:
+                      - paragraph [ref=e600]: Est Visitors (All Time)
+                      - paragraph [ref=e601]: 785k
+                    - generic [ref=e602]:
+                      - paragraph [ref=e603]: Release Date
+                      - paragraph [ref=e604]: Nov 29, 2024
+              - link "Meta Ads API Yves Junqueira Provides a bridge to Facebook's Marketing API for analyzing ad campaigns, reviewing creatives, and monitoring metrics... Classification Community icon community Est Visitors (All Time) 110k Release Date Apr 12, 2025" [ref=e606] [cursor=pointer]:
+                - /url: /servers/nictuku-meta-ads
+                - generic [ref=e608]:
+                  - generic [ref=e609]:
+                    - heading "Meta Ads API" [level=3] [ref=e611]
+                    - paragraph [ref=e612]: Yves Junqueira
+                    - paragraph [ref=e613]: Provides a bridge to Facebook's Marketing API for analyzing ad campaigns, reviewing creatives, and monitoring metrics...
+                  - generic [ref=e615]:
+                    - generic [ref=e616]:
+                      - paragraph [ref=e617]: Classification
+                      - generic [ref=e618]:
+                        - img "Community icon" [ref=e620]
+                        - paragraph [ref=e621]: community
+                    - generic [ref=e622]:
+                      - paragraph [ref=e623]: Est Visitors (All Time)
+                      - paragraph [ref=e624]: 110k
+                    - generic [ref=e625]:
+                      - paragraph [ref=e626]: Release Date
+                      - paragraph [ref=e627]: Apr 12, 2025
+              - link "OpenNews (6551) 6551Dex Provides real-time crypto news search, AI sentiment analysis, and trading signals from 72+ data sources. Classification Official repository icon official Est Visitors (All Time) 138k Release Date Feb 27, 2026" [ref=e629] [cursor=pointer]:
+                - /url: /servers/6551team-opennews
+                - generic [ref=e631]:
+                  - generic [ref=e632]:
+                    - heading "OpenNews (6551)" [level=3] [ref=e634]
+                    - paragraph [ref=e635]: 6551Dex
+                    - paragraph [ref=e636]: Provides real-time crypto news search, AI sentiment analysis, and trading signals from 72+ data sources.
+                  - generic [ref=e638]:
+                    - generic [ref=e639]:
+                      - paragraph [ref=e640]: Classification
+                      - generic [ref=e641]:
+                        - img "Official repository icon" [ref=e643]
+                        - paragraph [ref=e644]: official
+                    - generic [ref=e645]:
+                      - paragraph [ref=e646]: Est Visitors (All Time)
+                      - paragraph [ref=e647]: 138k
+                    - generic [ref=e648]:
+                      - paragraph [ref=e649]: Release Date
+                      - paragraph [ref=e650]: Feb 27, 2026
+              - link "PostgreSQL Pro Plus Khai Trinh Xuan Provides PostgreSQL database analysis and optimization capabilities including health monitoring across connections,... Classification Community icon community Est Visitors (All Time) 933 Release Date Jul 13, 2025" [ref=e652] [cursor=pointer]:
+                - /url: /servers/cloud-thinker-ai-postgres-pro-plus
+                - generic [ref=e654]:
+                  - generic [ref=e655]:
+                    - heading "PostgreSQL Pro Plus" [level=3] [ref=e657]
+                    - paragraph [ref=e658]: Khai Trinh Xuan
+                    - paragraph [ref=e659]: Provides PostgreSQL database analysis and optimization capabilities including health monitoring across connections,...
+                  - generic [ref=e661]:
+                    - generic [ref=e662]:
+                      - paragraph [ref=e663]: Classification
+                      - generic [ref=e664]:
+                        - img "Community icon" [ref=e666]
+                        - paragraph [ref=e667]: community
+                    - generic [ref=e668]:
+                      - paragraph [ref=e669]: Est Visitors (All Time)
+                      - paragraph [ref=e670]: "933"
+                    - generic [ref=e671]:
+                      - paragraph [ref=e672]: Release Date
+                      - paragraph [ref=e673]: Jul 13, 2025
+              - link "Roam Research Ian Shen Integrates with Roam Research to enable searching, creating, and manipulating graph content for automated note-taking... Classification Community icon community Est Visitors (All Time) 17.6k Release Date Dec 20, 2024" [ref=e675] [cursor=pointer]:
+                - /url: /servers/2b3pro-roam-research
+                - generic [ref=e677]:
+                  - generic [ref=e678]:
+                    - heading "Roam Research" [level=3] [ref=e680]
+                    - paragraph [ref=e681]: Ian Shen
+                    - paragraph [ref=e682]: Integrates with Roam Research to enable searching, creating, and manipulating graph content for automated note-taking...
+                  - generic [ref=e684]:
+                    - generic [ref=e685]:
+                      - paragraph [ref=e686]: Classification
+                      - generic [ref=e687]:
+                        - img "Community icon" [ref=e689]
+                        - paragraph [ref=e690]: community
+                    - generic [ref=e691]:
+                      - paragraph [ref=e692]: Est Visitors (All Time)
+                      - paragraph [ref=e693]: 17.6k
+                    - generic [ref=e694]:
+                      - paragraph [ref=e695]: Release Date
+                      - paragraph [ref=e696]: Dec 20, 2024
+              - link "AgentDeals Rob Hunter Developer deal aggregator providing structured access to discounts and promotions from 1500+ vendors across 38... Classification Community icon community Est Visitors (All Time) 560 Release Date Feb 25, 2026" [ref=e698] [cursor=pointer]:
+                - /url: /servers/robhunter-agentdeals
+                - generic [ref=e700]:
+                  - generic [ref=e701]:
+                    - heading "AgentDeals" [level=3] [ref=e703]
+                    - paragraph [ref=e704]: Rob Hunter
+                    - paragraph [ref=e705]: Developer deal aggregator providing structured access to discounts and promotions from 1500+ vendors across 38...
+                  - generic [ref=e707]:
+                    - generic [ref=e708]:
+                      - paragraph [ref=e709]: Classification
+                      - generic [ref=e710]:
+                        - img "Community icon" [ref=e712]
+                        - paragraph [ref=e713]: community
+                    - generic [ref=e714]:
+                      - paragraph [ref=e715]: Est Visitors (All Time)
+                      - paragraph [ref=e716]: "560"
+                    - generic [ref=e717]:
+                      - paragraph [ref=e718]: Release Date
+                      - paragraph [ref=e719]: Feb 25, 2026
+              - link "Rash paiml Rust-to-shell transpiler with formal correctness guarantees Classification Official repository icon official Est Visitors (All Time) 6k Release Date May 27, 2025" [ref=e721] [cursor=pointer]:
+                - /url: /servers/paiml-rash
+                - generic [ref=e723]:
+                  - generic [ref=e724]:
+                    - heading "Rash" [level=3] [ref=e726]
+                    - paragraph [ref=e727]: paiml
+                    - paragraph [ref=e728]: Rust-to-shell transpiler with formal correctness guarantees
+                  - generic [ref=e730]:
+                    - generic [ref=e731]:
+                      - paragraph [ref=e732]: Classification
+                      - generic [ref=e733]:
+                        - img "Official repository icon" [ref=e735]
+                        - paragraph [ref=e736]: official
+                    - generic [ref=e737]:
+                      - paragraph [ref=e738]: Est Visitors (All Time)
+                      - paragraph [ref=e739]: 6k
+                    - generic [ref=e740]:
+                      - paragraph [ref=e741]: Release Date
+                      - paragraph [ref=e742]: May 27, 2025
+              - link "EKAP v2 (Turkish Government Procurement) Said Surucu Integrates with Turkey's EKAP v2 government procurement API to search public tenders, announcements, and procurement... Classification Community icon community Est Visitors (All Time) 14.6k Release Date Aug 10, 2025" [ref=e744] [cursor=pointer]:
+                - /url: /servers/saidsurucu-ekap-turkish-procurement
+                - generic [ref=e746]:
+                  - generic [ref=e747]:
+                    - heading "EKAP v2 (Turkish Government Procurement)" [level=3] [ref=e749]
+                    - paragraph [ref=e750]: Said Surucu
+                    - paragraph [ref=e751]: Integrates with Turkey's EKAP v2 government procurement API to search public tenders, announcements, and procurement...
+                  - generic [ref=e753]:
+                    - generic [ref=e754]:
+                      - paragraph [ref=e755]: Classification
+                      - generic [ref=e756]:
+                        - img "Community icon" [ref=e758]
+                        - paragraph [ref=e759]: community
+                    - generic [ref=e760]:
+                      - paragraph [ref=e761]: Est Visitors (All Time)
+                      - paragraph [ref=e762]: 14.6k
+                    - generic [ref=e763]:
+                      - paragraph [ref=e764]: Release Date
+                      - paragraph [ref=e765]: Aug 10, 2025
+              - link "Local RAG Shinsuke Kagawa Local RAG for semantic document search without external API calls. Classification Community icon community Est Visitors (All Time) 13.1k Release Date Nov 2, 2025" [ref=e767] [cursor=pointer]:
+                - /url: /servers/shinpr-local-rag
+                - generic [ref=e769]:
+                  - generic [ref=e770]:
+                    - heading "Local RAG" [level=3] [ref=e772]
+                    - paragraph [ref=e773]: Shinsuke Kagawa
+                    - paragraph [ref=e774]: Local RAG for semantic document search without external API calls.
+                  - generic [ref=e776]:
+                    - generic [ref=e777]:
+                      - paragraph [ref=e778]: Classification
+                      - generic [ref=e779]:
+                        - img "Community icon" [ref=e781]
+                        - paragraph [ref=e782]: community
+                    - generic [ref=e783]:
+                      - paragraph [ref=e784]: Est Visitors (All Time)
+                      - paragraph [ref=e785]: 13.1k
+                    - generic [ref=e786]:
+                      - paragraph [ref=e787]: Release Date
+                      - paragraph [ref=e788]: Nov 2, 2025
+              - link "Hevy Fitness Christoph Kieslich Integrates with the Hevy Fitness API to enable workout tracking, routine management, exercise template searching, and... Classification Community icon community Est Visitors (All Time) 34.2k Release Date Mar 26, 2025" [ref=e790] [cursor=pointer]:
+                - /url: /servers/chrisdoc-hevy-fitness
+                - generic [ref=e792]:
+                  - generic [ref=e793]:
+                    - heading "Hevy Fitness" [level=3] [ref=e795]
+                    - paragraph [ref=e796]: Christoph Kieslich
+                    - paragraph [ref=e797]: Integrates with the Hevy Fitness API to enable workout tracking, routine management, exercise template searching, and...
+                  - generic [ref=e799]:
+                    - generic [ref=e800]:
+                      - paragraph [ref=e801]: Classification
+                      - generic [ref=e802]:
+                        - img "Community icon" [ref=e804]
+                        - paragraph [ref=e805]: community
+                    - generic [ref=e806]:
+                      - paragraph [ref=e807]: Est Visitors (All Time)
+                      - paragraph [ref=e808]: 34.2k
+                    - generic [ref=e809]:
+                      - paragraph [ref=e810]: Release Date
+                      - paragraph [ref=e811]: Mar 26, 2025
+              - link "GitHub GitHub Integration with GitHub Issues, Pull Requests, and more. Classification Official repository icon official Est Visitors (All Time) 5.5m Release Date Apr 4, 2025" [ref=e813] [cursor=pointer]:
+                - /url: /servers/github
+                - generic [ref=e815]:
+                  - generic [ref=e816]:
+                    - heading "GitHub" [level=3] [ref=e818]
+                    - paragraph [ref=e819]: GitHub
+                    - paragraph [ref=e820]: Integration with GitHub Issues, Pull Requests, and more.
+                  - generic [ref=e822]:
+                    - generic [ref=e823]:
+                      - paragraph [ref=e824]: Classification
+                      - generic [ref=e825]:
+                        - img "Official repository icon" [ref=e827]
+                        - paragraph [ref=e828]: official
+                    - generic [ref=e829]:
+                      - paragraph [ref=e830]: Est Visitors (All Time)
+                      - paragraph [ref=e831]: 5.5m
+                    - generic [ref=e832]:
+                      - paragraph [ref=e833]: Release Date
+                      - paragraph [ref=e834]: Apr 4, 2025
+              - link "Context7 (Documentation Database) Upstash Connects to Context7.com's documentation database to provide up-to-date library and framework documentation with... Classification Official repository icon official Est Visitors (All Time) 12m Release Date Apr 13, 2025" [ref=e836] [cursor=pointer]:
+                - /url: /servers/upstash-context7
+                - generic [ref=e838]:
+                  - generic [ref=e839]:
+                    - heading "Context7 (Documentation Database)" [level=3] [ref=e841]
+                    - paragraph [ref=e842]: Upstash
+                    - paragraph [ref=e843]: Connects to Context7.com's documentation database to provide up-to-date library and framework documentation with...
+                  - generic [ref=e845]:
+                    - generic [ref=e846]:
+                      - paragraph [ref=e847]: Classification
+                      - generic [ref=e848]:
+                        - img "Official repository icon" [ref=e850]
+                        - paragraph [ref=e851]: official
+                    - generic [ref=e852]:
+                      - paragraph [ref=e853]: Est Visitors (All Time)
+                      - paragraph [ref=e854]: 12m
+                    - generic [ref=e855]:
+                      - paragraph [ref=e856]: Release Date
+                      - paragraph [ref=e857]: Apr 13, 2025
+              - link "Kagan kagan-sh Terminal Kanban board that orchestrates autonomous and pair-mode coding agents across 14 supported providers. Classification Community icon community Est Visitors (All Time) 10.1k Release Date Jan 25, 2026" [ref=e859] [cursor=pointer]:
+                - /url: /servers/gh-kagan-sh-kagan
+                - generic [ref=e861]:
+                  - generic [ref=e862]:
+                    - heading "Kagan" [level=3] [ref=e864]
+                    - paragraph [ref=e865]: kagan-sh
+                    - paragraph [ref=e866]: Terminal Kanban board that orchestrates autonomous and pair-mode coding agents across 14 supported providers.
+                  - generic [ref=e868]:
+                    - generic [ref=e869]:
+                      - paragraph [ref=e870]: Classification
+                      - generic [ref=e871]:
+                        - img "Community icon" [ref=e873]
+                        - paragraph [ref=e874]: community
+                    - generic [ref=e875]:
+                      - paragraph [ref=e876]: Est Visitors (All Time)
+                      - paragraph [ref=e877]: 10.1k
+                    - generic [ref=e878]:
+                      - paragraph [ref=e879]: Release Date
+                      - paragraph [ref=e880]: Jan 25, 2026
+              - link "Unity Justin Barnett Allow MCP clients to perform Unity Editor actions. Classification Community icon community Est Visitors (All Time) 1.6m Release Date Mar 18, 2025" [ref=e882] [cursor=pointer]:
+                - /url: /servers/justinpbarnett-unity
+                - generic [ref=e884]:
+                  - generic [ref=e885]:
+                    - heading "Unity" [level=3] [ref=e887]
+                    - paragraph [ref=e888]: Justin Barnett
+                    - paragraph [ref=e889]: Allow MCP clients to perform Unity Editor actions.
+                  - generic [ref=e891]:
+                    - generic [ref=e892]:
+                      - paragraph [ref=e893]: Classification
+                      - generic [ref=e894]:
+                        - img "Community icon" [ref=e896]
+                        - paragraph [ref=e897]: community
+                    - generic [ref=e898]:
+                      - paragraph [ref=e899]: Est Visitors (All Time)
+                      - paragraph [ref=e900]: 1.6m
+                    - generic [ref=e901]:
+                      - paragraph [ref=e902]: Release Date
+                      - paragraph [ref=e903]: Mar 18, 2025
+              - link "Claude Flow ruvnet Agent orchestration platform with multi-agent swarms, workflow coordination, and conversational AI systems Classification Community icon community Est Visitors (All Time) 5.7m Release Date Jun 2, 2025" [ref=e905] [cursor=pointer]:
+                - /url: /servers/ruvnet-claude-flow
+                - generic [ref=e907]:
+                  - generic [ref=e908]:
+                    - heading "Claude Flow" [level=3] [ref=e910]
+                    - paragraph [ref=e911]: ruvnet
+                    - paragraph [ref=e912]: Agent orchestration platform with multi-agent swarms, workflow coordination, and conversational AI systems
+                  - generic [ref=e914]:
+                    - generic [ref=e915]:
+                      - paragraph [ref=e916]: Classification
+                      - generic [ref=e917]:
+                        - img "Community icon" [ref=e919]
+                        - paragraph [ref=e920]: community
+                    - generic [ref=e921]:
+                      - paragraph [ref=e922]: Est Visitors (All Time)
+                      - paragraph [ref=e923]: 5.7m
+                    - generic [ref=e924]:
+                      - paragraph [ref=e925]: Release Date
+                      - paragraph [ref=e926]: Jun 2, 2025
+              - link "Netdata Netdata Real-time infrastructure monitoring with metrics, logs, alerts, and ML anomaly detection Classification Official repository icon official Est Visitors (All Time) — Release Date Jun 17, 2013" [ref=e928] [cursor=pointer]:
+                - /url: /servers/netdata
+                - generic [ref=e930]:
+                  - generic [ref=e931]:
+                    - heading "Netdata" [level=3] [ref=e933]
+                    - paragraph [ref=e934]: Netdata
+                    - paragraph [ref=e935]: Real-time infrastructure monitoring with metrics, logs, alerts, and ML anomaly detection
+                  - generic [ref=e937]:
+                    - generic [ref=e938]:
+                      - paragraph [ref=e939]: Classification
+                      - generic [ref=e940]:
+                        - img "Official repository icon" [ref=e942]
+                        - paragraph [ref=e943]: official
+                    - generic [ref=e944]:
+                      - paragraph [ref=e945]: Est Visitors (All Time)
+                      - paragraph [ref=e946]: —
+                    - generic [ref=e947]:
+                      - paragraph [ref=e948]: Release Date
+                      - paragraph [ref=e949]: Jun 17, 2013
+              - link "Interactive Brokers Ruben Contesti Provides complete access to Interactive Brokers' Web API through a containerized FastAPI architecture with session... Classification Community icon community Est Visitors (All Time) 20.2k Release Date Apr 24, 2025" [ref=e951] [cursor=pointer]:
+                - /url: /servers/rcontesti-interactive-brokers
+                - generic [ref=e953]:
+                  - generic [ref=e954]:
+                    - heading "Interactive Brokers" [level=3] [ref=e956]
+                    - paragraph [ref=e957]: Ruben Contesti
+                    - paragraph [ref=e958]: Provides complete access to Interactive Brokers' Web API through a containerized FastAPI architecture with session...
+                  - generic [ref=e960]:
+                    - generic [ref=e961]:
+                      - paragraph [ref=e962]: Classification
+                      - generic [ref=e963]:
+                        - img "Community icon" [ref=e965]
+                        - paragraph [ref=e966]: community
+                    - generic [ref=e967]:
+                      - paragraph [ref=e968]: Est Visitors (All Time)
+                      - paragraph [ref=e969]: 20.2k
+                    - generic [ref=e970]:
+                      - paragraph [ref=e971]: Release Date
+                      - paragraph [ref=e972]: Apr 24, 2025
+              - link "Radare2 dnakov Provides direct access to radare2's binary analysis framework for reverse engineering, malware analysis, and... Classification Community icon community Est Visitors (All Time) 35.3k Release Date Mar 23, 2025" [ref=e974] [cursor=pointer]:
+                - /url: /servers/dnakov-radare2
+                - generic [ref=e976]:
+                  - generic [ref=e977]:
+                    - heading "Radare2" [level=3] [ref=e979]
+                    - paragraph [ref=e980]: dnakov
+                    - paragraph [ref=e981]: Provides direct access to radare2's binary analysis framework for reverse engineering, malware analysis, and...
+                  - generic [ref=e983]:
+                    - generic [ref=e984]:
+                      - paragraph [ref=e985]: Classification
+                      - generic [ref=e986]:
+                        - img "Community icon" [ref=e988]
+                        - paragraph [ref=e989]: community
+                    - generic [ref=e990]:
+                      - paragraph [ref=e991]: Est Visitors (All Time)
+                      - paragraph [ref=e992]: 35.3k
+                    - generic [ref=e993]:
+                      - paragraph [ref=e994]: Release Date
+                      - paragraph [ref=e995]: Mar 23, 2025
+              - link "TestDino TestDino Playwright test reporting and analytics platform with natural language test querying Classification Official repository icon official Est Visitors (All Time) 1.7k Release Date Dec 1, 2025" [ref=e997] [cursor=pointer]:
+                - /url: /servers/testdino
+                - generic [ref=e999]:
+                  - generic [ref=e1000]:
+                    - heading "TestDino" [level=3] [ref=e1002]
+                    - paragraph [ref=e1003]: TestDino
+                    - paragraph [ref=e1004]: Playwright test reporting and analytics platform with natural language test querying
+                  - generic [ref=e1006]:
+                    - generic [ref=e1007]:
+                      - paragraph [ref=e1008]: Classification
+                      - generic [ref=e1009]:
+                        - img "Official repository icon" [ref=e1011]
+                        - paragraph [ref=e1012]: official
+                    - generic [ref=e1013]:
+                      - paragraph [ref=e1014]: Est Visitors (All Time)
+                      - paragraph [ref=e1015]: 1.7k
+                    - generic [ref=e1016]:
+                      - paragraph [ref=e1017]: Release Date
+                      - paragraph [ref=e1018]: Dec 1, 2025
+              - link "Databricks Jordi Neil Bridges Claude with Databricks environments, enabling natural language interaction with SQL warehouses and job... Classification Community icon community Est Visitors (All Time) 9k Release Date Mar 21, 2025" [ref=e1020] [cursor=pointer]:
+                - /url: /servers/jordi-neil-databricks
+                - generic [ref=e1022]:
+                  - generic [ref=e1023]:
+                    - heading "Databricks" [level=3] [ref=e1025]
+                    - paragraph [ref=e1026]: Jordi Neil
+                    - paragraph [ref=e1027]: Bridges Claude with Databricks environments, enabling natural language interaction with SQL warehouses and job...
+                  - generic [ref=e1029]:
+                    - generic [ref=e1030]:
+                      - paragraph [ref=e1031]: Classification
+                      - generic [ref=e1032]:
+                        - img "Community icon" [ref=e1034]
+                        - paragraph [ref=e1035]: community
+                    - generic [ref=e1036]:
+                      - paragraph [ref=e1037]: Est Visitors (All Time)
+                      - paragraph [ref=e1038]: 9k
+                    - generic [ref=e1039]:
+                      - paragraph [ref=e1040]: Release Date
+                      - paragraph [ref=e1041]: Mar 21, 2025
+              - link "jCodeMunch by jgravelle jgravelle Token-efficient code exploration via tree-sitter AST parsing supporting 25+ programming languages. Classification Community icon community Est Visitors (All Time) 269k Release Date Feb 9, 2026" [ref=e1043] [cursor=pointer]:
+                - /url: /servers/jgravelle-jcodemunch
+                - generic [ref=e1045]:
+                  - generic [ref=e1046]:
+                    - heading "jCodeMunch by jgravelle" [level=3] [ref=e1048]
+                    - paragraph [ref=e1049]: jgravelle
+                    - paragraph [ref=e1050]: Token-efficient code exploration via tree-sitter AST parsing supporting 25+ programming languages.
+                  - generic [ref=e1052]:
+                    - generic [ref=e1053]:
+                      - paragraph [ref=e1054]: Classification
+                      - generic [ref=e1055]:
+                        - img "Community icon" [ref=e1057]
+                        - paragraph [ref=e1058]: community
+                    - generic [ref=e1059]:
+                      - paragraph [ref=e1060]: Est Visitors (All Time)
+                      - paragraph [ref=e1061]: 269k
+                    - generic [ref=e1062]:
+                      - paragraph [ref=e1063]: Release Date
+                      - paragraph [ref=e1064]: Feb 9, 2026
+              - link "Read MySQL Ben Borla Secure read-only MySQL database access to execute queries and analyze data patterns. Classification Community icon community Est Visitors (All Time) 202k Release Date Dec 9, 2024" [ref=e1066] [cursor=pointer]:
+                - /url: /servers/benborla-mysql
+                - generic [ref=e1068]:
+                  - generic [ref=e1069]:
+                    - heading "Read MySQL" [level=3] [ref=e1071]
+                    - paragraph [ref=e1072]: Ben Borla
+                    - paragraph [ref=e1073]: Secure read-only MySQL database access to execute queries and analyze data patterns.
+                  - generic [ref=e1075]:
+                    - generic [ref=e1076]:
+                      - paragraph [ref=e1077]: Classification
+                      - generic [ref=e1078]:
+                        - img "Community icon" [ref=e1080]
+                        - paragraph [ref=e1081]: community
+                    - generic [ref=e1082]:
+                      - paragraph [ref=e1083]: Est Visitors (All Time)
+                      - paragraph [ref=e1084]: 202k
+                    - generic [ref=e1085]:
+                      - paragraph [ref=e1086]: Release Date
+                      - paragraph [ref=e1087]: Dec 9, 2024
+              - link "Demo (Everything) Anthropic Test protocol features and tools for client compatibility. Classification Anthropic logo reference Est Visitors (All Time) 1.4m Release Date Nov 19, 2024" [ref=e1089] [cursor=pointer]:
+                - /url: /servers/modelcontextprotocol-demo-everything
+                - generic [ref=e1091]:
+                  - generic [ref=e1092]:
+                    - heading "Demo (Everything)" [level=3] [ref=e1094]
+                    - paragraph [ref=e1095]: Anthropic
+                    - paragraph [ref=e1096]: Test protocol features and tools for client compatibility.
+                  - generic [ref=e1098]:
+                    - generic [ref=e1099]:
+                      - paragraph [ref=e1100]: Classification
+                      - generic [ref=e1101]:
+                        - img "Anthropic logo" [ref=e1103]
+                        - paragraph [ref=e1104]: reference
+                    - generic [ref=e1105]:
+                      - paragraph [ref=e1106]: Est Visitors (All Time)
+                      - paragraph [ref=e1107]: 1.4m
+                    - generic [ref=e1108]:
+                      - paragraph [ref=e1109]: Release Date
+                      - paragraph [ref=e1110]: Nov 19, 2024
+              - link "Fetch Anthropic Retrieve and convert web content to markdown for analysis. Classification Anthropic logo reference Est Visitors (All Time) 26.3m Release Date Nov 19, 2024" [ref=e1112] [cursor=pointer]:
+                - /url: /servers/modelcontextprotocol-fetch
+                - generic [ref=e1114]:
+                  - generic [ref=e1115]:
+                    - heading "Fetch" [level=3] [ref=e1117]
+                    - paragraph [ref=e1118]: Anthropic
+                    - paragraph [ref=e1119]: Retrieve and convert web content to markdown for analysis.
+                  - generic [ref=e1121]:
+                    - generic [ref=e1122]:
+                      - paragraph [ref=e1123]: Classification
+                      - generic [ref=e1124]:
+                        - img "Anthropic logo" [ref=e1126]
+                        - paragraph [ref=e1127]: reference
+                    - generic [ref=e1128]:
+                      - paragraph [ref=e1129]: Est Visitors (All Time)
+                      - paragraph [ref=e1130]: 26.3m
+                    - generic [ref=e1131]:
+                      - paragraph [ref=e1132]: Release Date
+                      - paragraph [ref=e1133]: Nov 19, 2024
+              - link "Filesystem Anthropic Read, write, and manipulate local files through a controlled API. Classification Anthropic logo reference Est Visitors (All Time) 7.4m Release Date Nov 19, 2024" [ref=e1135] [cursor=pointer]:
+                - /url: /servers/modelcontextprotocol-filesystem
+                - generic [ref=e1137]:
+                  - generic [ref=e1138]:
+                    - heading "Filesystem" [level=3] [ref=e1140]
+                    - paragraph [ref=e1141]: Anthropic
+                    - paragraph [ref=e1142]: Read, write, and manipulate local files through a controlled API.
+                  - generic [ref=e1144]:
+                    - generic [ref=e1145]:
+                      - paragraph [ref=e1146]: Classification
+                      - generic [ref=e1147]:
+                        - img "Anthropic logo" [ref=e1149]
+                        - paragraph [ref=e1150]: reference
+                    - generic [ref=e1151]:
+                      - paragraph [ref=e1152]: Est Visitors (All Time)
+                      - paragraph [ref=e1153]: 7.4m
+                    - generic [ref=e1154]:
+                      - paragraph [ref=e1155]: Release Date
+                      - paragraph [ref=e1156]: Nov 19, 2024
+              - link "Knowledge Graph Memory Anthropic Build and query persistent semantic networks for data management. Classification Anthropic logo reference Est Visitors (All Time) 2.3m Release Date Nov 19, 2024" [ref=e1158] [cursor=pointer]:
+                - /url: /servers/modelcontextprotocol-memory
+                - generic [ref=e1160]:
+                  - generic [ref=e1161]:
+                    - heading "Knowledge Graph Memory" [level=3] [ref=e1163]
+                    - paragraph [ref=e1164]: Anthropic
+                    - paragraph [ref=e1165]: Build and query persistent semantic networks for data management.
+                  - generic [ref=e1167]:
+                    - generic [ref=e1168]:
+                      - paragraph [ref=e1169]: Classification
+                      - generic [ref=e1170]:
+                        - img "Anthropic logo" [ref=e1172]
+                        - paragraph [ref=e1173]: reference
+                    - generic [ref=e1174]:
+                      - paragraph [ref=e1175]: Est Visitors (All Time)
+                      - paragraph [ref=e1176]: 2.3m
+                    - generic [ref=e1177]:
+                      - paragraph [ref=e1178]: Release Date
+                      - paragraph [ref=e1179]: Nov 19, 2024
+              - link "Sequential Thinking Model Context Protocol Implements a structured sequential thinking process for breaking down complex problems, iteratively refining... Classification Anthropic logo reference Est Visitors (All Time) 4.4m Release Date Dec 16, 2024" [ref=e1181] [cursor=pointer]:
+                - /url: /servers/modelcontextprotocol-sequential-thinking
+                - generic [ref=e1183]:
+                  - generic [ref=e1184]:
+                    - heading "Sequential Thinking" [level=3] [ref=e1186]
+                    - paragraph [ref=e1187]: Model Context Protocol
+                    - paragraph [ref=e1188]: Implements a structured sequential thinking process for breaking down complex problems, iteratively refining...
+                  - generic [ref=e1190]:
+                    - generic [ref=e1191]:
+                      - paragraph [ref=e1192]: Classification
+                      - generic [ref=e1193]:
+                        - img "Anthropic logo" [ref=e1195]
+                        - paragraph [ref=e1196]: reference
+                    - generic [ref=e1197]:
+                      - paragraph [ref=e1198]: Est Visitors (All Time)
+                      - paragraph [ref=e1199]: 4.4m
+                    - generic [ref=e1200]:
+                      - paragraph [ref=e1201]: Release Date
+                      - paragraph [ref=e1202]: Dec 16, 2024
+              - link "Time Anthropic MCP server providing time and timezone conversion tools for AI assistants to handle localized time data and... Classification Anthropic logo reference Est Visitors (All Time) 4m Release Date Nov 19, 2024" [ref=e1204] [cursor=pointer]:
+                - /url: /servers/modelcontextprotocol-time
+                - generic [ref=e1206]:
+                  - generic [ref=e1207]:
+                    - heading "Time" [level=3] [ref=e1209]
+                    - paragraph [ref=e1210]: Anthropic
+                    - paragraph [ref=e1211]: MCP server providing time and timezone conversion tools for AI assistants to handle localized time data and...
+                  - generic [ref=e1213]:
+                    - generic [ref=e1214]:
+                      - paragraph [ref=e1215]: Classification
+                      - generic [ref=e1216]:
+                        - img "Anthropic logo" [ref=e1218]
+                        - paragraph [ref=e1219]: reference
+                    - generic [ref=e1220]:
+                      - paragraph [ref=e1221]: Est Visitors (All Time)
+                      - paragraph [ref=e1222]: 4m
+                    - generic [ref=e1223]:
+                      - paragraph [ref=e1224]: Release Date
+                      - paragraph [ref=e1225]: Nov 19, 2024
+              - link "CUA MCP Server CUA Enables LLMs to run Computer-Use Agent (CUA) workflows on Apple Silicon macOS. Classification Official repository icon official Est Visitors (All Time) 11.2k Release Date Apr 7, 2025" [ref=e1227] [cursor=pointer]:
+                - /url: /servers/cua
+                - generic [ref=e1229]:
+                  - generic [ref=e1230]:
+                    - heading "CUA MCP Server" [level=3] [ref=e1232]
+                    - paragraph [ref=e1233]: CUA
+                    - paragraph [ref=e1234]: Enables LLMs to run Computer-Use Agent (CUA) workflows on Apple Silicon macOS.
+                  - generic [ref=e1236]:
+                    - generic [ref=e1237]:
+                      - paragraph [ref=e1238]: Classification
+                      - generic [ref=e1239]:
+                        - img "Official repository icon" [ref=e1241]
+                        - paragraph [ref=e1242]: official
+                    - generic [ref=e1243]:
+                      - paragraph [ref=e1244]: Est Visitors (All Time)
+                      - paragraph [ref=e1245]: 11.2k
+                    - generic [ref=e1246]:
+                      - paragraph [ref=e1247]: Release Date
+                      - paragraph [ref=e1248]: Apr 7, 2025
+          - generic [ref=e1250]:
+            - generic [ref=e1251]:
+              - link "1" [ref=e1252] [cursor=pointer]:
+                - /url: /servers?page=1&sort=last-updated-desc
+                - generic: "1"
+              - link "2" [ref=e1253] [cursor=pointer]:
+                - /url: /servers?page=2&sort=last-updated-desc
+                - generic: "2"
+              - link "3" [ref=e1254] [cursor=pointer]:
+                - /url: /servers?page=3&sort=last-updated-desc
+                - generic: "3"
+              - link "4" [ref=e1255] [cursor=pointer]:
+                - /url: /servers?page=4&sort=last-updated-desc
+                - generic: "4"
+              - link "5" [ref=e1256] [cursor=pointer]:
+                - /url: /servers?page=5&sort=last-updated-desc
+                - generic: "5"
+              - link "6" [ref=e1257] [cursor=pointer]:
+                - /url: /servers?page=6&sort=last-updated-desc
+                - generic: "6"
+              - link "7" [ref=e1258] [cursor=pointer]:
+                - /url: /servers?page=7&sort=last-updated-desc
+                - generic: "7"
+              - generic [ref=e1259]: ...
+              - link "266" [ref=e1260] [cursor=pointer]:
+                - /url: /servers?page=266&sort=last-updated-desc
+                - generic: "266"
+            - link "Next" [ref=e1261] [cursor=pointer]:
+              - /url: /servers?page=2&sort=last-updated-desc
+              - generic: Next
+  - contentinfo [ref=e1262]:
+    - generic [ref=e1263]:
+      - generic [ref=e1264]:
+        - img "Pulse logo in white" [ref=e1265]
+        - paragraph [ref=e1266]: Stay up to date with all things MCP.
+        - paragraph [ref=e1268]: © Copyright 2026, All Rights Reserved
+      - generic [ref=e1270]:
+        - generic [ref=e1271]:
+          - link "Browse use cases" [ref=e1272] [cursor=pointer]:
+            - /url: /use-cases
+          - link "Submit use case" [ref=e1273] [cursor=pointer]:
+            - /url: /use-cases/submit
+          - link "Browse servers" [ref=e1274] [cursor=pointer]:
+            - /url: /servers
+          - link "Browse clients" [ref=e1275] [cursor=pointer]:
+            - /url: /clients
+          - link "Submit server/client" [ref=e1276] [cursor=pointer]:
+            - /url: /submit
+          - link "Terms of service" [ref=e1277] [cursor=pointer]:
+            - /url: /terms-of-service
+          - link "Privacy policy" [ref=e1278] [cursor=pointer]:
+            - /url: /privacy-policy
+          - link "Editorial Disclosure" [ref=e1279] [cursor=pointer]:
+            - /url: /editorial-disclosure
+        - generic [ref=e1280]:
+          - link "About us" [ref=e1281] [cursor=pointer]:
+            - /url: /#about-us
+          - link "Blog" [ref=e1282] [cursor=pointer]:
+            - /url: /posts
+          - link "API" [ref=e1283] [cursor=pointer]:
+            - /url: /api
+          - link "MCP Newsletter" [ref=e1284] [cursor=pointer]:
+            - /url: /newsletter
+          - link "MCP Statistics" [ref=e1285] [cursor=pointer]:
+            - /url: /statistics
+          - link "PulseMCP Discord" [ref=e1286] [cursor=pointer]:
+            - /url: https://discord.gg/dP2evEyTjS
+          - link "Contact us" [ref=e1287] [cursor=pointer]:
+            - /url: mailto:hello@pulsemcp.com
+  - iframe [ref=e1290]:
+    - generic [ref=f35e6]:
+      - text: protection par
+      - strong [ref=f35e7]: reCAPTCHA

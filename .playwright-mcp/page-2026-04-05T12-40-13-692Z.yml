@@ -1,0 +1,2608 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e4]:
+      - link "Pulse logo pulse" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "Pulse logo" [ref=e7]
+        - text: pulse
+      - generic [ref=e9]:
+        - link "MCP Servers icon MCP Servers" [ref=e10] [cursor=pointer]:
+          - /url: /servers
+          - img "MCP Servers icon" [ref=e11]
+          - text: MCP Servers
+        - link "MCP Clients icon MCP Clients" [ref=e12] [cursor=pointer]:
+          - /url: /clients
+          - img "MCP Clients icon" [ref=e13]
+          - text: MCP Clients
+        - link "Posts icon Posts" [ref=e14] [cursor=pointer]:
+          - /url: /posts
+          - img "Posts icon" [ref=e15]
+          - text: Posts
+        - link "Work With Us icon Work With Us" [ref=e16] [cursor=pointer]:
+          - /url: /work-with-us
+          - img "Work With Us icon" [ref=e17]
+          - text: Work With Us
+        - link "THE MCP newsletter icon THE MCP newsletter" [ref=e18] [cursor=pointer]:
+          - /url: /newsletter
+          - img "THE MCP newsletter icon" [ref=e19]
+          - text: THE MCP newsletter
+  - main [ref=e20]:
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - link "Home icon" [ref=e26] [cursor=pointer]:
+              - /url: /
+              - img "Home icon" [ref=e27]
+            - img "Chevron right icon" [ref=e28]
+            - link "MCP Servers" [ref=e29] [cursor=pointer]:
+              - /url: /servers
+            - img "Chevron right icon" [ref=e30]
+            - link "Google Search Console" [ref=e31] [cursor=pointer]:
+              - /url: /servers/aminforou-gsc
+          - heading "Google Search Console" [level=1] [ref=e32]
+          - generic [ref=e33]:
+            - generic [ref=e34]:
+              - paragraph [ref=e35]: Provider
+              - link "Amin Foroutan" [ref=e36] [cursor=pointer]:
+                - /url: https://github.com/AminForou
+            - generic [ref=e37]:
+              - paragraph [ref=e38]: Classification
+              - generic [ref=e39]:
+                - img "Community classification icon" [ref=e40]
+                - generic [ref=e41]: community
+            - generic [ref=e42]:
+              - generic [ref=e43]:
+                - paragraph [ref=e44]: Est. Visitors
+                - generic [ref=e46] [cursor=pointer]:
+                  - img "Info icon" [ref=e47]
+                  - generic:
+                    - generic: An estimate of visitors or package downloads that occurred for this server across the MCP ecosystem (not specific to any single platform). We use a mix of publicly available data, social signals, and more to feed an algorithm that drives this estimation.
+              - text: 117k (4.3k this week)
+            - generic [ref=e48]:
+              - paragraph [ref=e49]: Released On
+              - text: Mar 14, 2025
+            - generic [ref=e50]:
+              - generic [ref=e51]:
+                - paragraph [ref=e52]: Popularity Ranking
+                - generic [ref=e54] [cursor=pointer]:
+                  - img "Info icon" [ref=e55]
+                  - generic:
+                    - generic: Our estimate as to where this MCP server implementation ranks on the global leaderboard of usage.
+              - text: "#272 (#237 this week)"
+          - paragraph [ref=e56]: Integrates with Google Search Console API to provide website search performance analytics, indexing status monitoring, and sitemap management for SEO professionals
+        - link "GitHub icon GitHub Repo (612 stars)" [ref=e59] [cursor=pointer]:
+          - /url: https://github.com/aminforou/mcp-gsc
+          - generic [ref=e60]:
+            - img "GitHub icon" [ref=e61]
+            - generic [ref=e62]: GitHub Repo (612 stars)
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - generic [ref=e66]:
+            - heading "server.json file available" [level=3] [ref=e67]
+            - paragraph [ref=e68]:
+              - text: A
+              - link "standardized, official file format" [ref=e69] [cursor=pointer]:
+                - /url: https://github.com/modelcontextprotocol/registry/tree/main/docs/reference/server-json
+              - text: that defines how to use this MCP server. View the file to see installation instructions, configuration options, and usage guidelines.
+          - link "View server.json file" [ref=e71] [cursor=pointer]:
+            - /url: /servers/aminforou-gsc/serverjson
+            - img [ref=e72]
+            - generic [ref=e73]: View server.json file
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - paragraph [ref=e76]: NAME
+            - paragraph [ref=e77]: com.pulsemcp.mirror/aminforou-gsc
+          - generic [ref=e78]:
+            - paragraph [ref=e79]: MAINTAINER
+            - paragraph [ref=e80]:
+              - text: We (PulseMCP) are temporarily managing this server.json file until the maintainer
+              - link "publishes it" [ref=e81] [cursor=pointer]:
+                - /url: https://github.com/modelcontextprotocol/registry/blob/main/docs/guides/publishing/publish-server.md
+              - text: to the official registry.
+    - generic [ref=e83]:
+      - heading "Related Servers" [level=2] [ref=e84]
+      - generic [ref=e85]:
+        - link "Google Search Console Ahonn Jiang Analyze SEO metrics and search performance data. Classification Community icon community Est Visitors (All Time) 24.9k Release Date Dec 4, 2024" [ref=e87] [cursor=pointer]:
+          - /url: /servers/ahonn-mcp-server-gsc
+          - generic [ref=e89]:
+            - generic [ref=e90]:
+              - heading "Google Search Console" [level=3] [ref=e92]
+              - paragraph [ref=e93]: Ahonn Jiang
+              - paragraph [ref=e94]: Analyze SEO metrics and search performance data.
+            - generic [ref=e96]:
+              - generic [ref=e97]:
+                - paragraph [ref=e98]: Classification
+                - generic [ref=e99]:
+                  - img "Community icon" [ref=e101]
+                  - paragraph [ref=e102]: community
+              - generic [ref=e103]:
+                - paragraph [ref=e104]: Est Visitors (All Time)
+                - paragraph [ref=e105]: 24.9k
+              - generic [ref=e106]:
+                - paragraph [ref=e107]: Release Date
+                - paragraph [ref=e108]: Dec 4, 2024
+        - link "SearXNG Search SecretiveShell Perform privacy-preserving web searches via the SearXNG metasearch engine. Classification Community icon community Est Visitors (All Time) 18.1k Release Date Dec 13, 2024" [ref=e110] [cursor=pointer]:
+          - /url: /servers/secretiveshell-searxng-search
+          - generic [ref=e112]:
+            - generic [ref=e113]:
+              - heading "SearXNG Search" [level=3] [ref=e115]
+              - paragraph [ref=e116]: SecretiveShell
+              - paragraph [ref=e117]: Perform privacy-preserving web searches via the SearXNG metasearch engine.
+            - generic [ref=e119]:
+              - generic [ref=e120]:
+                - paragraph [ref=e121]: Classification
+                - generic [ref=e122]:
+                  - img "Community icon" [ref=e124]
+                  - paragraph [ref=e125]: community
+              - generic [ref=e126]:
+                - paragraph [ref=e127]: Est Visitors (All Time)
+                - paragraph [ref=e128]: 18.1k
+              - generic [ref=e129]:
+                - paragraph [ref=e130]: Release Date
+                - paragraph [ref=e131]: Dec 13, 2024
+        - link "Google Custom Search Alexander Lindquister Integrates the Google Custom Search API to enable web searches for retrieving and analyzing online content. Classification Community icon community Est Visitors (All Time) 8.2k Release Date Dec 16, 2024" [ref=e133] [cursor=pointer]:
+          - /url: /servers/alexatnordnet-google-custom-search
+          - generic [ref=e135]:
+            - generic [ref=e136]:
+              - heading "Google Custom Search" [level=3] [ref=e138]
+              - paragraph [ref=e139]: Alexander Lindquister
+              - paragraph [ref=e140]: Integrates the Google Custom Search API to enable web searches for retrieving and analyzing online content.
+            - generic [ref=e142]:
+              - generic [ref=e143]:
+                - paragraph [ref=e144]: Classification
+                - generic [ref=e145]:
+                  - img "Community icon" [ref=e147]
+                  - paragraph [ref=e148]: community
+              - generic [ref=e149]:
+                - paragraph [ref=e150]: Est Visitors (All Time)
+                - paragraph [ref=e151]: 8.2k
+              - generic [ref=e152]:
+                - paragraph [ref=e153]: Release Date
+                - paragraph [ref=e154]: Dec 16, 2024
+        - link "Google Calendar Elias Rissanen Uran Integrates the Google Calendar API to enable querying, creation, and modification of calendar entries and events. Classification Community icon community Est Visitors (All Time) 1.5k Release Date Dec 13, 2024" [ref=e156] [cursor=pointer]:
+          - /url: /servers/eliasuran-google-calendar
+          - generic [ref=e158]:
+            - generic [ref=e159]:
+              - heading "Google Calendar" [level=3] [ref=e161]
+              - paragraph [ref=e162]: Elias Rissanen Uran
+              - paragraph [ref=e163]: Integrates the Google Calendar API to enable querying, creation, and modification of calendar entries and events.
+            - generic [ref=e165]:
+              - generic [ref=e166]:
+                - paragraph [ref=e167]: Classification
+                - generic [ref=e168]:
+                  - img "Community icon" [ref=e170]
+                  - paragraph [ref=e171]: community
+              - generic [ref=e172]:
+                - paragraph [ref=e173]: Est Visitors (All Time)
+                - paragraph [ref=e174]: 1.5k
+              - generic [ref=e175]:
+                - paragraph [ref=e176]: Release Date
+                - paragraph [ref=e177]: Dec 13, 2024
+        - link "Google Analytics Ru Chen Chong Integrates GA4 data to provide web analytics metrics and insights for analyzing website performance and user engagement. Classification Community icon community Est Visitors (All Time) 14k Release Date Nov 29, 2024" [ref=e179] [cursor=pointer]:
+          - /url: /servers/ruchernchong-google-analytics
+          - generic [ref=e181]:
+            - generic [ref=e182]:
+              - heading "Google Analytics" [level=3] [ref=e184]
+              - paragraph [ref=e185]: Ru Chen Chong
+              - paragraph [ref=e186]: Integrates GA4 data to provide web analytics metrics and insights for analyzing website performance and user engagement.
+            - generic [ref=e188]:
+              - generic [ref=e189]:
+                - paragraph [ref=e190]: Classification
+                - generic [ref=e191]:
+                  - img "Community icon" [ref=e193]
+                  - paragraph [ref=e194]: community
+              - generic [ref=e195]:
+                - paragraph [ref=e196]: Est Visitors (All Time)
+                - paragraph [ref=e197]: 14k
+              - generic [ref=e198]:
+                - paragraph [ref=e199]: Release Date
+                - paragraph [ref=e200]: Nov 29, 2024
+        - link "Google Search mixelpixx Integrates with Google Custom Search API and web scraping tools to enable web searches, content extraction, and... Classification Community icon community Est Visitors (All Time) 1.8k Release Date Dec 19, 2024" [ref=e202] [cursor=pointer]:
+          - /url: /servers/mixelpixx-google-search
+          - generic [ref=e204]:
+            - generic [ref=e205]:
+              - heading "Google Search" [level=3] [ref=e207]
+              - paragraph [ref=e208]: mixelpixx
+              - paragraph [ref=e209]: Integrates with Google Custom Search API and web scraping tools to enable web searches, content extraction, and...
+            - generic [ref=e211]:
+              - generic [ref=e212]:
+                - paragraph [ref=e213]: Classification
+                - generic [ref=e214]:
+                  - img "Community icon" [ref=e216]
+                  - paragraph [ref=e217]: community
+              - generic [ref=e218]:
+                - paragraph [ref=e219]: Est Visitors (All Time)
+                - paragraph [ref=e220]: 1.8k
+              - generic [ref=e221]:
+                - paragraph [ref=e222]: Release Date
+                - paragraph [ref=e223]: Dec 19, 2024
+        - link "SearXNG Ihor Sokoliuk Integrates SearXNG API to enable web searches with pagination control for up-to-date information retrieval and... Classification Community icon community Est Visitors (All Time) 115k Release Date Dec 23, 2024" [ref=e225] [cursor=pointer]:
+          - /url: /servers/ihor-sokoliuk-searxng
+          - generic [ref=e227]:
+            - generic [ref=e228]:
+              - heading "SearXNG" [level=3] [ref=e230]
+              - paragraph [ref=e231]: Ihor Sokoliuk
+              - paragraph [ref=e232]: Integrates SearXNG API to enable web searches with pagination control for up-to-date information retrieval and...
+            - generic [ref=e234]:
+              - generic [ref=e235]:
+                - paragraph [ref=e236]: Classification
+                - generic [ref=e237]:
+                  - img "Community icon" [ref=e239]
+                  - paragraph [ref=e240]: community
+              - generic [ref=e241]:
+                - paragraph [ref=e242]: Est Visitors (All Time)
+                - paragraph [ref=e243]: 115k
+              - generic [ref=e244]:
+                - paragraph [ref=e245]: Release Date
+                - paragraph [ref=e246]: Dec 23, 2024
+        - link "Google Workspace epaproditus Integrates with Gmail and Google Calendar APIs to enable email and calendar management tasks like listing, searching,... Classification Community icon community Est Visitors (All Time) 5.6k Release Date Dec 24, 2024" [ref=e248] [cursor=pointer]:
+          - /url: /servers/epaproditus-google-workspace
+          - generic [ref=e250]:
+            - generic [ref=e251]:
+              - heading "Google Workspace" [level=3] [ref=e253]
+              - paragraph [ref=e254]: epaproditus
+              - paragraph [ref=e255]: Integrates with Gmail and Google Calendar APIs to enable email and calendar management tasks like listing, searching,...
+            - generic [ref=e257]:
+              - generic [ref=e258]:
+                - paragraph [ref=e259]: Classification
+                - generic [ref=e260]:
+                  - img "Community icon" [ref=e262]
+                  - paragraph [ref=e263]: community
+              - generic [ref=e264]:
+                - paragraph [ref=e265]: Est Visitors (All Time)
+                - paragraph [ref=e266]: 5.6k
+              - generic [ref=e267]:
+                - paragraph [ref=e268]: Release Date
+                - paragraph [ref=e269]: Dec 24, 2024
+        - link "PageSpeed Insights PhialsBasement Integrates Google's PageSpeed Insights API to provide detailed web performance metrics and optimization... Classification Community icon community Est Visitors (All Time) 4.2k Release Date Dec 24, 2024" [ref=e271] [cursor=pointer]:
+          - /url: /servers/phialsbasement-pagespeed-insights
+          - generic [ref=e273]:
+            - generic [ref=e274]:
+              - heading "PageSpeed Insights" [level=3] [ref=e276]
+              - paragraph [ref=e277]: PhialsBasement
+              - paragraph [ref=e278]: Integrates Google's PageSpeed Insights API to provide detailed web performance metrics and optimization...
+            - generic [ref=e280]:
+              - generic [ref=e281]:
+                - paragraph [ref=e282]: Classification
+                - generic [ref=e283]:
+                  - img "Community icon" [ref=e285]
+                  - paragraph [ref=e286]: community
+              - generic [ref=e287]:
+                - paragraph [ref=e288]: Est Visitors (All Time)
+                - paragraph [ref=e289]: 4.2k
+              - generic [ref=e290]:
+                - paragraph [ref=e291]: Release Date
+                - paragraph [ref=e292]: Dec 24, 2024
+        - link "Web Search (Serper) muka Integrates with the Serper API to perform web searches, enabling efficient retrieval and processing of up-to-date web... Classification Community icon community Est Visitors (All Time) 186 Release Date Dec 30, 2024" [ref=e294] [cursor=pointer]:
+          - /url: /servers/muka-web-search-serper
+          - generic [ref=e296]:
+            - generic [ref=e297]:
+              - heading "Web Search (Serper)" [level=3] [ref=e299]
+              - paragraph [ref=e300]: muka
+              - paragraph [ref=e301]: Integrates with the Serper API to perform web searches, enabling efficient retrieval and processing of up-to-date web...
+            - generic [ref=e303]:
+              - generic [ref=e304]:
+                - paragraph [ref=e305]: Classification
+                - generic [ref=e306]:
+                  - img "Community icon" [ref=e308]
+                  - paragraph [ref=e309]: community
+              - generic [ref=e310]:
+                - paragraph [ref=e311]: Est Visitors (All Time)
+                - paragraph [ref=e312]: "186"
+              - generic [ref=e313]:
+                - paragraph [ref=e314]: Release Date
+                - paragraph [ref=e315]: Dec 30, 2024
+        - link "Google News Chan Meng Integrates with Google News via SerpAPI to enable querying and retrieving current news articles, headlines, and... Classification Community icon community Est Visitors (All Time) 23k Release Date Dec 30, 2024" [ref=e317] [cursor=pointer]:
+          - /url: /servers/chanmeng666-google-news
+          - generic [ref=e319]:
+            - generic [ref=e320]:
+              - heading "Google News" [level=3] [ref=e322]
+              - paragraph [ref=e323]: Chan Meng
+              - paragraph [ref=e324]: Integrates with Google News via SerpAPI to enable querying and retrieving current news articles, headlines, and...
+            - generic [ref=e326]:
+              - generic [ref=e327]:
+                - paragraph [ref=e328]: Classification
+                - generic [ref=e329]:
+                  - img "Community icon" [ref=e331]
+                  - paragraph [ref=e332]: community
+              - generic [ref=e333]:
+                - paragraph [ref=e334]: Est Visitors (All Time)
+                - paragraph [ref=e335]: 23k
+              - generic [ref=e336]:
+                - paragraph [ref=e337]: Release Date
+                - paragraph [ref=e338]: Dec 30, 2024
+        - link "Google Jobs Chan Meng Integrates with Google Jobs search via Serp API to enable efficient querying and retrieval of job listings for career... Classification Community icon community Est Visitors (All Time) 3.7k Release Date Jan 1, 2025" [ref=e340] [cursor=pointer]:
+          - /url: /servers/chanmeng666-google-jobs
+          - generic [ref=e342]:
+            - generic [ref=e343]:
+              - heading "Google Jobs" [level=3] [ref=e345]
+              - paragraph [ref=e346]: Chan Meng
+              - paragraph [ref=e347]: Integrates with Google Jobs search via Serp API to enable efficient querying and retrieval of job listings for career...
+            - generic [ref=e349]:
+              - generic [ref=e350]:
+                - paragraph [ref=e351]: Classification
+                - generic [ref=e352]:
+                  - img "Community icon" [ref=e354]
+                  - paragraph [ref=e355]: community
+              - generic [ref=e356]:
+                - paragraph [ref=e357]: Est Visitors (All Time)
+                - paragraph [ref=e358]: 3.7k
+              - generic [ref=e359]:
+                - paragraph [ref=e360]: Release Date
+                - paragraph [ref=e361]: Jan 1, 2025
+        - link "Gemini Search Lorhlona Integrates with Google Gemini API to enable powerful web searches with advanced language understanding capabilities. Classification Community icon community Est Visitors (All Time) 4.3k Release Date Jan 5, 2025" [ref=e363] [cursor=pointer]:
+          - /url: /servers/lorhlona-geminiserch
+          - generic [ref=e365]:
+            - generic [ref=e366]:
+              - heading "Gemini Search" [level=3] [ref=e368]
+              - paragraph [ref=e369]: Lorhlona
+              - paragraph [ref=e370]: Integrates with Google Gemini API to enable powerful web searches with advanced language understanding capabilities.
+            - generic [ref=e372]:
+              - generic [ref=e373]:
+                - paragraph [ref=e374]: Classification
+                - generic [ref=e375]:
+                  - img "Community icon" [ref=e377]
+                  - paragraph [ref=e378]: community
+              - generic [ref=e379]:
+                - paragraph [ref=e380]: Est Visitors (All Time)
+                - paragraph [ref=e381]: 4.3k
+              - generic [ref=e382]:
+                - paragraph [ref=e383]: Release Date
+                - paragraph [ref=e384]: Jan 5, 2025
+        - link "SearXNG Matt Koski Integrates with SearXNG instances to provide unified search capabilities across multiple engines for tasks like... Classification Community icon community Est Visitors (All Time) 186 Release Date Jan 13, 2025" [ref=e386] [cursor=pointer]:
+          - /url: /servers/maccam912-searxng
+          - generic [ref=e388]:
+            - generic [ref=e389]:
+              - heading "SearXNG" [level=3] [ref=e391]
+              - paragraph [ref=e392]: Matt Koski
+              - paragraph [ref=e393]: Integrates with SearXNG instances to provide unified search capabilities across multiple engines for tasks like...
+            - generic [ref=e395]:
+              - generic [ref=e396]:
+                - paragraph [ref=e397]: Classification
+                - generic [ref=e398]:
+                  - img "Community icon" [ref=e400]
+                  - paragraph [ref=e401]: community
+              - generic [ref=e402]:
+                - paragraph [ref=e403]: Est Visitors (All Time)
+                - paragraph [ref=e404]: "186"
+              - generic [ref=e405]:
+                - paragraph [ref=e406]: Release Date
+                - paragraph [ref=e407]: Jan 13, 2025
+        - link "Google Custom Search Richard Weiss Integrates with Google Custom Search Engine API to enable web searches for fact-checking, research, and content... Classification Community icon community Est Visitors (All Time) 246k Release Date Jan 19, 2025" [ref=e409] [cursor=pointer]:
+          - /url: /servers/richard-weiss-google-cse
+          - generic [ref=e411]:
+            - generic [ref=e412]:
+              - heading "Google Custom Search" [level=3] [ref=e414]
+              - paragraph [ref=e415]: Richard Weiss
+              - paragraph [ref=e416]: Integrates with Google Custom Search Engine API to enable web searches for fact-checking, research, and content...
+            - generic [ref=e418]:
+              - generic [ref=e419]:
+                - paragraph [ref=e420]: Classification
+                - generic [ref=e421]:
+                  - img "Community icon" [ref=e423]
+                  - paragraph [ref=e424]: community
+              - generic [ref=e425]:
+                - paragraph [ref=e426]: Est Visitors (All Time)
+                - paragraph [ref=e427]: 246k
+              - generic [ref=e428]:
+                - paragraph [ref=e429]: Release Date
+                - paragraph [ref=e430]: Jan 19, 2025
+        - link "Web Search divslingerx Integrates with Google Search using Puppeteer to enable web searches and extract structured results for real-time... Classification Community icon community Est Visitors (All Time) 186 Release Date Jan 20, 2025" [ref=e432] [cursor=pointer]:
+          - /url: /servers/divslingerx-web-search
+          - generic [ref=e434]:
+            - generic [ref=e435]:
+              - heading "Web Search" [level=3] [ref=e437]
+              - paragraph [ref=e438]: divslingerx
+              - paragraph [ref=e439]: Integrates with Google Search using Puppeteer to enable web searches and extract structured results for real-time...
+            - generic [ref=e441]:
+              - generic [ref=e442]:
+                - paragraph [ref=e443]: Classification
+                - generic [ref=e444]:
+                  - img "Community icon" [ref=e446]
+                  - paragraph [ref=e447]: community
+              - generic [ref=e448]:
+                - paragraph [ref=e449]: Est Visitors (All Time)
+                - paragraph [ref=e450]: "186"
+              - generic [ref=e451]:
+                - paragraph [ref=e452]: Release Date
+                - paragraph [ref=e453]: Jan 20, 2025
+        - link "Google Search (via Chrome) Chris Mann Integrates Google search and webpage content extraction via Chrome browser automation, enabling access up-to-date web... Classification Community icon community Est Visitors (All Time) 5.2k Release Date Jan 24, 2025" [ref=e455] [cursor=pointer]:
+          - /url: /servers/cmann50-chrome-google-search
+          - generic [ref=e457]:
+            - generic [ref=e458]:
+              - heading "Google Search (via Chrome)" [level=3] [ref=e460]
+              - paragraph [ref=e461]: Chris Mann
+              - paragraph [ref=e462]: Integrates Google search and webpage content extraction via Chrome browser automation, enabling access up-to-date web...
+            - generic [ref=e464]:
+              - generic [ref=e465]:
+                - paragraph [ref=e466]: Classification
+                - generic [ref=e467]:
+                  - img "Community icon" [ref=e469]
+                  - paragraph [ref=e470]: community
+              - generic [ref=e471]:
+                - paragraph [ref=e472]: Est Visitors (All Time)
+                - paragraph [ref=e473]: 5.2k
+              - generic [ref=e474]:
+                - paragraph [ref=e475]: Release Date
+                - paragraph [ref=e476]: Jan 24, 2025
+        - link "Google Search Fearghal Hayes Integrates Google Search capabilities with web content extraction and screenshot functionality, enabling robust... Classification Community icon community Est Visitors (All Time) 1.1k Release Date Jan 26, 2025" [ref=e478] [cursor=pointer]:
+          - /url: /servers/fearghal-hayes-google-search
+          - generic [ref=e480]:
+            - generic [ref=e481]:
+              - heading "Google Search" [level=3] [ref=e483]
+              - paragraph [ref=e484]: Fearghal Hayes
+              - paragraph [ref=e485]: Integrates Google Search capabilities with web content extraction and screenshot functionality, enabling robust...
+            - generic [ref=e487]:
+              - generic [ref=e488]:
+                - paragraph [ref=e489]: Classification
+                - generic [ref=e490]:
+                  - img "Community icon" [ref=e492]
+                  - paragraph [ref=e493]: community
+              - generic [ref=e494]:
+                - paragraph [ref=e495]: Est Visitors (All Time)
+                - paragraph [ref=e496]: 1.1k
+              - generic [ref=e497]:
+                - paragraph [ref=e498]: Release Date
+                - paragraph [ref=e499]: Jan 26, 2025
+        - link "Google Custom Search Allan Denot Integrates Google Custom Search API to enable web searches for fact-checking, research, and content generation tasks. Classification Community icon community Est Visitors (All Time) 45.8k Release Date Feb 1, 2025" [ref=e501] [cursor=pointer]:
+          - /url: /servers/adenot-google-search
+          - generic [ref=e503]:
+            - generic [ref=e504]:
+              - heading "Google Custom Search" [level=3] [ref=e506]
+              - paragraph [ref=e507]: Allan Denot
+              - paragraph [ref=e508]: Integrates Google Custom Search API to enable web searches for fact-checking, research, and content generation tasks.
+            - generic [ref=e510]:
+              - generic [ref=e511]:
+                - paragraph [ref=e512]: Classification
+                - generic [ref=e513]:
+                  - img "Community icon" [ref=e515]
+                  - paragraph [ref=e516]: community
+              - generic [ref=e517]:
+                - paragraph [ref=e518]: Est Visitors (All Time)
+                - paragraph [ref=e519]: 45.8k
+              - generic [ref=e520]:
+                - paragraph [ref=e521]: Release Date
+                - paragraph [ref=e522]: Feb 1, 2025
+        - link "Bing Search Sean Horvath Integrates with Bing Search API to collect, parse, and analyze search data. Classification Community icon community Est Visitors (All Time) 373 Release Date Feb 8, 2025" [ref=e524] [cursor=pointer]:
+          - /url: /servers/seanivore-bing-searches-analysis
+          - generic [ref=e526]:
+            - generic [ref=e527]:
+              - heading "Bing Search" [level=3] [ref=e529]
+              - paragraph [ref=e530]: Sean Horvath
+              - paragraph [ref=e531]: Integrates with Bing Search API to collect, parse, and analyze search data.
+            - generic [ref=e533]:
+              - generic [ref=e534]:
+                - paragraph [ref=e535]: Classification
+                - generic [ref=e536]:
+                  - img "Community icon" [ref=e538]
+                  - paragraph [ref=e539]: community
+              - generic [ref=e540]:
+                - paragraph [ref=e541]: Est Visitors (All Time)
+                - paragraph [ref=e542]: "373"
+              - generic [ref=e543]:
+                - paragraph [ref=e544]: Release Date
+                - paragraph [ref=e545]: Feb 8, 2025
+        - link "Google Custom Search WeiDwonder Integrates with Google Custom Search Engine to enable automated web crawling, content extraction, and search result... Classification Community icon community Est Visitors (All Time) 26k Release Date Feb 8, 2025" [ref=e547] [cursor=pointer]:
+          - /url: /servers/weidwonder-crawl4ai-google-custom-search
+          - generic [ref=e549]:
+            - generic [ref=e550]:
+              - heading "Google Custom Search" [level=3] [ref=e552]
+              - paragraph [ref=e553]: WeiDwonder
+              - paragraph [ref=e554]: Integrates with Google Custom Search Engine to enable automated web crawling, content extraction, and search result...
+            - generic [ref=e556]:
+              - generic [ref=e557]:
+                - paragraph [ref=e558]: Classification
+                - generic [ref=e559]:
+                  - img "Community icon" [ref=e561]
+                  - paragraph [ref=e562]: community
+              - generic [ref=e563]:
+                - paragraph [ref=e564]: Est Visitors (All Time)
+                - paragraph [ref=e565]: 26k
+              - generic [ref=e566]:
+                - paragraph [ref=e567]: Release Date
+                - paragraph [ref=e568]: Feb 8, 2025
+        - link "PageSpeed Insights enemyrr Integrates with Google PageSpeed Insights to analyze webpage performance and provide optimization recommendations for... Classification Community icon community Est Visitors (All Time) 1.7k Release Date Feb 9, 2025" [ref=e570] [cursor=pointer]:
+          - /url: /servers/enemyrr-pagespeed
+          - generic [ref=e572]:
+            - generic [ref=e573]:
+              - heading "PageSpeed Insights" [level=3] [ref=e575]
+              - paragraph [ref=e576]: enemyrr
+              - paragraph [ref=e577]: Integrates with Google PageSpeed Insights to analyze webpage performance and provide optimization recommendations for...
+            - generic [ref=e579]:
+              - generic [ref=e580]:
+                - paragraph [ref=e581]: Classification
+                - generic [ref=e582]:
+                  - img "Community icon" [ref=e584]
+                  - paragraph [ref=e585]: community
+              - generic [ref=e586]:
+                - paragraph [ref=e587]: Est Visitors (All Time)
+                - paragraph [ref=e588]: 1.7k
+              - generic [ref=e589]:
+                - paragraph [ref=e590]: Release Date
+                - paragraph [ref=e591]: Feb 9, 2025
+        - link "SearXNG Meta Search Kevin Watt Integrates SearXNG's meta-search capabilities to provide privacy-focused, customizable search results from multiple... Classification Community icon community Est Visitors (All Time) 12.1k Release Date Feb 13, 2025" [ref=e593] [cursor=pointer]:
+          - /url: /servers/kevinwatt-searxng
+          - generic [ref=e595]:
+            - generic [ref=e596]:
+              - heading "SearXNG Meta Search" [level=3] [ref=e598]
+              - paragraph [ref=e599]: Kevin Watt
+              - paragraph [ref=e600]: Integrates SearXNG's meta-search capabilities to provide privacy-focused, customizable search results from multiple...
+            - generic [ref=e602]:
+              - generic [ref=e603]:
+                - paragraph [ref=e604]: Classification
+                - generic [ref=e605]:
+                  - img "Community icon" [ref=e607]
+                  - paragraph [ref=e608]: community
+              - generic [ref=e609]:
+                - paragraph [ref=e610]: Est Visitors (All Time)
+                - paragraph [ref=e611]: 12.1k
+              - generic [ref=e612]:
+                - paragraph [ref=e613]: Release Date
+                - paragraph [ref=e614]: Feb 13, 2025
+        - link "Local Web Search Frad Lee Integrates with a headless browser to perform Google searches and extract web content, enabling local web search... Classification Community icon community Est Visitors (All Time) 1.9k Release Date Feb 16, 2025" [ref=e616] [cursor=pointer]:
+          - /url: /servers/fradser-local-web-search
+          - generic [ref=e618]:
+            - generic [ref=e619]:
+              - heading "Local Web Search" [level=3] [ref=e621]
+              - paragraph [ref=e622]: Frad Lee
+              - paragraph [ref=e623]: Integrates with a headless browser to perform Google searches and extract web content, enabling local web search...
+            - generic [ref=e625]:
+              - generic [ref=e626]:
+                - paragraph [ref=e627]: Classification
+                - generic [ref=e628]:
+                  - img "Community icon" [ref=e630]
+                  - paragraph [ref=e631]: community
+              - generic [ref=e632]:
+                - paragraph [ref=e633]: Est Visitors (All Time)
+                - paragraph [ref=e634]: 1.9k
+              - generic [ref=e635]:
+                - paragraph [ref=e636]: Release Date
+                - paragraph [ref=e637]: Feb 16, 2025
+        - link "DuckDuckGo Search lowlyocean Integrates with DuckDuckGo to enable web search functionality, returning results as structured data for easy... Classification Community icon community Est Visitors (All Time) — Release Date Feb 19, 2025" [ref=e639] [cursor=pointer]:
+          - /url: /servers/lowlyocean-duckduckgo-search
+          - generic [ref=e641]:
+            - generic [ref=e642]:
+              - heading "DuckDuckGo Search" [level=3] [ref=e644]
+              - paragraph [ref=e645]: lowlyocean
+              - paragraph [ref=e646]: Integrates with DuckDuckGo to enable web search functionality, returning results as structured data for easy...
+            - generic [ref=e648]:
+              - generic [ref=e649]:
+                - paragraph [ref=e650]: Classification
+                - generic [ref=e651]:
+                  - img "Community icon" [ref=e653]
+                  - paragraph [ref=e654]: community
+              - generic [ref=e655]:
+                - paragraph [ref=e656]: Est Visitors (All Time)
+                - paragraph [ref=e657]: —
+              - generic [ref=e658]:
+                - paragraph [ref=e659]: Release Date
+                - paragraph [ref=e660]: Feb 19, 2025
+        - link "Serper Search and Scrape Marco Pesani Integrates with the Serper API to enable web searches and webpage content extraction, supporting research, content... Classification Community icon community Est Visitors (All Time) 174k Release Date Feb 21, 2025" [ref=e662] [cursor=pointer]:
+          - /url: /servers/marcopesani-serper-search-scrape
+          - generic [ref=e664]:
+            - generic [ref=e665]:
+              - heading "Serper Search and Scrape" [level=3] [ref=e667]
+              - paragraph [ref=e668]: Marco Pesani
+              - paragraph [ref=e669]: Integrates with the Serper API to enable web searches and webpage content extraction, supporting research, content...
+            - generic [ref=e671]:
+              - generic [ref=e672]:
+                - paragraph [ref=e673]: Classification
+                - generic [ref=e674]:
+                  - img "Community icon" [ref=e676]
+                  - paragraph [ref=e677]: community
+              - generic [ref=e678]:
+                - paragraph [ref=e679]: Est Visitors (All Time)
+                - paragraph [ref=e680]: 174k
+              - generic [ref=e681]:
+                - paragraph [ref=e682]: Release Date
+                - paragraph [ref=e683]: Feb 21, 2025
+        - link "WebSearch Tools m4s1t4 Integrates with web search APIs and crawling tools to enable internet-wide information retrieval, content extraction,... Classification Community icon community Est Visitors (All Time) 186 Release Date Mar 4, 2025" [ref=e685] [cursor=pointer]:
+          - /url: /servers/m4s1t4-websearch-tools
+          - generic [ref=e687]:
+            - generic [ref=e688]:
+              - heading "WebSearch Tools" [level=3] [ref=e690]
+              - paragraph [ref=e691]: m4s1t4
+              - paragraph [ref=e692]: Integrates with web search APIs and crawling tools to enable internet-wide information retrieval, content extraction,...
+            - generic [ref=e694]:
+              - generic [ref=e695]:
+                - paragraph [ref=e696]: Classification
+                - generic [ref=e697]:
+                  - img "Community icon" [ref=e699]
+                  - paragraph [ref=e700]: community
+              - generic [ref=e701]:
+                - paragraph [ref=e702]: Est Visitors (All Time)
+                - paragraph [ref=e703]: "186"
+              - generic [ref=e704]:
+                - paragraph [ref=e705]: Release Date
+                - paragraph [ref=e706]: Mar 4, 2025
+        - link "Gmail Vinayak Mehta Integrates with Gmail to enable email search, retrieval, and interaction for natural language-driven email management... Classification Community icon community Est Visitors (All Time) 5.1k Release Date Mar 4, 2025" [ref=e708] [cursor=pointer]:
+          - /url: /servers/vinayak-mehta-gmail
+          - generic [ref=e710]:
+            - generic [ref=e711]:
+              - heading "Gmail" [level=3] [ref=e713]
+              - paragraph [ref=e714]: Vinayak Mehta
+              - paragraph [ref=e715]: Integrates with Gmail to enable email search, retrieval, and interaction for natural language-driven email management...
+            - generic [ref=e717]:
+              - generic [ref=e718]:
+                - paragraph [ref=e719]: Classification
+                - generic [ref=e720]:
+                  - img "Community icon" [ref=e722]
+                  - paragraph [ref=e723]: community
+              - generic [ref=e724]:
+                - paragraph [ref=e725]: Est Visitors (All Time)
+                - paragraph [ref=e726]: 5.1k
+              - generic [ref=e727]:
+                - paragraph [ref=e728]: Release Date
+                - paragraph [ref=e729]: Mar 4, 2025
+        - link "SerpApi Google Search Ilya Zub Integrates with the SerpApi Google Search API to enable access to structured search results data for SEO tools,... Classification Community icon community Est Visitors (All Time) 23.2k Release Date Mar 5, 2025" [ref=e731] [cursor=pointer]:
+          - /url: /servers/ilyazub-serpapi-google-search
+          - generic [ref=e733]:
+            - generic [ref=e734]:
+              - heading "SerpApi Google Search" [level=3] [ref=e736]
+              - paragraph [ref=e737]: Ilya Zub
+              - paragraph [ref=e738]: Integrates with the SerpApi Google Search API to enable access to structured search results data for SEO tools,...
+            - generic [ref=e740]:
+              - generic [ref=e741]:
+                - paragraph [ref=e742]: Classification
+                - generic [ref=e743]:
+                  - img "Community icon" [ref=e745]
+                  - paragraph [ref=e746]: community
+              - generic [ref=e747]:
+                - paragraph [ref=e748]: Est Visitors (All Time)
+                - paragraph [ref=e749]: 23.2k
+              - generic [ref=e750]:
+                - paragraph [ref=e751]: Release Date
+                - paragraph [ref=e752]: Mar 5, 2025
+        - link "Google Search gradusnikov Integrates with Google Custom Search API to perform web searches and retrieve formatted results with titles, links,... Classification Community icon community Est Visitors (All Time) 1.3k Release Date Mar 7, 2025" [ref=e754] [cursor=pointer]:
+          - /url: /servers/gradusnikov-google-search
+          - generic [ref=e756]:
+            - generic [ref=e757]:
+              - heading "Google Search" [level=3] [ref=e759]
+              - paragraph [ref=e760]: gradusnikov
+              - paragraph [ref=e761]: Integrates with Google Custom Search API to perform web searches and retrieve formatted results with titles, links,...
+            - generic [ref=e763]:
+              - generic [ref=e764]:
+                - paragraph [ref=e765]: Classification
+                - generic [ref=e766]:
+                  - img "Community icon" [ref=e768]
+                  - paragraph [ref=e769]: community
+              - generic [ref=e770]:
+                - paragraph [ref=e771]: Est Visitors (All Time)
+                - paragraph [ref=e772]: 1.3k
+              - generic [ref=e773]:
+                - paragraph [ref=e774]: Release Date
+                - paragraph [ref=e775]: Mar 7, 2025
+        - link "Serper Search Diego Fornalha Integrates with the Serper API to provide web search capabilities including web, news, images, shopping, and YouTube... Classification Community icon community Est Visitors (All Time) — Release Date Mar 17, 2025" [ref=e777] [cursor=pointer]:
+          - /url: /servers/diegofornalha-serper-search
+          - generic [ref=e779]:
+            - generic [ref=e780]:
+              - heading "Serper Search" [level=3] [ref=e782]
+              - paragraph [ref=e783]: Diego Fornalha
+              - paragraph [ref=e784]: Integrates with the Serper API to provide web search capabilities including web, news, images, shopping, and YouTube...
+            - generic [ref=e786]:
+              - generic [ref=e787]:
+                - paragraph [ref=e788]: Classification
+                - generic [ref=e789]:
+                  - img "Community icon" [ref=e791]
+                  - paragraph [ref=e792]: community
+              - generic [ref=e793]:
+                - paragraph [ref=e794]: Est Visitors (All Time)
+                - paragraph [ref=e795]: —
+              - generic [ref=e796]:
+                - paragraph [ref=e797]: Release Date
+                - paragraph [ref=e798]: Mar 17, 2025
+        - link "Web Search Freddie Enables web search capabilities by scraping Google search results without API keys, returning structured data with... Classification Community icon community Est Visitors (All Time) 933 Release Date Mar 18, 2025" [ref=e800] [cursor=pointer]:
+          - /url: /servers/williamvd4-web-search
+          - generic [ref=e802]:
+            - generic [ref=e803]:
+              - heading "Web Search" [level=3] [ref=e805]
+              - paragraph [ref=e806]: Freddie
+              - paragraph [ref=e807]: Enables web search capabilities by scraping Google search results without API keys, returning structured data with...
+            - generic [ref=e809]:
+              - generic [ref=e810]:
+                - paragraph [ref=e811]: Classification
+                - generic [ref=e812]:
+                  - img "Community icon" [ref=e814]
+                  - paragraph [ref=e815]: community
+              - generic [ref=e816]:
+                - paragraph [ref=e817]: Est Visitors (All Time)
+                - paragraph [ref=e818]: "933"
+              - generic [ref=e819]:
+                - paragraph [ref=e820]: Release Date
+                - paragraph [ref=e821]: Mar 18, 2025
+        - link "SEO AI (Google Ads Keyword Planner) ccnn2509 Integrates with Google Ads Keyword Planner API to enable SEO research, SERP analysis, and competitor analysis through... Classification Community icon community Est Visitors (All Time) 9k Release Date Mar 17, 2025" [ref=e823] [cursor=pointer]:
+          - /url: /servers/ccnn2509-seo-ai
+          - generic [ref=e825]:
+            - generic [ref=e826]:
+              - heading "SEO AI (Google Ads Keyword Planner)" [level=3] [ref=e828]
+              - paragraph [ref=e829]: ccnn2509
+              - paragraph [ref=e830]: Integrates with Google Ads Keyword Planner API to enable SEO research, SERP analysis, and competitor analysis through...
+            - generic [ref=e832]:
+              - generic [ref=e833]:
+                - paragraph [ref=e834]: Classification
+                - generic [ref=e835]:
+                  - img "Community icon" [ref=e837]
+                  - paragraph [ref=e838]: community
+              - generic [ref=e839]:
+                - paragraph [ref=e840]: Est Visitors (All Time)
+                - paragraph [ref=e841]: 9k
+              - generic [ref=e842]:
+                - paragraph [ref=e843]: Release Date
+                - paragraph [ref=e844]: Mar 17, 2025
+        - link "Search1API fatwang2 Integrates with Search1API to enable web searches, website crawling, and content extraction with configurable... Classification Community icon community Est Visitors (All Time) 186 Release Date Mar 19, 2025" [ref=e846] [cursor=pointer]:
+          - /url: /servers/doubao-search
+          - generic [ref=e848]:
+            - generic [ref=e849]:
+              - heading "Search1API" [level=3] [ref=e851]
+              - paragraph [ref=e852]: fatwang2
+              - paragraph [ref=e853]: Integrates with Search1API to enable web searches, website crawling, and content extraction with configurable...
+            - generic [ref=e855]:
+              - generic [ref=e856]:
+                - paragraph [ref=e857]: Classification
+                - generic [ref=e858]:
+                  - img "Community icon" [ref=e860]
+                  - paragraph [ref=e861]: community
+              - generic [ref=e862]:
+                - paragraph [ref=e863]: Est Visitors (All Time)
+                - paragraph [ref=e864]: "186"
+              - generic [ref=e865]:
+                - paragraph [ref=e866]: Release Date
+                - paragraph [ref=e867]: Mar 19, 2025
+        - link "DataForSEO skobyn Connects to DataForSEO's API suite to provide access to comprehensive SEO data including search results, keyword... Classification Community icon community Est Visitors (All Time) 1k Release Date Mar 20, 2025" [ref=e869] [cursor=pointer]:
+          - /url: /servers/skobyn-dataforseo
+          - generic [ref=e871]:
+            - generic [ref=e872]:
+              - heading "DataForSEO" [level=3] [ref=e874]
+              - paragraph [ref=e875]: skobyn
+              - paragraph [ref=e876]: Connects to DataForSEO's API suite to provide access to comprehensive SEO data including search results, keyword...
+            - generic [ref=e878]:
+              - generic [ref=e879]:
+                - paragraph [ref=e880]: Classification
+                - generic [ref=e881]:
+                  - img "Community icon" [ref=e883]
+                  - paragraph [ref=e884]: community
+              - generic [ref=e885]:
+                - paragraph [ref=e886]: Est Visitors (All Time)
+                - paragraph [ref=e887]: 1k
+              - generic [ref=e888]:
+                - paragraph [ref=e889]: Release Date
+                - paragraph [ref=e890]: Mar 20, 2025
+        - link "Google Search gradusnikov Provides Google Custom Search functionality for web searches, returning structured results including titles, links,... Classification Community icon community Est Visitors (All Time) 373 Release Date Mar 20, 2025" [ref=e892] [cursor=pointer]:
+          - /url: /servers/google-search
+          - generic [ref=e894]:
+            - generic [ref=e895]:
+              - heading "Google Search" [level=3] [ref=e897]
+              - paragraph [ref=e898]: gradusnikov
+              - paragraph [ref=e899]: Provides Google Custom Search functionality for web searches, returning structured results including titles, links,...
+            - generic [ref=e901]:
+              - generic [ref=e902]:
+                - paragraph [ref=e903]: Classification
+                - generic [ref=e904]:
+                  - img "Community icon" [ref=e906]
+                  - paragraph [ref=e907]: community
+              - generic [ref=e908]:
+                - paragraph [ref=e909]: Est Visitors (All Time)
+                - paragraph [ref=e910]: "373"
+              - generic [ref=e911]:
+                - paragraph [ref=e912]: Release Date
+                - paragraph [ref=e913]: Mar 20, 2025
+        - link "Google Ads cohnen Integrates with Google Ads API to enable direct access and management of advertising campaigns, performance analysis,... Classification Community icon community Est Visitors (All Time) 98.4k Release Date Mar 20, 2025" [ref=e915] [cursor=pointer]:
+          - /url: /servers/cohnen-google-ads
+          - generic [ref=e917]:
+            - generic [ref=e918]:
+              - heading "Google Ads" [level=3] [ref=e920]
+              - paragraph [ref=e921]: cohnen
+              - paragraph [ref=e922]: Integrates with Google Ads API to enable direct access and management of advertising campaigns, performance analysis,...
+            - generic [ref=e924]:
+              - generic [ref=e925]:
+                - paragraph [ref=e926]: Classification
+                - generic [ref=e927]:
+                  - img "Community icon" [ref=e929]
+                  - paragraph [ref=e930]: community
+              - generic [ref=e931]:
+                - paragraph [ref=e932]: Est Visitors (All Time)
+                - paragraph [ref=e933]: 98.4k
+              - generic [ref=e934]:
+                - paragraph [ref=e935]: Release Date
+                - paragraph [ref=e936]: Mar 20, 2025
+        - link "GemSuite (Google Gemini) PV Bhat Integrates with Google's Gemini API through specialized tools for search, reasoning, processing, and file analysis,... Classification Community icon community Est Visitors (All Time) 5.4k Release Date Mar 15, 2025" [ref=e938] [cursor=pointer]:
+          - /url: /servers/pv-bhat-gemsuite
+          - generic [ref=e940]:
+            - generic [ref=e941]:
+              - heading "GemSuite (Google Gemini)" [level=3] [ref=e943]
+              - paragraph [ref=e944]: PV Bhat
+              - paragraph [ref=e945]: Integrates with Google's Gemini API through specialized tools for search, reasoning, processing, and file analysis,...
+            - generic [ref=e947]:
+              - generic [ref=e948]:
+                - paragraph [ref=e949]: Classification
+                - generic [ref=e950]:
+                  - img "Community icon" [ref=e952]
+                  - paragraph [ref=e953]: community
+              - generic [ref=e954]:
+                - paragraph [ref=e955]: Est Visitors (All Time)
+                - paragraph [ref=e956]: 5.4k
+              - generic [ref=e957]:
+                - paragraph [ref=e958]: Release Date
+                - paragraph [ref=e959]: Mar 15, 2025
+        - link "SEO AI (Google Ads Keyword Planner) Ayush Singhvi Connects AI systems to Google Ads Keyword Planner API for SEO automation through keyword research, SERP analysis, and... Classification Community icon community Est Visitors (All Time) 186 Release Date Mar 23, 2025" [ref=e961] [cursor=pointer]:
+          - /url: /servers/app-seo-ai
+          - generic [ref=e963]:
+            - generic [ref=e964]:
+              - heading "SEO AI (Google Ads Keyword Planner)" [level=3] [ref=e966]
+              - paragraph [ref=e967]: Ayush Singhvi
+              - paragraph [ref=e968]: Connects AI systems to Google Ads Keyword Planner API for SEO automation through keyword research, SERP analysis, and...
+            - generic [ref=e970]:
+              - generic [ref=e971]:
+                - paragraph [ref=e972]: Classification
+                - generic [ref=e973]:
+                  - img "Community icon" [ref=e975]
+                  - paragraph [ref=e976]: community
+              - generic [ref=e977]:
+                - paragraph [ref=e978]: Est Visitors (All Time)
+                - paragraph [ref=e979]: "186"
+              - generic [ref=e980]:
+                - paragraph [ref=e981]: Release Date
+                - paragraph [ref=e982]: Mar 23, 2025
+        - link "Search Engines Proxy fengin Provides a unified API for accessing multiple search engines including Brave Search, Metaso, and Bocha, handling... Classification Community icon community Est Visitors (All Time) 14.9k Release Date Feb 11, 2025" [ref=e984] [cursor=pointer]:
+          - /url: /servers/fengin-search-engines-proxy
+          - generic [ref=e986]:
+            - generic [ref=e987]:
+              - heading "Search Engines Proxy" [level=3] [ref=e989]
+              - paragraph [ref=e990]: fengin
+              - paragraph [ref=e991]: Provides a unified API for accessing multiple search engines including Brave Search, Metaso, and Bocha, handling...
+            - generic [ref=e993]:
+              - generic [ref=e994]:
+                - paragraph [ref=e995]: Classification
+                - generic [ref=e996]:
+                  - img "Community icon" [ref=e998]
+                  - paragraph [ref=e999]: community
+              - generic [ref=e1000]:
+                - paragraph [ref=e1001]: Est Visitors (All Time)
+                - paragraph [ref=e1002]: 14.9k
+              - generic [ref=e1003]:
+                - paragraph [ref=e1004]: Release Date
+                - paragraph [ref=e1005]: Feb 11, 2025
+        - link "Serper Search NightTrek Integrates with Serper API to provide web search capabilities through standard Google search and Deep Research tools... Classification Community icon community Est Visitors (All Time) 9.3k Release Date Feb 18, 2025" [ref=e1007] [cursor=pointer]:
+          - /url: /servers/nighttrek-serper-search
+          - generic [ref=e1009]:
+            - generic [ref=e1010]:
+              - heading "Serper Search" [level=3] [ref=e1012]
+              - paragraph [ref=e1013]: NightTrek
+              - paragraph [ref=e1014]: Integrates with Serper API to provide web search capabilities through standard Google search and Deep Research tools...
+            - generic [ref=e1016]:
+              - generic [ref=e1017]:
+                - paragraph [ref=e1018]: Classification
+                - generic [ref=e1019]:
+                  - img "Community icon" [ref=e1021]
+                  - paragraph [ref=e1022]: community
+              - generic [ref=e1023]:
+                - paragraph [ref=e1024]: Est Visitors (All Time)
+                - paragraph [ref=e1025]: 9.3k
+              - generic [ref=e1026]:
+                - paragraph [ref=e1027]: Release Date
+                - paragraph [ref=e1028]: Feb 18, 2025
+        - link "WebSearch (Google) Manh La Provides real-time web search capabilities via a dedicated crawler service with configurable result limits, language... Classification Community icon community Est Visitors (All Time) 8.8k Release Date Mar 25, 2025" [ref=e1030] [cursor=pointer]:
+          - /url: /servers/mnhlt-websearch
+          - generic [ref=e1032]:
+            - generic [ref=e1033]:
+              - heading "WebSearch (Google)" [level=3] [ref=e1035]
+              - paragraph [ref=e1036]: Manh La
+              - paragraph [ref=e1037]: Provides real-time web search capabilities via a dedicated crawler service with configurable result limits, language...
+            - generic [ref=e1039]:
+              - generic [ref=e1040]:
+                - paragraph [ref=e1041]: Classification
+                - generic [ref=e1042]:
+                  - img "Community icon" [ref=e1044]
+                  - paragraph [ref=e1045]: community
+              - generic [ref=e1046]:
+                - paragraph [ref=e1047]: Est Visitors (All Time)
+                - paragraph [ref=e1048]: 8.8k
+              - generic [ref=e1049]:
+                - paragraph [ref=e1050]: Release Date
+                - paragraph [ref=e1051]: Mar 25, 2025
+        - link "Google Analytics eno-graph Integrates with Google Analytics 4 to enable data retrieval and analysis through configurable metrics, dimensions,... Classification Community icon community Est Visitors (All Time) 1.3k Release Date Mar 25, 2025" [ref=e1053] [cursor=pointer]:
+          - /url: /servers/eno-graph-google-analytics
+          - generic [ref=e1055]:
+            - generic [ref=e1056]:
+              - heading "Google Analytics" [level=3] [ref=e1058]
+              - paragraph [ref=e1059]: eno-graph
+              - paragraph [ref=e1060]: Integrates with Google Analytics 4 to enable data retrieval and analysis through configurable metrics, dimensions,...
+            - generic [ref=e1062]:
+              - generic [ref=e1063]:
+                - paragraph [ref=e1064]: Classification
+                - generic [ref=e1065]:
+                  - img "Community icon" [ref=e1067]
+                  - paragraph [ref=e1068]: community
+              - generic [ref=e1069]:
+                - paragraph [ref=e1070]: Est Visitors (All Time)
+                - paragraph [ref=e1071]: 1.3k
+              - generic [ref=e1072]:
+                - paragraph [ref=e1073]: Release Date
+                - paragraph [ref=e1074]: Mar 25, 2025
+        - link "Web Search (Brave) Hossein Yousefpour Integrates Brave Search API for real-time web information retrieval, dynamically categorizing queries to proactively... Classification Community icon community Est Visitors (All Time) 2.8k Release Date Mar 8, 2025" [ref=e1076] [cursor=pointer]:
+          - /url: /servers/gabrimatic-web-search
+          - generic [ref=e1078]:
+            - generic [ref=e1079]:
+              - heading "Web Search (Brave)" [level=3] [ref=e1081]
+              - paragraph [ref=e1082]: Hossein Yousefpour
+              - paragraph [ref=e1083]: Integrates Brave Search API for real-time web information retrieval, dynamically categorizing queries to proactively...
+            - generic [ref=e1085]:
+              - generic [ref=e1086]:
+                - paragraph [ref=e1087]: Classification
+                - generic [ref=e1088]:
+                  - img "Community icon" [ref=e1090]
+                  - paragraph [ref=e1091]: community
+              - generic [ref=e1092]:
+                - paragraph [ref=e1093]: Est Visitors (All Time)
+                - paragraph [ref=e1094]: 2.8k
+              - generic [ref=e1095]:
+                - paragraph [ref=e1096]: Release Date
+                - paragraph [ref=e1097]: Mar 8, 2025
+        - link "Google Search GitHub Community Bypasses Google search anti-bot mechanisms with advanced browser fingerprinting and automatic CAPTCHA handling to... Classification Community icon community Est Visitors (All Time) 7.3k Release Date Mar 9, 2025" [ref=e1099] [cursor=pointer]:
+          - /url: /servers/google-search875c
+          - generic [ref=e1101]:
+            - generic [ref=e1102]:
+              - heading "Google Search" [level=3] [ref=e1104]
+              - paragraph [ref=e1105]: GitHub Community
+              - paragraph [ref=e1106]: Bypasses Google search anti-bot mechanisms with advanced browser fingerprinting and automatic CAPTCHA handling to...
+            - generic [ref=e1108]:
+              - generic [ref=e1109]:
+                - paragraph [ref=e1110]: Classification
+                - generic [ref=e1111]:
+                  - img "Community icon" [ref=e1113]
+                  - paragraph [ref=e1114]: community
+              - generic [ref=e1115]:
+                - paragraph [ref=e1116]: Est Visitors (All Time)
+                - paragraph [ref=e1117]: 7.3k
+              - generic [ref=e1118]:
+                - paragraph [ref=e1119]: Release Date
+                - paragraph [ref=e1120]: Mar 9, 2025
+        - link "One Search zac ma Provides a unified search and web scraping platform that integrates multiple search providers like SearxNG and... Classification Community icon community Est Visitors (All Time) 12.2k Release Date Mar 18, 2025" [ref=e1122] [cursor=pointer]:
+          - /url: /servers/one-search
+          - generic [ref=e1124]:
+            - generic [ref=e1125]:
+              - heading "One Search" [level=3] [ref=e1127]
+              - paragraph [ref=e1128]: zac ma
+              - paragraph [ref=e1129]: Provides a unified search and web scraping platform that integrates multiple search providers like SearxNG and...
+            - generic [ref=e1131]:
+              - generic [ref=e1132]:
+                - paragraph [ref=e1133]: Classification
+                - generic [ref=e1134]:
+                  - img "Community icon" [ref=e1136]
+                  - paragraph [ref=e1137]: community
+              - generic [ref=e1138]:
+                - paragraph [ref=e1139]: Est Visitors (All Time)
+                - paragraph [ref=e1140]: 12.2k
+              - generic [ref=e1141]:
+                - paragraph [ref=e1142]: Release Date
+                - paragraph [ref=e1143]: Mar 18, 2025
+        - link "Search Intent AI gh-captainChaozi Detects search intent for SEO-related workflows. Classification Community icon community Est Visitors (All Time) 5k Release Date Mar 31, 2025" [ref=e1145] [cursor=pointer]:
+          - /url: /servers/captainchaozi-search-intent
+          - generic [ref=e1147]:
+            - generic [ref=e1148]:
+              - heading "Search Intent AI" [level=3] [ref=e1150]
+              - paragraph [ref=e1151]: gh-captainChaozi
+              - paragraph [ref=e1152]: Detects search intent for SEO-related workflows.
+            - generic [ref=e1154]:
+              - generic [ref=e1155]:
+                - paragraph [ref=e1156]: Classification
+                - generic [ref=e1157]:
+                  - img "Community icon" [ref=e1159]
+                  - paragraph [ref=e1160]: community
+              - generic [ref=e1161]:
+                - paragraph [ref=e1162]: Est Visitors (All Time)
+                - paragraph [ref=e1163]: 5k
+              - generic [ref=e1164]:
+                - paragraph [ref=e1165]: Release Date
+                - paragraph [ref=e1166]: Mar 31, 2025
+        - link "Google Search jae-jae Automates parallel Google searches with intelligent CAPTCHA detection, browser state persistence, and user behavior... Classification Community icon community Est Visitors (All Time) 16.3k Release Date Mar 26, 2025" [ref=e1168] [cursor=pointer]:
+          - /url: /servers/jae-jae-g-search
+          - generic [ref=e1170]:
+            - generic [ref=e1171]:
+              - heading "Google Search" [level=3] [ref=e1173]
+              - paragraph [ref=e1174]: jae-jae
+              - paragraph [ref=e1175]: Automates parallel Google searches with intelligent CAPTCHA detection, browser state persistence, and user behavior...
+            - generic [ref=e1177]:
+              - generic [ref=e1178]:
+                - paragraph [ref=e1179]: Classification
+                - generic [ref=e1180]:
+                  - img "Community icon" [ref=e1182]
+                  - paragraph [ref=e1183]: community
+              - generic [ref=e1184]:
+                - paragraph [ref=e1185]: Est Visitors (All Time)
+                - paragraph [ref=e1186]: 16.3k
+              - generic [ref=e1187]:
+                - paragraph [ref=e1188]: Release Date
+                - paragraph [ref=e1189]: Mar 26, 2025
+        - link "Scrapeless (Google Search) Scrapeless Provides a bridge to the Scrapeless API for performing Google searches with customizable parameters including query... Classification Official repository icon official Est Visitors (All Time) 9.5k Release Date Apr 1, 2025" [ref=e1191] [cursor=pointer]:
+          - /url: /servers/scrapeless-google-search
+          - generic [ref=e1193]:
+            - generic [ref=e1194]:
+              - heading "Scrapeless (Google Search)" [level=3] [ref=e1196]
+              - paragraph [ref=e1197]: Scrapeless
+              - paragraph [ref=e1198]: Provides a bridge to the Scrapeless API for performing Google searches with customizable parameters including query...
+            - generic [ref=e1200]:
+              - generic [ref=e1201]:
+                - paragraph [ref=e1202]: Classification
+                - generic [ref=e1203]:
+                  - img "Official repository icon" [ref=e1205]
+                  - paragraph [ref=e1206]: official
+              - generic [ref=e1207]:
+                - paragraph [ref=e1208]: Est Visitors (All Time)
+                - paragraph [ref=e1209]: 9.5k
+              - generic [ref=e1210]:
+                - paragraph [ref=e1211]: Release Date
+                - paragraph [ref=e1212]: Apr 1, 2025
+        - link "Serper (Google Search) Gary Meng Enables AI to perform Google searches via the Serper API with support for location, language, and time period filters. Classification Community icon community Est Visitors (All Time) 25.7k Release Date Apr 7, 2025" [ref=e1214] [cursor=pointer]:
+          - /url: /servers/garymengcom-serper
+          - generic [ref=e1216]:
+            - generic [ref=e1217]:
+              - heading "Serper (Google Search)" [level=3] [ref=e1219]
+              - paragraph [ref=e1220]: Gary Meng
+              - paragraph [ref=e1221]: Enables AI to perform Google searches via the Serper API with support for location, language, and time period filters.
+            - generic [ref=e1223]:
+              - generic [ref=e1224]:
+                - paragraph [ref=e1225]: Classification
+                - generic [ref=e1226]:
+                  - img "Community icon" [ref=e1228]
+                  - paragraph [ref=e1229]: community
+              - generic [ref=e1230]:
+                - paragraph [ref=e1231]: Est Visitors (All Time)
+                - paragraph [ref=e1232]: 25.7k
+              - generic [ref=e1233]:
+                - paragraph [ref=e1234]: Release Date
+                - paragraph [ref=e1235]: Apr 7, 2025
+        - link "Bing Webmaster Tools Kuba Serafinowski Integrates with Bing Webmaster Tools API to enable complete site management, URL submission, traffic analysis,... Classification Community icon community Est Visitors (All Time) 1.3k Release Date Apr 8, 2025" [ref=e1237] [cursor=pointer]:
+          - /url: /servers/bing-webmaster-tools
+          - generic [ref=e1239]:
+            - generic [ref=e1240]:
+              - heading "Bing Webmaster Tools" [level=3] [ref=e1242]
+              - paragraph [ref=e1243]: Kuba Serafinowski
+              - paragraph [ref=e1244]: Integrates with Bing Webmaster Tools API to enable complete site management, URL submission, traffic analysis,...
+            - generic [ref=e1246]:
+              - generic [ref=e1247]:
+                - paragraph [ref=e1248]: Classification
+                - generic [ref=e1249]:
+                  - img "Community icon" [ref=e1251]
+                  - paragraph [ref=e1252]: community
+              - generic [ref=e1253]:
+                - paragraph [ref=e1254]: Est Visitors (All Time)
+                - paragraph [ref=e1255]: 1.3k
+              - generic [ref=e1256]:
+                - paragraph [ref=e1257]: Release Date
+                - paragraph [ref=e1258]: Apr 8, 2025
+        - link "Google Search demondehellis Provides web search capabilities and webpage content extraction through Google Custom Search API, enabling access to... Classification Community icon community Est Visitors (All Time) 32 Release Date Apr 11, 2025" [ref=e1260] [cursor=pointer]:
+          - /url: /servers/google-search285f
+          - generic [ref=e1262]:
+            - generic [ref=e1263]:
+              - heading "Google Search" [level=3] [ref=e1265]
+              - paragraph [ref=e1266]: demondehellis
+              - paragraph [ref=e1267]: Provides web search capabilities and webpage content extraction through Google Custom Search API, enabling access to...
+            - generic [ref=e1269]:
+              - generic [ref=e1270]:
+                - paragraph [ref=e1271]: Classification
+                - generic [ref=e1272]:
+                  - img "Community icon" [ref=e1274]
+                  - paragraph [ref=e1275]: community
+              - generic [ref=e1276]:
+                - paragraph [ref=e1277]: Est Visitors (All Time)
+                - paragraph [ref=e1278]: "32"
+              - generic [ref=e1279]:
+                - paragraph [ref=e1280]: Release Date
+                - paragraph [ref=e1281]: Apr 11, 2025
+        - link "DuckDuckGo Search OEvortex Provides web search capabilities through DuckDuckGo, enabling content retrieval, URL processing, and metadata... Classification Community icon community Est Visitors (All Time) 19.6k Release Date Apr 16, 2025" [ref=e1283] [cursor=pointer]:
+          - /url: /servers/oevortex-ddg-search
+          - generic [ref=e1285]:
+            - generic [ref=e1286]:
+              - heading "DuckDuckGo Search" [level=3] [ref=e1288]
+              - paragraph [ref=e1289]: OEvortex
+              - paragraph [ref=e1290]: Provides web search capabilities through DuckDuckGo, enabling content retrieval, URL processing, and metadata...
+            - generic [ref=e1292]:
+              - generic [ref=e1293]:
+                - paragraph [ref=e1294]: Classification
+                - generic [ref=e1295]:
+                  - img "Community icon" [ref=e1297]
+                  - paragraph [ref=e1298]: community
+              - generic [ref=e1299]:
+                - paragraph [ref=e1300]: Est Visitors (All Time)
+                - paragraph [ref=e1301]: 19.6k
+              - generic [ref=e1302]:
+                - paragraph [ref=e1303]: Release Date
+                - paragraph [ref=e1304]: Apr 16, 2025
+        - link "Google Search Hunter Arton Provides Google web and image search capabilities through the Custom Search API, enabling access to current internet... Classification Community icon community Est Visitors (All Time) 373 Release Date Apr 20, 2025" [ref=e1306] [cursor=pointer]:
+          - /url: /servers/hunter-arton-google-search
+          - generic [ref=e1308]:
+            - generic [ref=e1309]:
+              - heading "Google Search" [level=3] [ref=e1311]
+              - paragraph [ref=e1312]: Hunter Arton
+              - paragraph [ref=e1313]: Provides Google web and image search capabilities through the Custom Search API, enabling access to current internet...
+            - generic [ref=e1315]:
+              - generic [ref=e1316]:
+                - paragraph [ref=e1317]: Classification
+                - generic [ref=e1318]:
+                  - img "Community icon" [ref=e1320]
+                  - paragraph [ref=e1321]: community
+              - generic [ref=e1322]:
+                - paragraph [ref=e1323]: Est Visitors (All Time)
+                - paragraph [ref=e1324]: "373"
+              - generic [ref=e1325]:
+                - paragraph [ref=e1326]: Release Date
+                - paragraph [ref=e1327]: Apr 20, 2025
+        - link "Google Toolbox Anthony Kim Integrates with Google services including Gmail, Calendar, Drive, and Search through OAuth 2.0 authentication,... Classification Community icon community Est Visitors (All Time) 1.9k Release Date May 1, 2025" [ref=e1329] [cursor=pointer]:
+          - /url: /servers/jikime-google-toolbox
+          - generic [ref=e1331]:
+            - generic [ref=e1332]:
+              - heading "Google Toolbox" [level=3] [ref=e1334]
+              - paragraph [ref=e1335]: Anthony Kim
+              - paragraph [ref=e1336]: Integrates with Google services including Gmail, Calendar, Drive, and Search through OAuth 2.0 authentication,...
+            - generic [ref=e1338]:
+              - generic [ref=e1339]:
+                - paragraph [ref=e1340]: Classification
+                - generic [ref=e1341]:
+                  - img "Community icon" [ref=e1343]
+                  - paragraph [ref=e1344]: community
+              - generic [ref=e1345]:
+                - paragraph [ref=e1346]: Est Visitors (All Time)
+                - paragraph [ref=e1347]: 1.9k
+              - generic [ref=e1348]:
+                - paragraph [ref=e1349]: Release Date
+                - paragraph [ref=e1350]: May 1, 2025
+        - link "DataForSEO DataForSEO Integrates with DataForSEO's SEO and marketing analytics APIs to provide direct access to search engine results,... Classification Official repository icon official Est Visitors (All Time) 32.3k Release Date May 10, 2025" [ref=e1352] [cursor=pointer]:
+          - /url: /servers/dataforseo
+          - generic [ref=e1354]:
+            - generic [ref=e1355]:
+              - heading "DataForSEO" [level=3] [ref=e1357]
+              - paragraph [ref=e1358]: DataForSEO
+              - paragraph [ref=e1359]: Integrates with DataForSEO's SEO and marketing analytics APIs to provide direct access to search engine results,...
+            - generic [ref=e1361]:
+              - generic [ref=e1362]:
+                - paragraph [ref=e1363]: Classification
+                - generic [ref=e1364]:
+                  - img "Official repository icon" [ref=e1366]
+                  - paragraph [ref=e1367]: official
+              - generic [ref=e1368]:
+                - paragraph [ref=e1369]: Est Visitors (All Time)
+                - paragraph [ref=e1370]: 32.3k
+              - generic [ref=e1371]:
+                - paragraph [ref=e1372]: Release Date
+                - paragraph [ref=e1373]: May 10, 2025
+        - link "Google Programmable Search Engine Rendy Febry Integrates with Google Programmable Search Engine to enable web search capabilities with support for pagination,... Classification Community icon community Est Visitors (All Time) 4.7k Release Date May 23, 2025" [ref=e1375] [cursor=pointer]:
+          - /url: /servers/google-pse
+          - generic [ref=e1377]:
+            - generic [ref=e1378]:
+              - heading "Google Programmable Search Engine" [level=3] [ref=e1380]
+              - paragraph [ref=e1381]: Rendy Febry
+              - paragraph [ref=e1382]: Integrates with Google Programmable Search Engine to enable web search capabilities with support for pagination,...
+            - generic [ref=e1384]:
+              - generic [ref=e1385]:
+                - paragraph [ref=e1386]: Classification
+                - generic [ref=e1387]:
+                  - img "Community icon" [ref=e1389]
+                  - paragraph [ref=e1390]: community
+              - generic [ref=e1391]:
+                - paragraph [ref=e1392]: Est Visitors (All Time)
+                - paragraph [ref=e1393]: 4.7k
+              - generic [ref=e1394]:
+                - paragraph [ref=e1395]: Release Date
+                - paragraph [ref=e1396]: May 23, 2025
+        - link "Google Analytics 4 Surendran B Integrates with Google Analytics 4 to retrieve metrics, dimensions, and customized reports with flexible date ranges... Classification Community icon community Est Visitors (All Time) 31.3k Release Date May 25, 2025" [ref=e1398] [cursor=pointer]:
+          - /url: /servers/surendranb-google-analytics
+          - generic [ref=e1400]:
+            - generic [ref=e1401]:
+              - heading "Google Analytics 4" [level=3] [ref=e1403]
+              - paragraph [ref=e1404]: Surendran B
+              - paragraph [ref=e1405]: Integrates with Google Analytics 4 to retrieve metrics, dimensions, and customized reports with flexible date ranges...
+            - generic [ref=e1407]:
+              - generic [ref=e1408]:
+                - paragraph [ref=e1409]: Classification
+                - generic [ref=e1410]:
+                  - img "Community icon" [ref=e1412]
+                  - paragraph [ref=e1413]: community
+              - generic [ref=e1414]:
+                - paragraph [ref=e1415]: Est Visitors (All Time)
+                - paragraph [ref=e1416]: 31.3k
+              - generic [ref=e1417]:
+                - paragraph [ref=e1418]: Release Date
+                - paragraph [ref=e1419]: May 25, 2025
+        - link "Google Apps Script API mohalmah Integrates with Google Apps Script API through 17 specialized tools for project management, deployment operations,... Classification Community icon community Est Visitors (All Time) 7.7k Release Date Jun 2, 2025" [ref=e1421] [cursor=pointer]:
+          - /url: /servers/google-apps-script
+          - generic [ref=e1423]:
+            - generic [ref=e1424]:
+              - heading "Google Apps Script API" [level=3] [ref=e1426]
+              - paragraph [ref=e1427]: mohalmah
+              - paragraph [ref=e1428]: Integrates with Google Apps Script API through 17 specialized tools for project management, deployment operations,...
+            - generic [ref=e1430]:
+              - generic [ref=e1431]:
+                - paragraph [ref=e1432]: Classification
+                - generic [ref=e1433]:
+                  - img "Community icon" [ref=e1435]
+                  - paragraph [ref=e1436]: community
+              - generic [ref=e1437]:
+                - paragraph [ref=e1438]: Est Visitors (All Time)
+                - paragraph [ref=e1439]: 7.7k
+              - generic [ref=e1440]:
+                - paragraph [ref=e1441]: Release Date
+                - paragraph [ref=e1442]: Jun 2, 2025
+        - link "Search Analytics (Google Search Console & Analytics 4) dexter480 Integrates Google Search Console and Google Analytics 4 data through unified tools for search analytics, traffic... Classification Community icon community Est Visitors (All Time) 373 Release Date Jun 6, 2025" [ref=e1444] [cursor=pointer]:
+          - /url: /servers/search-analytics
+          - generic [ref=e1446]:
+            - generic [ref=e1447]:
+              - heading "Search Analytics (Google Search Console & Analytics 4)" [level=3] [ref=e1449]
+              - paragraph [ref=e1450]: dexter480
+              - paragraph [ref=e1451]: Integrates Google Search Console and Google Analytics 4 data through unified tools for search analytics, traffic...
+            - generic [ref=e1453]:
+              - generic [ref=e1454]:
+                - paragraph [ref=e1455]: Classification
+                - generic [ref=e1456]:
+                  - img "Community icon" [ref=e1458]
+                  - paragraph [ref=e1459]: community
+              - generic [ref=e1460]:
+                - paragraph [ref=e1461]: Est Visitors (All Time)
+                - paragraph [ref=e1462]: "373"
+              - generic [ref=e1463]:
+                - paragraph [ref=e1464]: Release Date
+                - paragraph [ref=e1465]: Jun 6, 2025
+        - link "SEO Review Tools SEO Review Tools Integrates with SEO Review Tools API for website traffic analysis, authority scoring, backlink discovery, SERP data... Classification Community icon community Est Visitors (All Time) 560 Release Date Jun 10, 2025" [ref=e1467] [cursor=pointer]:
+          - /url: /servers/seo-review-tools
+          - generic [ref=e1469]:
+            - generic [ref=e1470]:
+              - heading "SEO Review Tools" [level=3] [ref=e1472]
+              - paragraph [ref=e1473]: SEO Review Tools
+              - paragraph [ref=e1474]: Integrates with SEO Review Tools API for website traffic analysis, authority scoring, backlink discovery, SERP data...
+            - generic [ref=e1476]:
+              - generic [ref=e1477]:
+                - paragraph [ref=e1478]: Classification
+                - generic [ref=e1479]:
+                  - img "Community icon" [ref=e1481]
+                  - paragraph [ref=e1482]: community
+              - generic [ref=e1483]:
+                - paragraph [ref=e1484]: Est Visitors (All Time)
+                - paragraph [ref=e1485]: "560"
+              - generic [ref=e1486]:
+                - paragraph [ref=e1487]: Release Date
+                - paragraph [ref=e1488]: Jun 10, 2025
+        - link "FetchSERP fetchSERP Integrates with FetchSERP API to provide SEO analysis, SERP data retrieval, web scraping, keyword research, backlink... Classification Official repository icon official Est Visitors (All Time) — Release Date Jun 20, 2025" [ref=e1490] [cursor=pointer]:
+          - /url: /servers/fetchserp
+          - generic [ref=e1492]:
+            - generic [ref=e1493]:
+              - heading "FetchSERP" [level=3] [ref=e1495]
+              - paragraph [ref=e1496]: fetchSERP
+              - paragraph [ref=e1497]: Integrates with FetchSERP API to provide SEO analysis, SERP data retrieval, web scraping, keyword research, backlink...
+            - generic [ref=e1499]:
+              - generic [ref=e1500]:
+                - paragraph [ref=e1501]: Classification
+                - generic [ref=e1502]:
+                  - img "Official repository icon" [ref=e1504]
+                  - paragraph [ref=e1505]: official
+              - generic [ref=e1506]:
+                - paragraph [ref=e1507]: Est Visitors (All Time)
+                - paragraph [ref=e1508]: —
+              - generic [ref=e1509]:
+                - paragraph [ref=e1510]: Release Date
+                - paragraph [ref=e1511]: Jun 20, 2025
+        - link "Google Search (Gemini) yukukotani Provides Google Search functionality through Gemini's native grounding capabilities, delivering search results with... Classification Community icon community Est Visitors (All Time) 8.6k Release Date Jun 26, 2025" [ref=e1513] [cursor=pointer]:
+          - /url: /servers/yukukotani-gemini-google-search
+          - generic [ref=e1515]:
+            - generic [ref=e1516]:
+              - heading "Google Search (Gemini)" [level=3] [ref=e1518]
+              - paragraph [ref=e1519]: yukukotani
+              - paragraph [ref=e1520]: Provides Google Search functionality through Gemini's native grounding capabilities, delivering search results with...
+            - generic [ref=e1522]:
+              - generic [ref=e1523]:
+                - paragraph [ref=e1524]: Classification
+                - generic [ref=e1525]:
+                  - img "Community icon" [ref=e1527]
+                  - paragraph [ref=e1528]: community
+              - generic [ref=e1529]:
+                - paragraph [ref=e1530]: Est Visitors (All Time)
+                - paragraph [ref=e1531]: 8.6k
+              - generic [ref=e1532]:
+                - paragraph [ref=e1533]: Release Date
+                - paragraph [ref=e1534]: Jun 26, 2025
+        - link "Google Ads GoMarble Integrates with Google Ads API to list accounts, execute GAQL queries, and generate keyword ideas with search volume... Classification Community icon community Est Visitors (All Time) 21.5k Release Date Jul 1, 2025" [ref=e1536] [cursor=pointer]:
+          - /url: /servers/gomarble-google-ads
+          - generic [ref=e1538]:
+            - generic [ref=e1539]:
+              - heading "Google Ads" [level=3] [ref=e1541]
+              - paragraph [ref=e1542]: GoMarble
+              - paragraph [ref=e1543]: Integrates with Google Ads API to list accounts, execute GAQL queries, and generate keyword ideas with search volume...
+            - generic [ref=e1545]:
+              - generic [ref=e1546]:
+                - paragraph [ref=e1547]: Classification
+                - generic [ref=e1548]:
+                  - img "Community icon" [ref=e1550]
+                  - paragraph [ref=e1551]: community
+              - generic [ref=e1552]:
+                - paragraph [ref=e1553]: Est Visitors (All Time)
+                - paragraph [ref=e1554]: 21.5k
+              - generic [ref=e1555]:
+                - paragraph [ref=e1556]: Release Date
+                - paragraph [ref=e1557]: Jul 1, 2025
+        - link "Bing Webmaster Tools Isiah Wheeler Integrates with Bing Webmaster Tools API to provide website management and SEO analytics through over 40 specialized... Classification Community icon community Est Visitors (All Time) 1.3k Release Date Jul 6, 2025" [ref=e1559] [cursor=pointer]:
+          - /url: /servers/isiahw1-bing-webmaster
+          - generic [ref=e1561]:
+            - generic [ref=e1562]:
+              - heading "Bing Webmaster Tools" [level=3] [ref=e1564]
+              - paragraph [ref=e1565]: Isiah Wheeler
+              - paragraph [ref=e1566]: Integrates with Bing Webmaster Tools API to provide website management and SEO analytics through over 40 specialized...
+            - generic [ref=e1568]:
+              - generic [ref=e1569]:
+                - paragraph [ref=e1570]: Classification
+                - generic [ref=e1571]:
+                  - img "Community icon" [ref=e1573]
+                  - paragraph [ref=e1574]: community
+              - generic [ref=e1575]:
+                - paragraph [ref=e1576]: Est Visitors (All Time)
+                - paragraph [ref=e1577]: 1.3k
+              - generic [ref=e1578]:
+                - paragraph [ref=e1579]: Release Date
+                - paragraph [ref=e1580]: Jul 6, 2025
+        - link "Google Chat Sivaprakash Kumar Integrates with Google Chat API to send messages, search conversations, manage spaces, and retrieve user information... Classification Community icon community Est Visitors (All Time) 3.9k Release Date May 28, 2025" [ref=e1582] [cursor=pointer]:
+          - /url: /servers/siva010928-multi-chat
+          - generic [ref=e1584]:
+            - generic [ref=e1585]:
+              - heading "Google Chat" [level=3] [ref=e1587]
+              - paragraph [ref=e1588]: Sivaprakash Kumar
+              - paragraph [ref=e1589]: Integrates with Google Chat API to send messages, search conversations, manage spaces, and retrieve user information...
+            - generic [ref=e1591]:
+              - generic [ref=e1592]:
+                - paragraph [ref=e1593]: Classification
+                - generic [ref=e1594]:
+                  - img "Community icon" [ref=e1596]
+                  - paragraph [ref=e1597]: community
+              - generic [ref=e1598]:
+                - paragraph [ref=e1599]: Est Visitors (All Time)
+                - paragraph [ref=e1600]: 3.9k
+              - generic [ref=e1601]:
+                - paragraph [ref=e1602]: Release Date
+                - paragraph [ref=e1603]: May 28, 2025
+        - link "Google Analytics 4 Gomarble AI Integrates with Google Analytics 4 to provide property management, page views, user metrics, events, traffic sources,... Classification Community icon community Est Visitors (All Time) 2.4k Release Date Jul 28, 2025" [ref=e1605] [cursor=pointer]:
+          - /url: /servers/gomarble-ai-google-analytics-4
+          - generic [ref=e1607]:
+            - generic [ref=e1608]:
+              - heading "Google Analytics 4" [level=3] [ref=e1610]
+              - paragraph [ref=e1611]: Gomarble AI
+              - paragraph [ref=e1612]: Integrates with Google Analytics 4 to provide property management, page views, user metrics, events, traffic sources,...
+            - generic [ref=e1614]:
+              - generic [ref=e1615]:
+                - paragraph [ref=e1616]: Classification
+                - generic [ref=e1617]:
+                  - img "Community icon" [ref=e1619]
+                  - paragraph [ref=e1620]: community
+              - generic [ref=e1621]:
+                - paragraph [ref=e1622]: Est Visitors (All Time)
+                - paragraph [ref=e1623]: 2.4k
+              - generic [ref=e1624]:
+                - paragraph [ref=e1625]: Release Date
+                - paragraph [ref=e1626]: Jul 28, 2025
+        - link "Keywords Everywhere hithereiamaliff Provides access to the Keywords Everywhere API for SEO research and keyword analysis. Classification Community icon community Est Visitors (All Time) 1.1k Release Date Jul 29, 2025" [ref=e1628] [cursor=pointer]:
+          - /url: /servers/hithereiamaliff-keywords-everywhere
+          - generic [ref=e1630]:
+            - generic [ref=e1631]:
+              - heading "Keywords Everywhere" [level=3] [ref=e1633]
+              - paragraph [ref=e1634]: hithereiamaliff
+              - paragraph [ref=e1635]: Provides access to the Keywords Everywhere API for SEO research and keyword analysis.
+            - generic [ref=e1637]:
+              - generic [ref=e1638]:
+                - paragraph [ref=e1639]: Classification
+                - generic [ref=e1640]:
+                  - img "Community icon" [ref=e1642]
+                  - paragraph [ref=e1643]: community
+              - generic [ref=e1644]:
+                - paragraph [ref=e1645]: Est Visitors (All Time)
+                - paragraph [ref=e1646]: 1.1k
+              - generic [ref=e1647]:
+                - paragraph [ref=e1648]: Release Date
+                - paragraph [ref=e1649]: Jul 29, 2025
+        - link "SEO LinkMap SEO LinkMap Transforms SEO analytics into conversational queries, providing SERP correlation analysis, PageRank calculations,... Classification Official repository icon official Est Visitors (All Time) 23.2k Release Date Aug 4, 2025" [ref=e1651] [cursor=pointer]:
+          - /url: /servers/seolinkmap
+          - generic [ref=e1653]:
+            - generic [ref=e1654]:
+              - heading "SEO LinkMap" [level=3] [ref=e1656]
+              - paragraph [ref=e1657]: SEO LinkMap
+              - paragraph [ref=e1658]: Transforms SEO analytics into conversational queries, providing SERP correlation analysis, PageRank calculations,...
+            - generic [ref=e1660]:
+              - generic [ref=e1661]:
+                - paragraph [ref=e1662]: Classification
+                - generic [ref=e1663]:
+                  - img "Official repository icon" [ref=e1665]
+                  - paragraph [ref=e1666]: official
+              - generic [ref=e1667]:
+                - paragraph [ref=e1668]: Est Visitors (All Time)
+                - paragraph [ref=e1669]: 23.2k
+              - generic [ref=e1670]:
+                - paragraph [ref=e1671]: Release Date
+                - paragraph [ref=e1672]: Aug 4, 2025
+        - link "SEO Checker Hostinger Professional SEO analysis server that evaluates websites across multiple optimization dimensions including meta tags,... Classification Community icon community Est Visitors (All Time) 33.4k Release Date Jul 30, 2025" [ref=e1674] [cursor=pointer]:
+          - /url: /servers/hostinger-seo-checker
+          - generic [ref=e1676]:
+            - generic [ref=e1677]:
+              - heading "SEO Checker" [level=3] [ref=e1679]
+              - paragraph [ref=e1680]: Hostinger
+              - paragraph [ref=e1681]: Professional SEO analysis server that evaluates websites across multiple optimization dimensions including meta tags,...
+            - generic [ref=e1683]:
+              - generic [ref=e1684]:
+                - paragraph [ref=e1685]: Classification
+                - generic [ref=e1686]:
+                  - img "Community icon" [ref=e1688]
+                  - paragraph [ref=e1689]: community
+              - generic [ref=e1690]:
+                - paragraph [ref=e1691]: Est Visitors (All Time)
+                - paragraph [ref=e1692]: 33.4k
+              - generic [ref=e1693]:
+                - paragraph [ref=e1694]: Release Date
+                - paragraph [ref=e1695]: Jul 30, 2025
+        - link "Google Search Fabien Desablens Integrates with Google's Custom Search API using automatic key rotation and quota management to provide high-volume... Classification Community icon community Est Visitors (All Time) 2.1k Release Date Jul 31, 2025" [ref=e1697] [cursor=pointer]:
+          - /url: /servers/fabien-desablens-google-search
+          - generic [ref=e1699]:
+            - generic [ref=e1700]:
+              - heading "Google Search" [level=3] [ref=e1702]
+              - paragraph [ref=e1703]: Fabien Desablens
+              - paragraph [ref=e1704]: Integrates with Google's Custom Search API using automatic key rotation and quota management to provide high-volume...
+            - generic [ref=e1706]:
+              - generic [ref=e1707]:
+                - paragraph [ref=e1708]: Classification
+                - generic [ref=e1709]:
+                  - img "Community icon" [ref=e1711]
+                  - paragraph [ref=e1712]: community
+              - generic [ref=e1713]:
+                - paragraph [ref=e1714]: Est Visitors (All Time)
+                - paragraph [ref=e1715]: 2.1k
+              - generic [ref=e1716]:
+                - paragraph [ref=e1717]: Release Date
+                - paragraph [ref=e1718]: Jul 31, 2025
+        - link "Google News & Trends Jesse Manek Integrates with Google News RSS feeds and Google Trends to provide news article search, trending topic retrieval, and... Classification Community icon community Est Visitors (All Time) 18.2k Release Date Aug 2, 2025" [ref=e1720] [cursor=pointer]:
+          - /url: /servers/jmanek-google-news-trends
+          - generic [ref=e1722]:
+            - generic [ref=e1723]:
+              - heading "Google News & Trends" [level=3] [ref=e1725]
+              - paragraph [ref=e1726]: Jesse Manek
+              - paragraph [ref=e1727]: Integrates with Google News RSS feeds and Google Trends to provide news article search, trending topic retrieval, and...
+            - generic [ref=e1729]:
+              - generic [ref=e1730]:
+                - paragraph [ref=e1731]: Classification
+                - generic [ref=e1732]:
+                  - img "Community icon" [ref=e1734]
+                  - paragraph [ref=e1735]: community
+              - generic [ref=e1736]:
+                - paragraph [ref=e1737]: Est Visitors (All Time)
+                - paragraph [ref=e1738]: 18.2k
+              - generic [ref=e1739]:
+                - paragraph [ref=e1740]: Release Date
+                - paragraph [ref=e1741]: Aug 2, 2025
+        - link "Google Search kongyo2 Provides Google Search functionality with advanced anti-detection capabilities including rotating user agents, DNS... Classification Community icon community Est Visitors (All Time) 560 Release Date Aug 9, 2025" [ref=e1743] [cursor=pointer]:
+          - /url: /servers/kongyo2-google-search
+          - generic [ref=e1745]:
+            - generic [ref=e1746]:
+              - heading "Google Search" [level=3] [ref=e1748]
+              - paragraph [ref=e1749]: kongyo2
+              - paragraph [ref=e1750]: Provides Google Search functionality with advanced anti-detection capabilities including rotating user agents, DNS...
+            - generic [ref=e1752]:
+              - generic [ref=e1753]:
+                - paragraph [ref=e1754]: Classification
+                - generic [ref=e1755]:
+                  - img "Community icon" [ref=e1757]
+                  - paragraph [ref=e1758]: community
+              - generic [ref=e1759]:
+                - paragraph [ref=e1760]: Est Visitors (All Time)
+                - paragraph [ref=e1761]: "560"
+              - generic [ref=e1762]:
+                - paragraph [ref=e1763]: Release Date
+                - paragraph [ref=e1764]: Aug 9, 2025
+        - link "Search Fusion sailaoda Aggregates multiple search engines including Google Custom Search, Jina AI, DuckDuckGo, Bing, Baidu, and Exa AI with... Classification Community icon community Est Visitors (All Time) 4.7k Release Date Aug 13, 2025" [ref=e1766] [cursor=pointer]:
+          - /url: /servers/sailaoda-search-fusion
+          - generic [ref=e1768]:
+            - generic [ref=e1769]:
+              - heading "Search Fusion" [level=3] [ref=e1771]
+              - paragraph [ref=e1772]: sailaoda
+              - paragraph [ref=e1773]: Aggregates multiple search engines including Google Custom Search, Jina AI, DuckDuckGo, Bing, Baidu, and Exa AI with...
+            - generic [ref=e1775]:
+              - generic [ref=e1776]:
+                - paragraph [ref=e1777]: Classification
+                - generic [ref=e1778]:
+                  - img "Community icon" [ref=e1780]
+                  - paragraph [ref=e1781]: community
+              - generic [ref=e1782]:
+                - paragraph [ref=e1783]: Est Visitors (All Time)
+                - paragraph [ref=e1784]: 4.7k
+              - generic [ref=e1785]:
+                - paragraph [ref=e1786]: Release Date
+                - paragraph [ref=e1787]: Aug 13, 2025
+        - link "Google Search iwanghc Provides web search capabilities through Google Search integration using browser automation with advanced... Classification Community icon community Est Visitors (All Time) 933 Release Date Aug 14, 2025" [ref=e1789] [cursor=pointer]:
+          - /url: /servers/iwanghc-google-search
+          - generic [ref=e1791]:
+            - generic [ref=e1792]:
+              - heading "Google Search" [level=3] [ref=e1794]
+              - paragraph [ref=e1795]: iwanghc
+              - paragraph [ref=e1796]: Provides web search capabilities through Google Search integration using browser automation with advanced...
+            - generic [ref=e1798]:
+              - generic [ref=e1799]:
+                - paragraph [ref=e1800]: Classification
+                - generic [ref=e1801]:
+                  - img "Community icon" [ref=e1803]
+                  - paragraph [ref=e1804]: community
+              - generic [ref=e1805]:
+                - paragraph [ref=e1806]: Est Visitors (All Time)
+                - paragraph [ref=e1807]: "933"
+              - generic [ref=e1808]:
+                - paragraph [ref=e1809]: Release Date
+                - paragraph [ref=e1810]: Aug 14, 2025
+        - link "Gemini Philipp Schmid Integrates with Google's Gemini API to provide intelligent web search with synthesized results and citations, plus... Classification Community icon community Est Visitors (All Time) 22.4k Release Date Aug 20, 2025" [ref=e1812] [cursor=pointer]:
+          - /url: /servers/philschmid-gemini
+          - generic [ref=e1814]:
+            - generic [ref=e1815]:
+              - heading "Gemini" [level=3] [ref=e1817]
+              - paragraph [ref=e1818]: Philipp Schmid
+              - paragraph [ref=e1819]: Integrates with Google's Gemini API to provide intelligent web search with synthesized results and citations, plus...
+            - generic [ref=e1821]:
+              - generic [ref=e1822]:
+                - paragraph [ref=e1823]: Classification
+                - generic [ref=e1824]:
+                  - img "Community icon" [ref=e1826]
+                  - paragraph [ref=e1827]: community
+              - generic [ref=e1828]:
+                - paragraph [ref=e1829]: Est Visitors (All Time)
+                - paragraph [ref=e1830]: 22.4k
+              - generic [ref=e1831]:
+                - paragraph [ref=e1832]: Release Date
+                - paragraph [ref=e1833]: Aug 20, 2025
+        - link "GetWeb Ivan Mezentsev Integrates DuckDuckGo, Google Search, Felo AI, and Jina Reader APIs to provide web search, content extraction, and... Classification Community icon community Est Visitors (All Time) 1.1k Release Date Aug 30, 2025" [ref=e1835] [cursor=pointer]:
+          - /url: /servers/getweb
+          - generic [ref=e1837]:
+            - generic [ref=e1838]:
+              - heading "GetWeb" [level=3] [ref=e1840]
+              - paragraph [ref=e1841]: Ivan Mezentsev
+              - paragraph [ref=e1842]: Integrates DuckDuckGo, Google Search, Felo AI, and Jina Reader APIs to provide web search, content extraction, and...
+            - generic [ref=e1844]:
+              - generic [ref=e1845]:
+                - paragraph [ref=e1846]: Classification
+                - generic [ref=e1847]:
+                  - img "Community icon" [ref=e1849]
+                  - paragraph [ref=e1850]: community
+              - generic [ref=e1851]:
+                - paragraph [ref=e1852]: Est Visitors (All Time)
+                - paragraph [ref=e1853]: 1.1k
+              - generic [ref=e1854]:
+                - paragraph [ref=e1855]: Release Date
+                - paragraph [ref=e1856]: Aug 30, 2025
+        - link "Web Search hexdecimal16 Performs Google searches and crawls content from the top 5 non-social media results, filtering out social platforms... Classification Community icon community Est Visitors (All Time) 933 Release Date Sep 13, 2025" [ref=e1858] [cursor=pointer]:
+          - /url: /servers/hexdecimal16-web-search
+          - generic [ref=e1860]:
+            - generic [ref=e1861]:
+              - heading "Web Search" [level=3] [ref=e1863]
+              - paragraph [ref=e1864]: hexdecimal16
+              - paragraph [ref=e1865]: Performs Google searches and crawls content from the top 5 non-social media results, filtering out social platforms...
+            - generic [ref=e1867]:
+              - generic [ref=e1868]:
+                - paragraph [ref=e1869]: Classification
+                - generic [ref=e1870]:
+                  - img "Community icon" [ref=e1872]
+                  - paragraph [ref=e1873]: community
+              - generic [ref=e1874]:
+                - paragraph [ref=e1875]: Est Visitors (All Time)
+                - paragraph [ref=e1876]: "933"
+              - generic [ref=e1877]:
+                - paragraph [ref=e1878]: Release Date
+                - paragraph [ref=e1879]: Sep 13, 2025
+        - link "Google Analytics Google Integrates with Google Analytics to retrieve website traffic metrics, user behavior data, conversion tracking, and... Classification Official repository icon official Est Visitors (All Time) 329k Release Date Jul 17, 2025" [ref=e1881] [cursor=pointer]:
+          - /url: /servers/google-analytics
+          - generic [ref=e1883]:
+            - generic [ref=e1884]:
+              - heading "Google Analytics" [level=3] [ref=e1886]
+              - paragraph [ref=e1887]: Google
+              - paragraph [ref=e1888]: Integrates with Google Analytics to retrieve website traffic metrics, user behavior data, conversion tracking, and...
+            - generic [ref=e1890]:
+              - generic [ref=e1891]:
+                - paragraph [ref=e1892]: Classification
+                - generic [ref=e1893]:
+                  - img "Official repository icon" [ref=e1895]
+                  - paragraph [ref=e1896]: official
+              - generic [ref=e1897]:
+                - paragraph [ref=e1898]: Est Visitors (All Time)
+                - paragraph [ref=e1899]: 329k
+              - generic [ref=e1900]:
+                - paragraph [ref=e1901]: Release Date
+                - paragraph [ref=e1902]: Jul 17, 2025
+        - link "Google Search Console Yuexun Jiang Integrates with Google Search Console to provide search performance data with up to 25,000 rows, regex filtering for... Classification Community icon community Est Visitors (All Time) — Release Date Nov 3, 2025" [ref=e1904] [cursor=pointer]:
+          - /url: /servers/leandrocg-google-search-console
+          - generic [ref=e1906]:
+            - generic [ref=e1907]:
+              - heading "Google Search Console" [level=3] [ref=e1909]
+              - paragraph [ref=e1910]: Yuexun Jiang
+              - paragraph [ref=e1911]: Integrates with Google Search Console to provide search performance data with up to 25,000 rows, regex filtering for...
+            - generic [ref=e1913]:
+              - generic [ref=e1914]:
+                - paragraph [ref=e1915]: Classification
+                - generic [ref=e1916]:
+                  - img "Community icon" [ref=e1918]
+                  - paragraph [ref=e1919]: community
+              - generic [ref=e1920]:
+                - paragraph [ref=e1921]: Est Visitors (All Time)
+                - paragraph [ref=e1922]: —
+              - generic [ref=e1923]:
+                - paragraph [ref=e1924]: Release Date
+                - paragraph [ref=e1925]: Nov 3, 2025
+        - link "Gemini Ernie Brodeur Professional integration with Google's Gemini AI models featuring Google Search grounding and deep research capabilities Classification Community icon community Est Visitors (All Time) 2.6k Release Date Dec 17, 2025" [ref=e1927] [cursor=pointer]:
+          - /url: /servers/houtini-gemini
+          - generic [ref=e1929]:
+            - generic [ref=e1930]:
+              - heading "Gemini" [level=3] [ref=e1932]
+              - paragraph [ref=e1933]: Ernie Brodeur
+              - paragraph [ref=e1934]: Professional integration with Google's Gemini AI models featuring Google Search grounding and deep research capabilities
+            - generic [ref=e1936]:
+              - generic [ref=e1937]:
+                - paragraph [ref=e1938]: Classification
+                - generic [ref=e1939]:
+                  - img "Community icon" [ref=e1941]
+                  - paragraph [ref=e1942]: community
+              - generic [ref=e1943]:
+                - paragraph [ref=e1944]: Est Visitors (All Time)
+                - paragraph [ref=e1945]: 2.6k
+              - generic [ref=e1946]:
+                - paragraph [ref=e1947]: Release Date
+                - paragraph [ref=e1948]: Dec 17, 2025
+        - link "Easysearch cloudsmithy Integrates with Elasticsearch and OpenSearch clusters for index management, document operations, search queries,... Classification Community icon community Est Visitors (All Time) 747 Release Date Jan 2, 2026" [ref=e1950] [cursor=pointer]:
+          - /url: /servers/cloudsmithy-easysearch
+          - generic [ref=e1952]:
+            - generic [ref=e1953]:
+              - heading "Easysearch" [level=3] [ref=e1955]
+              - paragraph [ref=e1956]: cloudsmithy
+              - paragraph [ref=e1957]: Integrates with Elasticsearch and OpenSearch clusters for index management, document operations, search queries,...
+            - generic [ref=e1959]:
+              - generic [ref=e1960]:
+                - paragraph [ref=e1961]: Classification
+                - generic [ref=e1962]:
+                  - img "Community icon" [ref=e1964]
+                  - paragraph [ref=e1965]: community
+              - generic [ref=e1966]:
+                - paragraph [ref=e1967]: Est Visitors (All Time)
+                - paragraph [ref=e1968]: "747"
+              - generic [ref=e1969]:
+                - paragraph [ref=e1970]: Release Date
+                - paragraph [ref=e1971]: Jan 2, 2026
+        - link "Google SERP Liran Yoffe Scrapes Google search results with automatic browser fingerprint rotation using Camoufox, offering lite mode for... Classification Community icon community Est Visitors (All Time) 1.1k Release Date Jan 6, 2026" [ref=e1973] [cursor=pointer]:
+          - /url: /servers/liranyoffe-serp
+          - generic [ref=e1975]:
+            - generic [ref=e1976]:
+              - heading "Google SERP" [level=3] [ref=e1978]
+              - paragraph [ref=e1979]: Liran Yoffe
+              - paragraph [ref=e1980]: Scrapes Google search results with automatic browser fingerprint rotation using Camoufox, offering lite mode for...
+            - generic [ref=e1982]:
+              - generic [ref=e1983]:
+                - paragraph [ref=e1984]: Classification
+                - generic [ref=e1985]:
+                  - img "Community icon" [ref=e1987]
+                  - paragraph [ref=e1988]: community
+              - generic [ref=e1989]:
+                - paragraph [ref=e1990]: Est Visitors (All Time)
+                - paragraph [ref=e1991]: 1.1k
+              - generic [ref=e1992]:
+                - paragraph [ref=e1993]: Release Date
+                - paragraph [ref=e1994]: Jan 6, 2026
+        - link "Deep Search thejusdutt Performs web searches by combining Google search results with full page content extraction using Mozilla's... Classification Community icon community Est Visitors (All Time) 373 Release Date Jan 7, 2026" [ref=e1996] [cursor=pointer]:
+          - /url: /servers/thejusdutt-deep-search
+          - generic [ref=e1998]:
+            - generic [ref=e1999]:
+              - heading "Deep Search" [level=3] [ref=e2001]
+              - paragraph [ref=e2002]: thejusdutt
+              - paragraph [ref=e2003]: Performs web searches by combining Google search results with full page content extraction using Mozilla's...
+            - generic [ref=e2005]:
+              - generic [ref=e2006]:
+                - paragraph [ref=e2007]: Classification
+                - generic [ref=e2008]:
+                  - img "Community icon" [ref=e2010]
+                  - paragraph [ref=e2011]: community
+              - generic [ref=e2012]:
+                - paragraph [ref=e2013]: Est Visitors (All Time)
+                - paragraph [ref=e2014]: "373"
+              - generic [ref=e2015]:
+                - paragraph [ref=e2016]: Release Date
+                - paragraph [ref=e2017]: Jan 7, 2026
+        - link "Google Custom Search thejusdutt Google Custom Search API integration with full content extraction using Mozilla's Readability algorithm, providing... Classification Community icon community Est Visitors (All Time) 373 Release Date Jan 15, 2026" [ref=e2019] [cursor=pointer]:
+          - /url: /servers/thejusdutt-google-search
+          - generic [ref=e2021]:
+            - generic [ref=e2022]:
+              - heading "Google Custom Search" [level=3] [ref=e2024]
+              - paragraph [ref=e2025]: thejusdutt
+              - paragraph [ref=e2026]: Google Custom Search API integration with full content extraction using Mozilla's Readability algorithm, providing...
+            - generic [ref=e2028]:
+              - generic [ref=e2029]:
+                - paragraph [ref=e2030]: Classification
+                - generic [ref=e2031]:
+                  - img "Community icon" [ref=e2033]
+                  - paragraph [ref=e2034]: community
+              - generic [ref=e2035]:
+                - paragraph [ref=e2036]: Est Visitors (All Time)
+                - paragraph [ref=e2037]: "373"
+              - generic [ref=e2038]:
+                - paragraph [ref=e2039]: Release Date
+                - paragraph [ref=e2040]: Jan 15, 2026
+        - link "Google Search Console SuperZero11 Integrates with Google Search Console using OAuth2 or service account authentication to provide search analytics... Classification Community icon community Est Visitors (All Time) 747 Release Date Jan 20, 2026" [ref=e2042] [cursor=pointer]:
+          - /url: /servers/superzero11-google-search-console
+          - generic [ref=e2044]:
+            - generic [ref=e2045]:
+              - heading "Google Search Console" [level=3] [ref=e2047]
+              - paragraph [ref=e2048]: SuperZero11
+              - paragraph [ref=e2049]: Integrates with Google Search Console using OAuth2 or service account authentication to provide search analytics...
+            - generic [ref=e2051]:
+              - generic [ref=e2052]:
+                - paragraph [ref=e2053]: Classification
+                - generic [ref=e2054]:
+                  - img "Community icon" [ref=e2056]
+                  - paragraph [ref=e2057]: community
+              - generic [ref=e2058]:
+                - paragraph [ref=e2059]: Est Visitors (All Time)
+                - paragraph [ref=e2060]: "747"
+              - generic [ref=e2061]:
+                - paragraph [ref=e2062]: Release Date
+                - paragraph [ref=e2063]: Jan 20, 2026
+        - link "SearchApi SearchApi Access real-time search data across Google, Bing, flights, hotels, shopping, and more. Classification Official repository icon official Est Visitors (All Time) 3.7k Release Date Jan 28, 2026" [ref=e2065] [cursor=pointer]:
+          - /url: /servers/searchapi
+          - generic [ref=e2067]:
+            - generic [ref=e2068]:
+              - heading "SearchApi" [level=3] [ref=e2070]
+              - paragraph [ref=e2071]: SearchApi
+              - paragraph [ref=e2072]: Access real-time search data across Google, Bing, flights, hotels, shopping, and more.
+            - generic [ref=e2074]:
+              - generic [ref=e2075]:
+                - paragraph [ref=e2076]: Classification
+                - generic [ref=e2077]:
+                  - img "Official repository icon" [ref=e2079]
+                  - paragraph [ref=e2080]: official
+              - generic [ref=e2081]:
+                - paragraph [ref=e2082]: Est Visitors (All Time)
+                - paragraph [ref=e2083]: 3.7k
+              - generic [ref=e2084]:
+                - paragraph [ref=e2085]: Release Date
+                - paragraph [ref=e2086]: Jan 28, 2026
+        - link "SEO Crawler Crawls websites to identify SEO issues and generates structured audit reports. Classification Community icon community Est Visitors (All Time) — Release Date Feb 3, 2026" [ref=e2088] [cursor=pointer]:
+          - /url: /servers/houtini-ai-seo-crawler
+          - generic [ref=e2090]:
+            - generic [ref=e2091]:
+              - heading "SEO Crawler" [level=3] [ref=e2093]
+              - paragraph [ref=e2094]: Crawls websites to identify SEO issues and generates structured audit reports.
+            - generic [ref=e2096]:
+              - generic [ref=e2097]:
+                - paragraph [ref=e2098]: Classification
+                - generic [ref=e2099]:
+                  - img "Community icon" [ref=e2101]
+                  - paragraph [ref=e2102]: community
+              - generic [ref=e2103]:
+                - paragraph [ref=e2104]: Est Visitors (All Time)
+                - paragraph [ref=e2105]: —
+              - generic [ref=e2106]:
+                - paragraph [ref=e2107]: Release Date
+                - paragraph [ref=e2108]: Feb 3, 2026
+        - link "Google Research Zohar Babin Google Search, web scraping, and multi-source research tools. Classification Community icon community Est Visitors (All Time) 4.1k Release Date May 3, 2025" [ref=e2110] [cursor=pointer]:
+          - /url: /servers/zoharbabin-google-researcher
+          - generic [ref=e2112]:
+            - generic [ref=e2113]:
+              - heading "Google Research" [level=3] [ref=e2115]
+              - paragraph [ref=e2116]: Zohar Babin
+              - paragraph [ref=e2117]: Google Search, web scraping, and multi-source research tools.
+            - generic [ref=e2119]:
+              - generic [ref=e2120]:
+                - paragraph [ref=e2121]: Classification
+                - generic [ref=e2122]:
+                  - img "Community icon" [ref=e2124]
+                  - paragraph [ref=e2125]: community
+              - generic [ref=e2126]:
+                - paragraph [ref=e2127]: Est Visitors (All Time)
+                - paragraph [ref=e2128]: 4.1k
+              - generic [ref=e2129]:
+                - paragraph [ref=e2130]: Release Date
+                - paragraph [ref=e2131]: May 3, 2025
+        - link "Serpstat Serpstat Automate daily SEO tasks including keyword research, competitor analysis, rank tracking, and site audits using... Classification Official repository icon official Est Visitors (All Time) 4.5k Release Date Feb 17, 2026" [ref=e2133] [cursor=pointer]:
+          - /url: /servers/serpstat
+          - generic [ref=e2135]:
+            - generic [ref=e2136]:
+              - heading "Serpstat" [level=3] [ref=e2138]
+              - paragraph [ref=e2139]: Serpstat
+              - paragraph [ref=e2140]: Automate daily SEO tasks including keyword research, competitor analysis, rank tracking, and site audits using...
+            - generic [ref=e2142]:
+              - generic [ref=e2143]:
+                - paragraph [ref=e2144]: Classification
+                - generic [ref=e2145]:
+                  - img "Official repository icon" [ref=e2147]
+                  - paragraph [ref=e2148]: official
+              - generic [ref=e2149]:
+                - paragraph [ref=e2150]: Est Visitors (All Time)
+                - paragraph [ref=e2151]: 4.5k
+              - generic [ref=e2152]:
+                - paragraph [ref=e2153]: Release Date
+                - paragraph [ref=e2154]: Feb 17, 2026
+        - link "Google Search Console saurabhsharma2u Integrates with Google Search Console to provide search analytics, SEO opportunity detection, keyword cannibalization... Classification Community icon community Est Visitors (All Time) 15.9k Release Date Feb 1, 2026" [ref=e2156] [cursor=pointer]:
+          - /url: /servers/saurabhsharma2u-search-console
+          - generic [ref=e2158]:
+            - generic [ref=e2159]:
+              - heading "Google Search Console" [level=3] [ref=e2161]
+              - paragraph [ref=e2162]: saurabhsharma2u
+              - paragraph [ref=e2163]: Integrates with Google Search Console to provide search analytics, SEO opportunity detection, keyword cannibalization...
+            - generic [ref=e2165]:
+              - generic [ref=e2166]:
+                - paragraph [ref=e2167]: Classification
+                - generic [ref=e2168]:
+                  - img "Community icon" [ref=e2170]
+                  - paragraph [ref=e2171]: community
+              - generic [ref=e2172]:
+                - paragraph [ref=e2173]: Est Visitors (All Time)
+                - paragraph [ref=e2174]: 15.9k
+              - generic [ref=e2175]:
+                - paragraph [ref=e2176]: Release Date
+                - paragraph [ref=e2177]: Feb 1, 2026
+        - link "SearchAtlas SearchAtlas All-in-one SEO, GEO, Google Ads, local SEO, content generation, digital PR, and link building platform with 112... Classification Official repository icon official Est Visitors (All Time) 1.7k Release Date Feb 28, 2026" [ref=e2179] [cursor=pointer]:
+          - /url: /servers/searchatlas
+          - generic [ref=e2181]:
+            - generic [ref=e2182]:
+              - heading "SearchAtlas" [level=3] [ref=e2184]
+              - paragraph [ref=e2185]: SearchAtlas
+              - paragraph [ref=e2186]: All-in-one SEO, GEO, Google Ads, local SEO, content generation, digital PR, and link building platform with 112...
+            - generic [ref=e2188]:
+              - generic [ref=e2189]:
+                - paragraph [ref=e2190]: Classification
+                - generic [ref=e2191]:
+                  - img "Official repository icon" [ref=e2193]
+                  - paragraph [ref=e2194]: official
+              - generic [ref=e2195]:
+                - paragraph [ref=e2196]: Est Visitors (All Time)
+                - paragraph [ref=e2197]: 1.7k
+              - generic [ref=e2198]:
+                - paragraph [ref=e2199]: Release Date
+                - paragraph [ref=e2200]: Feb 28, 2026
+        - link "EzBiz SEO & Marketing EzBiz Services AI-powered SEO intelligence with keyword research, SERP analysis, backlink checking, and content optimization tools. Classification Community icon community Est Visitors (All Time) 3k Release Date Feb 21, 2026" [ref=e2202] [cursor=pointer]:
+          - /url: /servers/ezbiz-services-seo-marketing
+          - generic [ref=e2204]:
+            - generic [ref=e2205]:
+              - heading "EzBiz SEO & Marketing" [level=3] [ref=e2207]
+              - paragraph [ref=e2208]: EzBiz Services
+              - paragraph [ref=e2209]: AI-powered SEO intelligence with keyword research, SERP analysis, backlink checking, and content optimization tools.
+            - generic [ref=e2211]:
+              - generic [ref=e2212]:
+                - paragraph [ref=e2213]: Classification
+                - generic [ref=e2214]:
+                  - img "Community icon" [ref=e2216]
+                  - paragraph [ref=e2217]: community
+              - generic [ref=e2218]:
+                - paragraph [ref=e2219]: Est Visitors (All Time)
+                - paragraph [ref=e2220]: 3k
+              - generic [ref=e2221]:
+                - paragraph [ref=e2222]: Release Date
+                - paragraph [ref=e2223]: Feb 21, 2026
+        - link "Google Analytics & Search Console JaForge Integrates Google Analytics 4 and Google Search Console for unified SEO and traffic analysis with natural language... Classification Community icon community Est Visitors (All Time) — Release Date Feb 22, 2026" [ref=e2225] [cursor=pointer]:
+          - /url: /servers/jafforgehq-google-analytics
+          - generic [ref=e2227]:
+            - generic [ref=e2228]:
+              - heading "Google Analytics & Search Console" [level=3] [ref=e2230]
+              - paragraph [ref=e2231]: JaForge
+              - paragraph [ref=e2232]: Integrates Google Analytics 4 and Google Search Console for unified SEO and traffic analysis with natural language...
+            - generic [ref=e2234]:
+              - generic [ref=e2235]:
+                - paragraph [ref=e2236]: Classification
+                - generic [ref=e2237]:
+                  - img "Community icon" [ref=e2239]
+                  - paragraph [ref=e2240]: community
+              - generic [ref=e2241]:
+                - paragraph [ref=e2242]: Est Visitors (All Time)
+                - paragraph [ref=e2243]: —
+              - generic [ref=e2244]:
+                - paragraph [ref=e2245]: Release Date
+                - paragraph [ref=e2246]: Feb 22, 2026
+        - link "SearchAtlas SEO platform integration providing access to OTTO SEO, content generation, PPC management, and local SEO tools. Classification Official repository icon official Est Visitors (All Time) — Release Date Mar 3, 2026" [ref=e2248] [cursor=pointer]:
+          - /url: /servers/searchatlas-1
+          - generic [ref=e2250]:
+            - generic [ref=e2251]:
+              - heading "SearchAtlas" [level=3] [ref=e2253]
+              - paragraph [ref=e2254]: SEO platform integration providing access to OTTO SEO, content generation, PPC management, and local SEO tools.
+            - generic [ref=e2256]:
+              - generic [ref=e2257]:
+                - paragraph [ref=e2258]: Classification
+                - generic [ref=e2259]:
+                  - img "Official repository icon" [ref=e2261]
+                  - paragraph [ref=e2262]: official
+              - generic [ref=e2263]:
+                - paragraph [ref=e2264]: Est Visitors (All Time)
+                - paragraph [ref=e2265]: —
+              - generic [ref=e2266]:
+                - paragraph [ref=e2267]: Release Date
+                - paragraph [ref=e2268]: Mar 3, 2026
+        - link "OctoBoost SEO eugenregehr SEO, accessibility, performance, and AI-visibility audits with compact, token-efficient results. Classification Community icon community Est Visitors (All Time) — Release Date Mar 8, 2026" [ref=e2270] [cursor=pointer]:
+          - /url: /servers/eugenregehr-octoboost
+          - generic [ref=e2272]:
+            - generic [ref=e2273]:
+              - heading "OctoBoost SEO" [level=3] [ref=e2275]
+              - paragraph [ref=e2276]: eugenregehr
+              - paragraph [ref=e2277]: SEO, accessibility, performance, and AI-visibility audits with compact, token-efficient results.
+            - generic [ref=e2279]:
+              - generic [ref=e2280]:
+                - paragraph [ref=e2281]: Classification
+                - generic [ref=e2282]:
+                  - img "Community icon" [ref=e2284]
+                  - paragraph [ref=e2285]: community
+              - generic [ref=e2286]:
+                - paragraph [ref=e2287]: Est Visitors (All Time)
+                - paragraph [ref=e2288]: —
+              - generic [ref=e2289]:
+                - paragraph [ref=e2290]: Release Date
+                - paragraph [ref=e2291]: Mar 8, 2026
+        - link "GEO Agent YiGather AI search engine optimization platform for automated SEO landing page creation and product knowledge injection. Classification Official repository icon official Est Visitors (All Time) 186 Release Date Feb 27, 2026" [ref=e2293] [cursor=pointer]:
+          - /url: /servers/geo-agent
+          - generic [ref=e2295]:
+            - generic [ref=e2296]:
+              - heading "GEO Agent" [level=3] [ref=e2298]
+              - paragraph [ref=e2299]: YiGather
+              - paragraph [ref=e2300]: AI search engine optimization platform for automated SEO landing page creation and product knowledge injection.
+            - generic [ref=e2302]:
+              - generic [ref=e2303]:
+                - paragraph [ref=e2304]: Classification
+                - generic [ref=e2305]:
+                  - img "Official repository icon" [ref=e2307]
+                  - paragraph [ref=e2308]: official
+              - generic [ref=e2309]:
+                - paragraph [ref=e2310]: Est Visitors (All Time)
+                - paragraph [ref=e2311]: "186"
+              - generic [ref=e2312]:
+                - paragraph [ref=e2313]: Release Date
+                - paragraph [ref=e2314]: Feb 27, 2026
+        - link "Screaming Frog SEO Spider bzsasson Crawl websites, export SEO data, and manage crawls via Screaming Frog SEO Spider. Classification Community icon community Est Visitors (All Time) 3k Release Date Feb 28, 2026" [ref=e2316] [cursor=pointer]:
+          - /url: /servers/bzsasson-screaming-frog
+          - generic [ref=e2318]:
+            - generic [ref=e2319]:
+              - heading "Screaming Frog SEO Spider" [level=3] [ref=e2321]
+              - paragraph [ref=e2322]: bzsasson
+              - paragraph [ref=e2323]: Crawl websites, export SEO data, and manage crawls via Screaming Frog SEO Spider.
+            - generic [ref=e2325]:
+              - generic [ref=e2326]:
+                - paragraph [ref=e2327]: Classification
+                - generic [ref=e2328]:
+                  - img "Community icon" [ref=e2330]
+                  - paragraph [ref=e2331]: community
+              - generic [ref=e2332]:
+                - paragraph [ref=e2333]: Est Visitors (All Time)
+                - paragraph [ref=e2334]: 3k
+              - generic [ref=e2335]:
+                - paragraph [ref=e2336]: Release Date
+                - paragraph [ref=e2337]: Feb 28, 2026
+        - link "io.github.joepangallo/mcp-server-indexforge joepangallo Submit URLs to Google and Bing for indexing, scan sitemaps, check index status. Classification Official repository icon official Est Visitors (All Time) — Release Date Mar 12, 2026" [ref=e2339] [cursor=pointer]:
+          - /url: /servers/mcp-server-indexforge
+          - generic [ref=e2341]:
+            - generic [ref=e2342]:
+              - heading "io.github.joepangallo/mcp-server-indexforge" [level=3] [ref=e2344]
+              - paragraph [ref=e2345]: joepangallo
+              - paragraph [ref=e2346]: Submit URLs to Google and Bing for indexing, scan sitemaps, check index status.
+            - generic [ref=e2348]:
+              - generic [ref=e2349]:
+                - paragraph [ref=e2350]: Classification
+                - generic [ref=e2351]:
+                  - img "Official repository icon" [ref=e2353]
+                  - paragraph [ref=e2354]: official
+              - generic [ref=e2355]:
+                - paragraph [ref=e2356]: Est Visitors (All Time)
+                - paragraph [ref=e2357]: —
+              - generic [ref=e2358]:
+                - paragraph [ref=e2359]: Release Date
+                - paragraph [ref=e2360]: Mar 12, 2026
+        - link "Google Search Console (crunchtools) crunchtools Query search analytics, manage sitemaps, and inspect URL indexing status via Google Search Console API. Classification Community icon community Est Visitors (All Time) — Release Date Mar 3, 2026" [ref=e2362] [cursor=pointer]:
+          - /url: /servers/crunchtools-google-search-console
+          - generic [ref=e2364]:
+            - generic [ref=e2365]:
+              - heading "Google Search Console (crunchtools)" [level=3] [ref=e2367]
+              - paragraph [ref=e2368]: crunchtools
+              - paragraph [ref=e2369]: Query search analytics, manage sitemaps, and inspect URL indexing status via Google Search Console API.
+            - generic [ref=e2371]:
+              - generic [ref=e2372]:
+                - paragraph [ref=e2373]: Classification
+                - generic [ref=e2374]:
+                  - img "Community icon" [ref=e2376]
+                  - paragraph [ref=e2377]: community
+              - generic [ref=e2378]:
+                - paragraph [ref=e2379]: Est Visitors (All Time)
+                - paragraph [ref=e2380]: —
+              - generic [ref=e2381]:
+                - paragraph [ref=e2382]: Release Date
+                - paragraph [ref=e2383]: Mar 3, 2026
+        - link "TransformSEO TransformSEO SEO analysis with tools for keyword research, competitor analysis, backlink monitoring, and more. Classification Official repository icon official Est Visitors (All Time) — Release Date Mar 12, 2026" [ref=e2385] [cursor=pointer]:
+          - /url: /servers/transformseo
+          - generic [ref=e2387]:
+            - generic [ref=e2388]:
+              - heading "TransformSEO" [level=3] [ref=e2390]
+              - paragraph [ref=e2391]: TransformSEO
+              - paragraph [ref=e2392]: SEO analysis with tools for keyword research, competitor analysis, backlink monitoring, and more.
+            - generic [ref=e2394]:
+              - generic [ref=e2395]:
+                - paragraph [ref=e2396]: Classification
+                - generic [ref=e2397]:
+                  - img "Official repository icon" [ref=e2399]
+                  - paragraph [ref=e2400]: official
+              - generic [ref=e2401]:
+                - paragraph [ref=e2402]: Est Visitors (All Time)
+                - paragraph [ref=e2403]: —
+              - generic [ref=e2404]:
+                - paragraph [ref=e2405]: Release Date
+                - paragraph [ref=e2406]: Mar 12, 2026
+        - link "WP Analytics bradvin WordPress plugin exposing Google Search Console and Google Analytics 4 data through a REST endpoint. Classification Community icon community Est Visitors (All Time) 1.1k Release Date Mar 13, 2026" [ref=e2408] [cursor=pointer]:
+          - /url: /servers/gh-bradvin-wp-analytics
+          - generic [ref=e2410]:
+            - generic [ref=e2411]:
+              - heading "WP Analytics" [level=3] [ref=e2413]
+              - paragraph [ref=e2414]: bradvin
+              - paragraph [ref=e2415]: WordPress plugin exposing Google Search Console and Google Analytics 4 data through a REST endpoint.
+            - generic [ref=e2417]:
+              - generic [ref=e2418]:
+                - paragraph [ref=e2419]: Classification
+                - generic [ref=e2420]:
+                  - img "Community icon" [ref=e2422]
+                  - paragraph [ref=e2423]: community
+              - generic [ref=e2424]:
+                - paragraph [ref=e2425]: Est Visitors (All Time)
+                - paragraph [ref=e2426]: 1.1k
+              - generic [ref=e2427]:
+                - paragraph [ref=e2428]: Release Date
+                - paragraph [ref=e2429]: Mar 13, 2026
+        - link "Google Calendar Integrates with Google Calendar API for event management and scheduling operations. Classification Community icon community Est Visitors (All Time) — Release Date Mar 13, 2026" [ref=e2431] [cursor=pointer]:
+          - /url: /servers/joecardoso13-google-calendar
+          - generic [ref=e2433]:
+            - generic [ref=e2434]:
+              - heading "Google Calendar" [level=3] [ref=e2436]
+              - paragraph [ref=e2437]: Integrates with Google Calendar API for event management and scheduling operations.
+            - generic [ref=e2439]:
+              - generic [ref=e2440]:
+                - paragraph [ref=e2441]: Classification
+                - generic [ref=e2442]:
+                  - img "Community icon" [ref=e2444]
+                  - paragraph [ref=e2445]: community
+              - generic [ref=e2446]:
+                - paragraph [ref=e2447]: Est Visitors (All Time)
+                - paragraph [ref=e2448]: —
+              - generic [ref=e2449]:
+                - paragraph [ref=e2450]: Release Date
+                - paragraph [ref=e2451]: Mar 13, 2026
+        - link "Google Ads (Noviq) Integrates with Google Ads API for campaign management, reporting, and keyword research. Classification Community icon community Est Visitors (All Time) — Release Date Mar 13, 2026" [ref=e2453] [cursor=pointer]:
+          - /url: /servers/noviq-ai-google-ads
+          - generic [ref=e2455]:
+            - generic [ref=e2456]:
+              - heading "Google Ads (Noviq)" [level=3] [ref=e2458]
+              - paragraph [ref=e2459]: Integrates with Google Ads API for campaign management, reporting, and keyword research.
+            - generic [ref=e2461]:
+              - generic [ref=e2462]:
+                - paragraph [ref=e2463]: Classification
+                - generic [ref=e2464]:
+                  - img "Community icon" [ref=e2466]
+                  - paragraph [ref=e2467]: community
+              - generic [ref=e2468]:
+                - paragraph [ref=e2469]: Est Visitors (All Time)
+                - paragraph [ref=e2470]: —
+              - generic [ref=e2471]:
+                - paragraph [ref=e2472]: Release Date
+                - paragraph [ref=e2473]: Mar 13, 2026
+        - link "Online Search Online search integration. Classification Community icon community Est Visitors (All Time) — Release Date Mar 13, 2026" [ref=e2475] [cursor=pointer]:
+          - /url: /servers/tofunmi-io-online-search
+          - generic [ref=e2477]:
+            - generic [ref=e2478]:
+              - heading "Online Search" [level=3] [ref=e2480]
+              - paragraph [ref=e2481]: Online search integration.
+            - generic [ref=e2483]:
+              - generic [ref=e2484]:
+                - paragraph [ref=e2485]: Classification
+                - generic [ref=e2486]:
+                  - img "Community icon" [ref=e2488]
+                  - paragraph [ref=e2489]: community
+              - generic [ref=e2490]:
+                - paragraph [ref=e2491]: Est Visitors (All Time)
+                - paragraph [ref=e2492]: —
+              - generic [ref=e2493]:
+                - paragraph [ref=e2494]: Release Date
+                - paragraph [ref=e2495]: Mar 13, 2026
+        - link "SISTRIX Cloud SISTRIX SEO analytics integration. Classification Community icon community Est Visitors (All Time) — Release Date Mar 13, 2026" [ref=e2497] [cursor=pointer]:
+          - /url: /servers/nicholasgriffintn-sistrix-cloud
+          - generic [ref=e2499]:
+            - generic [ref=e2500]:
+              - heading "SISTRIX Cloud" [level=3] [ref=e2502]
+              - paragraph [ref=e2503]: SISTRIX SEO analytics integration.
+            - generic [ref=e2505]:
+              - generic [ref=e2506]:
+                - paragraph [ref=e2507]: Classification
+                - generic [ref=e2508]:
+                  - img "Community icon" [ref=e2510]
+                  - paragraph [ref=e2511]: community
+              - generic [ref=e2512]:
+                - paragraph [ref=e2513]: Est Visitors (All Time)
+                - paragraph [ref=e2514]: —
+              - generic [ref=e2515]:
+                - paragraph [ref=e2516]: Release Date
+                - paragraph [ref=e2517]: Mar 13, 2026
+        - link "Google Analytics Google Analytics integration for account summaries, reports, and realtime data. Classification Community icon community Est Visitors (All Time) — Release Date Mar 13, 2026" [ref=e2519] [cursor=pointer]:
+          - /url: /servers/noviq-ai-google-analytics
+          - generic [ref=e2521]:
+            - generic [ref=e2522]:
+              - heading "Google Analytics" [level=3] [ref=e2524]
+              - paragraph [ref=e2525]: Google Analytics integration for account summaries, reports, and realtime data.
+            - generic [ref=e2527]:
+              - generic [ref=e2528]:
+                - paragraph [ref=e2529]: Classification
+                - generic [ref=e2530]:
+                  - img "Community icon" [ref=e2532]
+                  - paragraph [ref=e2533]: community
+              - generic [ref=e2534]:
+                - paragraph [ref=e2535]: Est Visitors (All Time)
+                - paragraph [ref=e2536]: —
+              - generic [ref=e2537]:
+                - paragraph [ref=e2538]: Release Date
+                - paragraph [ref=e2539]: Mar 13, 2026
+        - link "PageSpeed Insights nicolaset Google PageSpeed Insights integration providing comprehensive web performance analysis, accessibility scoring, and... Classification Community icon community Est Visitors (All Time) — Release Date Mar 14, 2026" [ref=e2541] [cursor=pointer]:
+          - /url: /servers/nicolaset-pagespeed-insights
+          - generic [ref=e2543]:
+            - generic [ref=e2544]:
+              - heading "PageSpeed Insights" [level=3] [ref=e2546]
+              - paragraph [ref=e2547]: nicolaset
+              - paragraph [ref=e2548]: Google PageSpeed Insights integration providing comprehensive web performance analysis, accessibility scoring, and...
+            - generic [ref=e2550]:
+              - generic [ref=e2551]:
+                - paragraph [ref=e2552]: Classification
+                - generic [ref=e2553]:
+                  - img "Community icon" [ref=e2555]
+                  - paragraph [ref=e2556]: community
+              - generic [ref=e2557]:
+                - paragraph [ref=e2558]: Est Visitors (All Time)
+                - paragraph [ref=e2559]: —
+              - generic [ref=e2560]:
+                - paragraph [ref=e2561]: Release Date
+                - paragraph [ref=e2562]: Mar 14, 2026
+        - link "Google Ads Google Ads Access Google Ads API for campaign management and performance reporting. Classification Official repository icon official Est Visitors (All Time) 65.6k Release Date Oct 4, 2025" [ref=e2564] [cursor=pointer]:
+          - /url: /servers/google-ads
+          - generic [ref=e2566]:
+            - generic [ref=e2567]:
+              - heading "Google Ads" [level=3] [ref=e2569]
+              - paragraph [ref=e2570]: Google Ads
+              - paragraph [ref=e2571]: Access Google Ads API for campaign management and performance reporting.
+            - generic [ref=e2573]:
+              - generic [ref=e2574]:
+                - paragraph [ref=e2575]: Classification
+                - generic [ref=e2576]:
+                  - img "Official repository icon" [ref=e2578]
+                  - paragraph [ref=e2579]: official
+              - generic [ref=e2580]:
+                - paragraph [ref=e2581]: Est Visitors (All Time)
+                - paragraph [ref=e2582]: 65.6k
+              - generic [ref=e2583]:
+                - paragraph [ref=e2584]: Release Date
+                - paragraph [ref=e2585]: Oct 4, 2025
+        - link "Google Search Console (smw355) smw355 Stateless multi-tenant HTTP server for Google Search Console with OAuth 2.1 authentication. Classification Community icon community Est Visitors (All Time) — Release Date Mar 14, 2026" [ref=e2587] [cursor=pointer]:
+          - /url: /servers/gh-smw355-google-search-console
+          - generic [ref=e2589]:
+            - generic [ref=e2590]:
+              - heading "Google Search Console (smw355)" [level=3] [ref=e2592]
+              - paragraph [ref=e2593]: smw355
+              - paragraph [ref=e2594]: Stateless multi-tenant HTTP server for Google Search Console with OAuth 2.1 authentication.
+            - generic [ref=e2596]:
+              - generic [ref=e2597]:
+                - paragraph [ref=e2598]: Classification
+                - generic [ref=e2599]:
+                  - img "Community icon" [ref=e2601]
+                  - paragraph [ref=e2602]: community
+              - generic [ref=e2603]:
+                - paragraph [ref=e2604]: Est Visitors (All Time)
+                - paragraph [ref=e2605]: —
+              - generic [ref=e2606]:
+                - paragraph [ref=e2607]: Release Date
+                - paragraph [ref=e2608]: Mar 14, 2026
+        - link "SearXNG Public Web search via SearXNG metasearch engine. Classification Community icon community Est Visitors (All Time) — Release Date Mar 16, 2026" [ref=e2610] [cursor=pointer]:
+          - /url: /servers/gh-nicobailon-searxng
+          - generic [ref=e2612]:
+            - generic [ref=e2613]:
+              - heading "SearXNG Public" [level=3] [ref=e2615]
+              - paragraph [ref=e2616]: Web search via SearXNG metasearch engine.
+            - generic [ref=e2618]:
+              - generic [ref=e2619]:
+                - paragraph [ref=e2620]: Classification
+                - generic [ref=e2621]:
+                  - img "Community icon" [ref=e2623]
+                  - paragraph [ref=e2624]: community
+              - generic [ref=e2625]:
+                - paragraph [ref=e2626]: Est Visitors (All Time)
+                - paragraph [ref=e2627]: —
+              - generic [ref=e2628]:
+                - paragraph [ref=e2629]: Release Date
+                - paragraph [ref=e2630]: Mar 16, 2026
+        - link "Gemini Web Search Web search via Google Gemini API. Classification Community icon community Est Visitors (All Time) — Release Date Mar 18, 2026" [ref=e2632] [cursor=pointer]:
+          - /url: /servers/llm-proxy-rs-gemini-websearch
+          - generic [ref=e2634]:
+            - generic [ref=e2635]:
+              - heading "Gemini Web Search" [level=3] [ref=e2637]
+              - paragraph [ref=e2638]: Web search via Google Gemini API.
+            - generic [ref=e2640]:
+              - generic [ref=e2641]:
+                - paragraph [ref=e2642]: Classification
+                - generic [ref=e2643]:
+                  - img "Community icon" [ref=e2645]
+                  - paragraph [ref=e2646]: community
+              - generic [ref=e2647]:
+                - paragraph [ref=e2648]: Est Visitors (All Time)
+                - paragraph [ref=e2649]: —
+              - generic [ref=e2650]:
+                - paragraph [ref=e2651]: Release Date
+                - paragraph [ref=e2652]: Mar 18, 2026
+        - link "GA4 & Search Console Remote prakh-yat Remote MCP server for Google Analytics 4 and Google Search Console data. Classification Community icon community Est Visitors (All Time) — Release Date Mar 18, 2026" [ref=e2654] [cursor=pointer]:
+          - /url: /servers/prakh-yat-ga4-gsc-remote
+          - generic [ref=e2656]:
+            - generic [ref=e2657]:
+              - heading "GA4 & Search Console Remote" [level=3] [ref=e2659]
+              - paragraph [ref=e2660]: prakh-yat
+              - paragraph [ref=e2661]: Remote MCP server for Google Analytics 4 and Google Search Console data.
+            - generic [ref=e2663]:
+              - generic [ref=e2664]:
+                - paragraph [ref=e2665]: Classification
+                - generic [ref=e2666]:
+                  - img "Community icon" [ref=e2668]
+                  - paragraph [ref=e2669]: community
+              - generic [ref=e2670]:
+                - paragraph [ref=e2671]: Est Visitors (All Time)
+                - paragraph [ref=e2672]: —
+              - generic [ref=e2673]:
+                - paragraph [ref=e2674]: Release Date
+                - paragraph [ref=e2675]: Mar 18, 2026
+        - link "SEO Keywords seovimalraj Keyword research tools using Google Autocomplete, Trends, and Answer-the-Public style question generation. Classification Community icon community Est Visitors (All Time) — Release Date Mar 18, 2026" [ref=e2677] [cursor=pointer]:
+          - /url: /servers/seovimalraj-seo-keywords
+          - generic [ref=e2679]:
+            - generic [ref=e2680]:
+              - heading "SEO Keywords" [level=3] [ref=e2682]
+              - paragraph [ref=e2683]: seovimalraj
+              - paragraph [ref=e2684]: Keyword research tools using Google Autocomplete, Trends, and Answer-the-Public style question generation.
+            - generic [ref=e2686]:
+              - generic [ref=e2687]:
+                - paragraph [ref=e2688]: Classification
+                - generic [ref=e2689]:
+                  - img "Community icon" [ref=e2691]
+                  - paragraph [ref=e2692]: community
+              - generic [ref=e2693]:
+                - paragraph [ref=e2694]: Est Visitors (All Time)
+                - paragraph [ref=e2695]: —
+              - generic [ref=e2696]:
+                - paragraph [ref=e2697]: Release Date
+                - paragraph [ref=e2698]: Mar 18, 2026
+        - link "Google Ads by raphizsanders Raphiz Sanders Comprehensive Google Ads campaign management with 80 tools covering creation, analytics, bidding, keywords,... Classification Community icon community Est Visitors (All Time) — Release Date Mar 18, 2026" [ref=e2700] [cursor=pointer]:
+          - /url: /servers/raphizsanders-google-ads
+          - generic [ref=e2702]:
+            - generic [ref=e2703]:
+              - heading "Google Ads by raphizsanders" [level=3] [ref=e2705]
+              - paragraph [ref=e2706]: Raphiz Sanders
+              - paragraph [ref=e2707]: Comprehensive Google Ads campaign management with 80 tools covering creation, analytics, bidding, keywords,...
+            - generic [ref=e2709]:
+              - generic [ref=e2710]:
+                - paragraph [ref=e2711]: Classification
+                - generic [ref=e2712]:
+                  - img "Community icon" [ref=e2714]
+                  - paragraph [ref=e2715]: community
+              - generic [ref=e2716]:
+                - paragraph [ref=e2717]: Est Visitors (All Time)
+                - paragraph [ref=e2718]: —
+              - generic [ref=e2719]:
+                - paragraph [ref=e2720]: Release Date
+                - paragraph [ref=e2721]: Mar 18, 2026
+        - link "Social Search shubhamekapure Search across social media platforms using SearXNG, Serper, or Google Custom Search with domain-specific filtering. Classification Community icon community Est Visitors (All Time) — Release Date Mar 18, 2026" [ref=e2723] [cursor=pointer]:
+          - /url: /servers/shubhamekapure-social-search
+          - generic [ref=e2725]:
+            - generic [ref=e2726]:
+              - heading "Social Search" [level=3] [ref=e2728]
+              - paragraph [ref=e2729]: shubhamekapure
+              - paragraph [ref=e2730]: Search across social media platforms using SearXNG, Serper, or Google Custom Search with domain-specific filtering.
+            - generic [ref=e2732]:
+              - generic [ref=e2733]:
+                - paragraph [ref=e2734]: Classification
+                - generic [ref=e2735]:
+                  - img "Community icon" [ref=e2737]
+                  - paragraph [ref=e2738]: community
+              - generic [ref=e2739]:
+                - paragraph [ref=e2740]: Est Visitors (All Time)
+                - paragraph [ref=e2741]: —
+              - generic [ref=e2742]:
+                - paragraph [ref=e2743]: Release Date
+                - paragraph [ref=e2744]: Mar 18, 2026
+        - link "GA4 & Search Console (chimpmatic) chimpmatic Integrates Google Analytics 4, Google Search Console, and the Indexing API with 16 tools for analytics queries,... Classification Community icon community Est Visitors (All Time) 144.8m Release Date Mar 20, 2026" [ref=e2746] [cursor=pointer]:
+          - /url: /servers/chimpmatic-ga4-search-console
+          - generic [ref=e2748]:
+            - generic [ref=e2749]:
+              - heading "GA4 & Search Console (chimpmatic)" [level=3] [ref=e2751]
+              - paragraph [ref=e2752]: chimpmatic
+              - paragraph [ref=e2753]: Integrates Google Analytics 4, Google Search Console, and the Indexing API with 16 tools for analytics queries,...
+            - generic [ref=e2755]:
+              - generic [ref=e2756]:
+                - paragraph [ref=e2757]: Classification
+                - generic [ref=e2758]:
+                  - img "Community icon" [ref=e2760]
+                  - paragraph [ref=e2761]: community
+              - generic [ref=e2762]:
+                - paragraph [ref=e2763]: Est Visitors (All Time)
+                - paragraph [ref=e2764]: 144.8m
+              - generic [ref=e2765]:
+                - paragraph [ref=e2766]: Release Date
+                - paragraph [ref=e2767]: Mar 20, 2026
+        - link "Google Search Console gh-mikusnuz Query search analytics, inspect URLs, manage sitemaps, and submit pages for indexing via Google Search Console and... Classification Community icon community Est Visitors (All Time) 373 Release Date Feb 17, 2026" [ref=e2769] [cursor=pointer]:
+          - /url: /servers/mikusnuz-gsc
+          - generic [ref=e2771]:
+            - generic [ref=e2772]:
+              - heading "Google Search Console" [level=3] [ref=e2774]
+              - paragraph [ref=e2775]: gh-mikusnuz
+              - paragraph [ref=e2776]: Query search analytics, inspect URLs, manage sitemaps, and submit pages for indexing via Google Search Console and...
+            - generic [ref=e2778]:
+              - generic [ref=e2779]:
+                - paragraph [ref=e2780]: Classification
+                - generic [ref=e2781]:
+                  - img "Community icon" [ref=e2783]
+                  - paragraph [ref=e2784]: community
+              - generic [ref=e2785]:
+                - paragraph [ref=e2786]: Est Visitors (All Time)
+                - paragraph [ref=e2787]: "373"
+              - generic [ref=e2788]:
+                - paragraph [ref=e2789]: Release Date
+                - paragraph [ref=e2790]: Feb 17, 2026
+        - link "Google Search Console (sarahpark) sarahpark Read-only access to Google Search Console data including search analytics, URL inspection, and sitemap status via... Classification Community icon community Est Visitors (All Time) 186 Release Date Mar 23, 2026" [ref=e2792] [cursor=pointer]:
+          - /url: /servers/sarahpark-google-search-console
+          - generic [ref=e2794]:
+            - generic [ref=e2795]:
+              - heading "Google Search Console (sarahpark)" [level=3] [ref=e2797]
+              - paragraph [ref=e2798]: sarahpark
+              - paragraph [ref=e2799]: Read-only access to Google Search Console data including search analytics, URL inspection, and sitemap status via...
+            - generic [ref=e2801]:
+              - generic [ref=e2802]:
+                - paragraph [ref=e2803]: Classification
+                - generic [ref=e2804]:
+                  - img "Community icon" [ref=e2806]
+                  - paragraph [ref=e2807]: community
+              - generic [ref=e2808]:
+                - paragraph [ref=e2809]: Est Visitors (All Time)
+                - paragraph [ref=e2810]: "186"
+              - generic [ref=e2811]:
+                - paragraph [ref=e2812]: Release Date
+                - paragraph [ref=e2813]: Mar 23, 2026
+        - link "SEO Tools (rog0x) rog0x SEO analysis suite for meta tags, heading hierarchy, broken links, keyword density, page speed, and sitemap validation. Classification Community icon community Est Visitors (All Time) — Release Date Mar 18, 2026" [ref=e2815] [cursor=pointer]:
+          - /url: /servers/rog0x-seo-tools
+          - generic [ref=e2817]:
+            - generic [ref=e2818]:
+              - heading "SEO Tools (rog0x)" [level=3] [ref=e2820]
+              - paragraph [ref=e2821]: rog0x
+              - paragraph [ref=e2822]: SEO analysis suite for meta tags, heading hierarchy, broken links, keyword density, page speed, and sitemap validation.
+            - generic [ref=e2824]:
+              - generic [ref=e2825]:
+                - paragraph [ref=e2826]: Classification
+                - generic [ref=e2827]:
+                  - img "Community icon" [ref=e2829]
+                  - paragraph [ref=e2830]: community
+              - generic [ref=e2831]:
+                - paragraph [ref=e2832]: Est Visitors (All Time)
+                - paragraph [ref=e2833]: —
+              - generic [ref=e2834]:
+                - paragraph [ref=e2835]: Release Date
+                - paragraph [ref=e2836]: Mar 18, 2026
+        - link "SearXNG by aicrafted aicrafted Provides web search capabilities by integrating with a self-hosted SearXNG instance. Classification Community icon community Est Visitors (All Time) 373 Release Date Mar 7, 2026" [ref=e2838] [cursor=pointer]:
+          - /url: /servers/aicrafted-searxng
+          - generic [ref=e2840]:
+            - generic [ref=e2841]:
+              - heading "SearXNG by aicrafted" [level=3] [ref=e2843]
+              - paragraph [ref=e2844]: aicrafted
+              - paragraph [ref=e2845]: Provides web search capabilities by integrating with a self-hosted SearXNG instance.
+            - generic [ref=e2847]:
+              - generic [ref=e2848]:
+                - paragraph [ref=e2849]: Classification
+                - generic [ref=e2850]:
+                  - img "Community icon" [ref=e2852]
+                  - paragraph [ref=e2853]: community
+              - generic [ref=e2854]:
+                - paragraph [ref=e2855]: Est Visitors (All Time)
+                - paragraph [ref=e2856]: "373"
+              - generic [ref=e2857]:
+                - paragraph [ref=e2858]: Release Date
+                - paragraph [ref=e2859]: Mar 7, 2026
+        - link "Keyword Trend Search htrunghuynh04 SEO keyword research tool. Classification Community icon community Est Visitors (All Time) — Release Date Mar 24, 2026" [ref=e2861] [cursor=pointer]:
+          - /url: /servers/htrunghuynh04-keyword-trend-search
+          - generic [ref=e2863]:
+            - generic [ref=e2864]:
+              - heading "Keyword Trend Search" [level=3] [ref=e2866]
+              - paragraph [ref=e2867]: htrunghuynh04
+              - paragraph [ref=e2868]: SEO keyword research tool.
+            - generic [ref=e2870]:
+              - generic [ref=e2871]:
+                - paragraph [ref=e2872]: Classification
+                - generic [ref=e2873]:
+                  - img "Community icon" [ref=e2875]
+                  - paragraph [ref=e2876]: community
+              - generic [ref=e2877]:
+                - paragraph [ref=e2878]: Est Visitors (All Time)
+                - paragraph [ref=e2879]: —
+              - generic [ref=e2880]:
+                - paragraph [ref=e2881]: Release Date
+                - paragraph [ref=e2882]: Mar 24, 2026
+        - link "Google Search Console by pijusz pijusz Query search analytics, inspect URLs, manage sitemaps, and run SEO reports via Google Search Console with OAuth and... Classification Community icon community Est Visitors (All Time) 186 Release Date Mar 20, 2026" [ref=e2884] [cursor=pointer]:
+          - /url: /servers/gh-pijusz-gsc
+          - generic [ref=e2886]:
+            - generic [ref=e2887]:
+              - heading "Google Search Console by pijusz" [level=3] [ref=e2889]
+              - paragraph [ref=e2890]: pijusz
+              - paragraph [ref=e2891]: Query search analytics, inspect URLs, manage sitemaps, and run SEO reports via Google Search Console with OAuth and...
+            - generic [ref=e2893]:
+              - generic [ref=e2894]:
+                - paragraph [ref=e2895]: Classification
+                - generic [ref=e2896]:
+                  - img "Community icon" [ref=e2898]
+                  - paragraph [ref=e2899]: community
+              - generic [ref=e2900]:
+                - paragraph [ref=e2901]: Est Visitors (All Time)
+                - paragraph [ref=e2902]: "186"
+              - generic [ref=e2903]:
+                - paragraph [ref=e2904]: Release Date
+                - paragraph [ref=e2905]: Mar 20, 2026
+        - link "Google Ads by pijusz pijusz Query Google Ads campaigns, keywords, assets, and performance metrics with 39 tools including GAQL queries and write... Classification Community icon community Est Visitors (All Time) 186 Release Date Mar 2, 2026" [ref=e2907] [cursor=pointer]:
+          - /url: /servers/gh-pijusz-google-ads
+          - generic [ref=e2909]:
+            - generic [ref=e2910]:
+              - heading "Google Ads by pijusz" [level=3] [ref=e2912]
+              - paragraph [ref=e2913]: pijusz
+              - paragraph [ref=e2914]: Query Google Ads campaigns, keywords, assets, and performance metrics with 39 tools including GAQL queries and write...
+            - generic [ref=e2916]:
+              - generic [ref=e2917]:
+                - paragraph [ref=e2918]: Classification
+                - generic [ref=e2919]:
+                  - img "Community icon" [ref=e2921]
+                  - paragraph [ref=e2922]: community
+              - generic [ref=e2923]:
+                - paragraph [ref=e2924]: Est Visitors (All Time)
+                - paragraph [ref=e2925]: "186"
+              - generic [ref=e2926]:
+                - paragraph [ref=e2927]: Release Date
+                - paragraph [ref=e2928]: Mar 2, 2026
+        - link "Google Search Console timeleft-dev Google Search Console connector for search analytics queries. Classification Community icon community Est Visitors (All Time) — Release Date Mar 24, 2026" [ref=e2930] [cursor=pointer]:
+          - /url: /servers/gh-timeleft-dev-search-console
+          - generic [ref=e2932]:
+            - generic [ref=e2933]:
+              - heading "Google Search Console" [level=3] [ref=e2935]
+              - paragraph [ref=e2936]: timeleft-dev
+              - paragraph [ref=e2937]: Google Search Console connector for search analytics queries.
+            - generic [ref=e2939]:
+              - generic [ref=e2940]:
+                - paragraph [ref=e2941]: Classification
+                - generic [ref=e2942]:
+                  - img "Community icon" [ref=e2944]
+                  - paragraph [ref=e2945]: community
+              - generic [ref=e2946]:
+                - paragraph [ref=e2947]: Est Visitors (All Time)
+                - paragraph [ref=e2948]: —
+              - generic [ref=e2949]:
+                - paragraph [ref=e2950]: Release Date
+                - paragraph [ref=e2951]: Mar 24, 2026
+        - link "GSearch daanielcruz Free Google Search grounding via Google Code Assist API. Classification Community icon community Est Visitors (All Time) 368 Release Date Mar 28, 2026" [ref=e2953] [cursor=pointer]:
+          - /url: /servers/daanielcruz-gsearch
+          - generic [ref=e2955]:
+            - generic [ref=e2956]:
+              - heading "GSearch" [level=3] [ref=e2958]
+              - paragraph [ref=e2959]: daanielcruz
+              - paragraph [ref=e2960]: Free Google Search grounding via Google Code Assist API.
+            - generic [ref=e2962]:
+              - generic [ref=e2963]:
+                - paragraph [ref=e2964]: Classification
+                - generic [ref=e2965]:
+                  - img "Community icon" [ref=e2967]
+                  - paragraph [ref=e2968]: community
+              - generic [ref=e2969]:
+                - paragraph [ref=e2970]: Est Visitors (All Time)
+                - paragraph [ref=e2971]: "368"
+              - generic [ref=e2972]:
+                - paragraph [ref=e2973]: Release Date
+                - paragraph [ref=e2974]: Mar 28, 2026
+        - link "Yandex Webmaster theyahia Integrates with Yandex Webmaster API for monitoring website indexing, search queries, and site management. Classification Community icon community Est Visitors (All Time) — Release Date Mar 31, 2026" [ref=e2976] [cursor=pointer]:
+          - /url: /servers/theyahia-yandex-webmaster
+          - generic [ref=e2978]:
+            - generic [ref=e2979]:
+              - heading "Yandex Webmaster" [level=3] [ref=e2981]
+              - paragraph [ref=e2982]: theyahia
+              - paragraph [ref=e2983]: Integrates with Yandex Webmaster API for monitoring website indexing, search queries, and site management.
+            - generic [ref=e2985]:
+              - generic [ref=e2986]:
+                - paragraph [ref=e2987]: Classification
+                - generic [ref=e2988]:
+                  - img "Community icon" [ref=e2990]
+                  - paragraph [ref=e2991]: community
+              - generic [ref=e2992]:
+                - paragraph [ref=e2993]: Est Visitors (All Time)
+                - paragraph [ref=e2994]: —
+              - generic [ref=e2995]:
+                - paragraph [ref=e2996]: Release Date
+                - paragraph [ref=e2997]: Mar 31, 2026
+        - link "WebCheck yifanyifan897645 Analyzes website health across SEO, accessibility, performance, and security dimensions with broken link detection... Classification Community icon community Est Visitors (All Time) — Release Date Mar 29, 2026" [ref=e2999] [cursor=pointer]:
+          - /url: /servers/yifanyifan897645-webcheck
+          - generic [ref=e3001]:
+            - generic [ref=e3002]:
+              - heading "WebCheck" [level=3] [ref=e3004]
+              - paragraph [ref=e3005]: yifanyifan897645
+              - paragraph [ref=e3006]: Analyzes website health across SEO, accessibility, performance, and security dimensions with broken link detection...
+            - generic [ref=e3008]:
+              - generic [ref=e3009]:
+                - paragraph [ref=e3010]: Classification
+                - generic [ref=e3011]:
+                  - img "Community icon" [ref=e3013]
+                  - paragraph [ref=e3014]: community
+              - generic [ref=e3015]:
+                - paragraph [ref=e3016]: Est Visitors (All Time)
+                - paragraph [ref=e3017]: —
+              - generic [ref=e3018]:
+                - paragraph [ref=e3019]: Release Date
+                - paragraph [ref=e3020]: Mar 29, 2026
+        - link "Google Search Gemini furafrafrfr Performs Google searches and summarizes results using Gemini AI. Classification Community icon community Est Visitors (All Time) — Release Date Apr 10, 2025" [ref=e3022] [cursor=pointer]:
+          - /url: /servers/furafrafrfr-google-search-gemini
+          - generic [ref=e3024]:
+            - generic [ref=e3025]:
+              - heading "Google Search Gemini" [level=3] [ref=e3027]
+              - paragraph [ref=e3028]: furafrafrfr
+              - paragraph [ref=e3029]: Performs Google searches and summarizes results using Gemini AI.
+            - generic [ref=e3031]:
+              - generic [ref=e3032]:
+                - paragraph [ref=e3033]: Classification
+                - generic [ref=e3034]:
+                  - img "Community icon" [ref=e3036]
+                  - paragraph [ref=e3037]: community
+              - generic [ref=e3038]:
+                - paragraph [ref=e3039]: Est Visitors (All Time)
+                - paragraph [ref=e3040]: —
+              - generic [ref=e3041]:
+                - paragraph [ref=e3042]: Release Date
+                - paragraph [ref=e3043]: Apr 10, 2025
+        - link "Google Search Console MCP Server drewbeechler Draft — pending enrichment. Classification Est Visitors (All Time) — Release Date Apr 2, 2026" [ref=e3045] [cursor=pointer]:
+          - /url: /servers/gsc-mcp-server
+          - generic [ref=e3047]:
+            - generic [ref=e3048]:
+              - heading "Google Search Console MCP Server" [level=3] [ref=e3050]
+              - paragraph [ref=e3051]: drewbeechler
+              - paragraph [ref=e3052]: Draft — pending enrichment.
+            - generic [ref=e3054]:
+              - generic [ref=e3055]:
+                - paragraph [ref=e3056]: Classification
+                - generic [ref=e3057]:
+                  - paragraph
+              - generic [ref=e3059]:
+                - paragraph [ref=e3060]: Est Visitors (All Time)
+                - paragraph [ref=e3061]: —
+              - generic [ref=e3062]:
+                - paragraph [ref=e3063]: Release Date
+                - paragraph [ref=e3064]: Apr 2, 2026
+  - contentinfo [ref=e3065]:
+    - generic [ref=e3066]:
+      - generic [ref=e3067]:
+        - img "Pulse logo in white" [ref=e3068]
+        - paragraph [ref=e3069]: Stay up to date with all things MCP.
+        - paragraph [ref=e3071]: © Copyright 2026, All Rights Reserved
+      - generic [ref=e3073]:
+        - generic [ref=e3074]:
+          - link "Browse use cases" [ref=e3075] [cursor=pointer]:
+            - /url: /use-cases
+          - link "Submit use case" [ref=e3076] [cursor=pointer]:
+            - /url: /use-cases/submit
+          - link "Browse servers" [ref=e3077] [cursor=pointer]:
+            - /url: /servers
+          - link "Browse clients" [ref=e3078] [cursor=pointer]:
+            - /url: /clients
+          - link "Submit server/client" [ref=e3079] [cursor=pointer]:
+            - /url: /submit
+          - link "Terms of service" [ref=e3080] [cursor=pointer]:
+            - /url: /terms-of-service
+          - link "Privacy policy" [ref=e3081] [cursor=pointer]:
+            - /url: /privacy-policy
+          - link "Editorial Disclosure" [ref=e3082] [cursor=pointer]:
+            - /url: /editorial-disclosure
+        - generic [ref=e3083]:
+          - link "About us" [ref=e3084] [cursor=pointer]:
+            - /url: /#about-us
+          - link "Blog" [ref=e3085] [cursor=pointer]:
+            - /url: /posts
+          - link "API" [ref=e3086] [cursor=pointer]:
+            - /url: /api
+          - link "MCP Newsletter" [ref=e3087] [cursor=pointer]:
+            - /url: /newsletter
+          - link "MCP Statistics" [ref=e3088] [cursor=pointer]:
+            - /url: /statistics
+          - link "PulseMCP Discord" [ref=e3089] [cursor=pointer]:
+            - /url: https://discord.gg/dP2evEyTjS
+          - link "Contact us" [ref=e3090] [cursor=pointer]:
+            - /url: mailto:hello@pulsemcp.com
+  - iframe [ref=e3093]:
+    - generic [ref=f11e6]:
+      - text: protection par
+      - strong [ref=f11e7]: reCAPTCHA
