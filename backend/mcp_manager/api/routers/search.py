@@ -20,8 +20,8 @@ async def search_services(
     repo_status: str | None = Query(None, description="Filter by repo status: ok, 404"),
     has_summaries: bool | None = Query(None, description="Filter by summary availability"),
     targets: str | None = Query(None, description="Comma-separated target names to include recipes for"),
-    page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=100),
+    page: int = Query(1, ge=1, le=1000),
+    per_page: int = Query(10, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
 ):
     # Build base query
