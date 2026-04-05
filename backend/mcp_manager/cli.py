@@ -266,10 +266,12 @@ async def _run_enrich(pass_name: str | None = None) -> None:
     from mcp_manager.enrichment.url_resolver import run_url_resolve
     from mcp_manager.enrichment.dedup import run_dedup
     from mcp_manager.enrichment.categorizer import run_categorize
+    from mcp_manager.enrichment.repo_checker import run_repo_check
 
     passes = {
         "url-resolve": ("URL Resolve", run_url_resolve),
         "dedup": ("Deduplication", run_dedup),
+        "repo-check": ("Repo Check", run_repo_check),
         "categorize": ("Auto-categorize", run_categorize),
     }
 
