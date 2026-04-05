@@ -76,7 +76,7 @@ class GlamaConnector(AbstractConnector):
         repo_url = repo.get("url", "") if repo else ""
         attributes = data.get("attributes", [])
         license_info = data.get("spdxLicense") or {}
-        env_schema = data.get("environmentVariablesJsonSchema", {})
+        env_schema = data.get("environmentVariablesJsonSchema") or {}
 
         # Determine transport from attributes
         transport = "stdio"
