@@ -47,8 +47,8 @@ async def list_services(
     if is_deprecated is not None:
         query = query.where(McpService.is_deprecated == is_deprecated)
     if search:
-        pattern = f"%{search}%"
-        query = query.where(McpService.name.ilike(pattern) | McpService.source_url.ilike(pattern))
+        ts_query = func.plainto_tsquery("english", search)
+        query = query.where(McpService.search_vector.op("@@")(ts_query))
 
     count_query = select(func.count()).select_from(query.subquery())
     total = (await db.execute(count_query)).scalar() or 0

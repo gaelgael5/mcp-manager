@@ -36,25 +36,24 @@ async def search_services(
             page=page, per_page=per_page, db=db,
         )
 
-    # Standard text search path
+    # Standard text search path — uses PostgreSQL tsvector for performance
     query = select(McpService)
 
     if q:
-        pattern = f"%{q}%"
-        summary_match = exists(
-            select(McpSummary.id).where(
-                McpSummary.mcp_service_id == McpService.id,
-                McpSummary.summary.ilike(pattern),
-            )
-        )
-        query = query.where(McpService.name.ilike(pattern) | summary_match)
+        ts_query = func.plainto_tsquery("english", q)
+        query = query.where(McpService.search_vector.op("@@")(ts_query))
 
     query = _apply_filters(query, transport, category, source_type, repo_status, has_summaries)
 
     count_query = select(func.count()).select_from(query.subquery())
     total = (await db.execute(count_query)).scalar() or 0
 
-    query = query.order_by(McpService.name).offset((page - 1) * per_page).limit(per_page)
+    if q:
+        ts_query = func.plainto_tsquery("english", q)
+        rank = func.ts_rank(McpService.search_vector, ts_query)
+        query = query.order_by(rank.desc()).offset((page - 1) * per_page).limit(per_page)
+    else:
+        query = query.order_by(McpService.name).offset((page - 1) * per_page).limit(per_page)
     result = await db.execute(query)
     services = result.scalars().all()
 
