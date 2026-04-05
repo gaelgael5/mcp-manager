@@ -10,6 +10,8 @@ from mcp_manager.db.models import McpService, McpSummary
 class ServiceUpdate(BaseModel):
     source_url: str | None = None
     doc_url: str | None = None
+    transport: str | None = None
+    category: str | None = None
 
 router = APIRouter(tags=["services"])
 
@@ -77,6 +79,10 @@ async def update_service(service_id: uuid.UUID, body: ServiceUpdate, db: AsyncSe
             service.doc_url = body.source_url
     if body.doc_url is not None:
         service.doc_url = body.doc_url
+    if body.transport is not None:
+        service.transport = body.transport
+    if body.category is not None:
+        service.category = body.category
     await db.commit()
     await db.refresh(service)
     return _serialize_service(service)

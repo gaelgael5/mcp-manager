@@ -34,7 +34,7 @@ export function useService(id: string) {
 export function useUpdateService(id: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { source_url?: string; doc_url?: string }) =>
+    mutationFn: (body: { source_url?: string; doc_url?: string; transport?: string; category?: string }) =>
       apiFetch<McpService>(`/services/${id}`, {
         method: "PATCH",
         body: JSON.stringify(body),

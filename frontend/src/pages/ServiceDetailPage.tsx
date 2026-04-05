@@ -59,9 +59,24 @@ export function ServiceDetailPage() {
           <StatusBadge isDeprecated={service.is_deprecated} />
           {service.repo_status === "404" && <Badge color="red">404</Badge>}
         </div>
-        <div className="mt-2 flex flex-wrap gap-2">
+        <div className="mt-2 flex flex-wrap items-center gap-2">
           <Badge color="purple">{service.source_type}</Badge>
-          {service.transport && <Badge color="yellow">{service.transport}</Badge>}
+          <select
+            value={service.transport || ""}
+            onChange={(e) => updateService.mutate({ transport: e.target.value || undefined })}
+            className="rounded border border-gray-300 px-2 py-0.5 text-xs font-medium bg-yellow-50 text-yellow-700"
+          >
+            <option value="">no transport</option>
+            <option value="stdio">stdio</option>
+            <option value="sse">sse</option>
+            <option value="streamable-http">streamable-http</option>
+          </select>
+          {service.transport === "stdio" && (
+            <span className="text-xs text-gray-400">requires local runtime (npx/uvx/docker)</span>
+          )}
+          {(service.transport === "sse" || service.transport === "streamable-http") && (
+            <span className="text-xs text-gray-400">remote endpoint — no local runtime needed</span>
+          )}
           {service.category && <Badge>{service.category}</Badge>}
           {service.tags.map((t) => <Badge key={t}>{t}</Badge>)}
         </div>
