@@ -1,8 +1,8 @@
-"""Scrape skills.sh catalog via their paginated API → create SkillSources + Skills.
+"""Scrape skills.sh catalog via their paginated API → create SkillSources.
 
 API: GET /api/skills/all-time/{page} → { skills: [...], total, hasMore, page }
-Each skill: { source, skillId, name, installs }
-250 skills per page, no auth required.
+Each entry = one SkillSource with its install command.
+250 entries per page, no auth required.
 
 Usage (inside container):
     python -m scripts.scrape_skills_sh [--limit N] [--skip-summaries]
@@ -19,26 +19,25 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from sqlalchemy import select
 from mcp_manager.db.session import SessionLocal
-from mcp_manager.db.models import SkillSource, Skill
+from mcp_manager.db.models import SkillSource
 
 logger = logging.getLogger(__name__)
 
 SKILLS_SH_BASE = "https://skills.sh"
 API_URL = f"{SKILLS_SH_BASE}/api/skills/all-time"
-PAGE_SIZE = 250
 
 
 async def scrape_skills_sh(limit: int | None = None, skip_summaries: bool = False):
-    """Main scraper: paginate the API, upsert into DB."""
+    """Main scraper: paginate the API, upsert SkillSources."""
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
-    all_skills: list[dict] = []
+    all_entries: list[dict] = []
     page = 0
 
     async with httpx.AsyncClient(timeout=30.0, headers={"User-Agent": "MCPManager/1.0"}) as client:
         while True:
             url = f"{API_URL}/{page}"
-            logger.info("Fetching page %d (%s) ...", page, url)
+            logger.info("Fetching page %d ...", url)
 
             try:
                 resp = await client.get(url)
@@ -50,17 +49,17 @@ async def scrape_skills_sh(limit: int | None = None, skip_summaries: bool = Fals
                 break
 
             data = resp.json()
-            skills = data.get("skills", [])
+            entries = data.get("skills", [])
             has_more = data.get("hasMore", False)
 
-            if not skills:
+            if not entries:
                 break
 
-            all_skills.extend(skills)
-            logger.info("  → %d skills (total so far: %d)", len(skills), len(all_skills))
+            all_entries.extend(entries)
+            logger.info("  → %d entries (total so far: %d)", len(entries), len(all_entries))
 
-            if limit and len(all_skills) >= limit:
-                all_skills = all_skills[:limit]
+            if limit and len(all_entries) >= limit:
+                all_entries = all_entries[:limit]
                 break
 
             if not has_more:
@@ -69,141 +68,65 @@ async def scrape_skills_sh(limit: int | None = None, skip_summaries: bool = Fals
             page += 1
             await asyncio.sleep(0.3)
 
-    logger.info("Fetched %d skills from %d pages", len(all_skills), page + 1)
+    logger.info("Fetched %d skill sources from %d pages", len(all_entries), page + 1)
 
-    if not all_skills:
-        logger.warning("No skills fetched, aborting")
+    if not all_entries:
+        logger.warning("No entries fetched, aborting")
         return
 
-    # Group by repo
-    repos_map: dict[str, list[dict]] = {}
-    for s in all_skills:
-        repos_map.setdefault(s["source"], []).append(s)
-
-    logger.info("Upserting %d skills from %d repos...", len(all_skills), len(repos_map))
-
+    # Each entry = one SkillSource
     async with SessionLocal() as db:
-        total_sources = 0
         total_added = 0
         total_updated = 0
 
-        for repo_key, skills in repos_map.items():
-            github_url = f"https://github.com/{repo_key}"
+        for i, entry in enumerate(all_entries):
+            source_key = entry["source"]  # "owner/repo"
+            skill_id = entry["skillId"]
+            name = entry.get("name", skill_id)
+            installs = entry.get("installs", 0)
 
-            # Upsert SkillSource
+            # URL unique per skill source = the skills.sh page
+            skills_sh_url = f"{SKILLS_SH_BASE}/{source_key}/{skill_id}"
+            github_url = f"https://github.com/{source_key}"
+            install_cmd = f"npx skills add {github_url} --skill {skill_id}"
+
             result = await db.execute(
-                select(SkillSource).where(SkillSource.url == github_url)
+                select(SkillSource).where(SkillSource.url == skills_sh_url)
             )
             source = result.scalar_one_or_none()
-            if not source:
+            if source:
+                source.name = name
+                source.description = install_cmd
+                total_updated += 1
+            else:
                 source = SkillSource(
-                    name=repo_key,
-                    url=github_url,
-                    skills_path="",
+                    name=name,
+                    url=skills_sh_url,
+                    skills_path=install_cmd,  # store install command in skills_path
                     type="claude",
                 )
                 db.add(source)
-                await db.flush()
-                total_sources += 1
+                total_added += 1
 
-            for s in skills:
-                install_cmd = f"npx skills add {github_url} --skill {s['skillId']}"
-                source_url = f"{SKILLS_SH_BASE}/{s['source']}/{s['skillId']}"
+            # Commit in batches
+            if (i + 1) % 500 == 0:
+                await db.commit()
+                logger.info("Progress: %d/%d (added: %d, updated: %d)",
+                            i + 1, len(all_entries), total_added, total_updated)
 
-                result = await db.execute(
-                    select(Skill).where(
-                        Skill.skill_source_id == source.id,
-                        Skill.name == s["name"],
-                    )
-                )
-                skill = result.scalar_one_or_none()
-                if skill:
-                    skill.install_command = install_cmd
-                    skill.weekly_installs = s.get("installs", 0)
-                    skill.source_url = source_url
-                    skill.needs_summary = skill.needs_summary or not skill.summary_en
-                    total_updated += 1
-                else:
-                    skill = Skill(
-                        skill_source_id=source.id,
-                        name=s["name"],
-                        description=None,
-                        target_type="claude",
-                        source_url=source_url,
-                        install_command=install_cmd,
-                        weekly_installs=s.get("installs", 0),
-                        needs_summary=True,
-                    )
-                    db.add(skill)
-                    total_added += 1
-
-            source.last_sync = datetime.now(timezone.utc)
-            source.last_sync_count = len(skills)
-
+        source_obj = None  # clear ref
         await db.commit()
         logger.info(
-            "DB upsert done: %d sources, %d added, %d updated",
-            total_sources, total_added, total_updated,
+            "DB upsert done: %d added, %d updated (total: %d)",
+            total_added, total_updated, total_added + total_updated,
         )
-
-        if not skip_summaries:
-            await _generate_summaries(db)
-
-
-async def _generate_summaries(db):
-    """Generate EN/FR summaries for skills that need them."""
-    from mcp_manager.summarizer.ollama_client import ollama_generate
-    from mcp_manager.summarizer.cleaner import clean_markdown
-
-    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "prompts")
-
-    result = await db.execute(
-        select(Skill).where(Skill.needs_summary == True).limit(500)
-    )
-    skills = result.scalars().all()
-    logger.info("Generating summaries for %d skills...", len(skills))
-
-    count = 0
-    for skill in skills:
-        content = skill.description or skill.name
-        cleaned = clean_markdown(content)
-        if not cleaned or len(cleaned) < 10:
-            skill.needs_summary = False
-            continue
-
-        if len(cleaned) > 8000:
-            cleaned = cleaned[:8000]
-
-        try:
-            with open(os.path.join(prompts_dir, "skill_summary_en.md"), encoding="utf-8") as f:
-                prompt_en = f.read().replace("{content}", cleaned)
-            skill.summary_en = await ollama_generate(prompt_en)
-        except Exception:
-            logger.exception("EN summary failed for %s", skill.name)
-
-        try:
-            with open(os.path.join(prompts_dir, "skill_summary_fr.md"), encoding="utf-8") as f:
-                prompt_fr = f.read().replace("{content}", cleaned)
-            skill.summary_fr = await ollama_generate(prompt_fr)
-        except Exception:
-            logger.exception("FR summary failed for %s", skill.name)
-
-        skill.needs_summary = False
-        count += 1
-
-        if count % 10 == 0:
-            await db.commit()
-            logger.info("Summaries: %d/%d done", count, len(skills))
-
-    await db.commit()
-    logger.info("Summary generation complete: %d skills", count)
 
 
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Scrape skills.sh catalog")
-    parser.add_argument("--limit", type=int, default=None, help="Max skills to scrape")
+    parser.add_argument("--limit", type=int, default=None, help="Max entries to scrape")
     parser.add_argument("--skip-summaries", action="store_true", help="Skip summary generation")
     args = parser.parse_args()
 
