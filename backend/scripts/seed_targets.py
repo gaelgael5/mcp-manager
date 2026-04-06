@@ -336,41 +336,42 @@ TARGETS = [
 ]
 
 # Skill installation modes per target
+# Each entry has "compatible_skill_types" to filter which skills are shown
 # {source_url} = URL of the skill (GitHub folder URL)
 # {name} = skill name
 SKILL_MODES = {
     "claude_code": [
-        {"action_type": "cmd", "template": "claude skill add {source_url}"},
+        {"action_type": "cmd", "template": "claude skill add {source_url}", "compatible_skill_types": ["claude"]},
     ],
     "OpenAI Codex CLI": [
-        {"action_type": "cmd", "template": "npx codex skills install {name}"},
+        {"action_type": "cmd", "template": "npx codex skills install {name}", "compatible_skill_types": ["claude"]},
     ],
     "Kiro": [
-        {"action_type": "cmd", "template": "npx skills add {source_url}"},
+        {"action_type": "cmd", "template": "npx skills add {source_url}", "compatible_skill_types": ["claude"]},
     ],
     "Cursor": [
-        {"action_type": "insert_in_file", "template": "Copy skill content into .cursor/rules/{name}.mdc"},
+        {"action_type": "insert_in_file", "template": "Copy into .cursor/rules/{name}.mdc", "compatible_skill_types": ["cursor"]},
     ],
     "Windsurf": [
-        {"action_type": "insert_in_file", "template": "Copy skill content into .windsurf/rules/{name}.md"},
+        {"action_type": "insert_in_file", "template": "Copy into .windsurf/rules/{name}.md", "compatible_skill_types": ["windsurf"]},
     ],
     "Gemini CLI": [
-        {"action_type": "insert_in_file", "template": "Copy skill content into .gemini/GEMINI.md"},
+        {"action_type": "insert_in_file", "template": "Copy into .gemini/GEMINI.md", "compatible_skill_types": ["gemini"]},
     ],
     "Antigravity": [
-        {"action_type": "insert_in_file", "template": "Copy skill folder into ~/.gemini/antigravity/skills/{name}/SKILL.md"},
+        {"action_type": "insert_in_file", "template": "Copy folder into ~/.gemini/antigravity/skills/{name}/SKILL.md", "compatible_skill_types": ["gemini"]},
     ],
     "GitHub Copilot": [
-        {"action_type": "insert_in_file", "template": "Copy skill content into .github/copilot-instructions.md"},
+        {"action_type": "insert_in_file", "template": "Copy into .github/copilot-instructions.md", "compatible_skill_types": ["copilot"]},
     ],
     "VS Code": [
-        {"action_type": "insert_in_file", "template": "Copy skill content into .github/copilot-instructions.md"},
+        {"action_type": "insert_in_file", "template": "Copy into .github/copilot-instructions.md", "compatible_skill_types": ["copilot"]},
     ],
     "Junie": [
-        {"action_type": "insert_in_file", "template": "Copy skill content into .junie/guidelines.md"},
+        {"action_type": "insert_in_file", "template": "Copy into .junie/guidelines.md", "compatible_skill_types": ["junie"]},
     ],
     "JetBrains": [
-        {"action_type": "insert_in_file", "template": "Copy skill content into .junie/guidelines.md"},
+        {"action_type": "insert_in_file", "template": "Copy into .junie/guidelines.md", "compatible_skill_types": ["junie"]},
     ],
 }
 

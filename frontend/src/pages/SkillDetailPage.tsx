@@ -146,7 +146,7 @@ export function SkillDetailPage() {
       )}
 
       {/* Installation */}
-      <SkillInstallBlock skillName={skill.name} sourceUrl={skill.source_url || ""} />
+      <SkillInstallBlock skillName={skill.name} sourceUrl={skill.source_url || ""} skillType={skill.target_type} />
     </div>
   );
 }
@@ -154,10 +154,10 @@ export function SkillDetailPage() {
 interface TargetWithSkillModes {
   id: string;
   name: string;
-  skill_modes: { action_type: string; template: string }[];
+  skill_modes: { action_type: string; template: string; compatible_skill_types?: string[] }[];
 }
 
-function SkillInstallBlock({ skillName, sourceUrl }: { skillName: string; sourceUrl: string }) {
+function SkillInstallBlock({ skillName, sourceUrl, skillType }: { skillName: string; sourceUrl: string; skillType: string }) {
   const { data: targets } = useQuery({
     queryKey: ["targets"],
     queryFn: () => apiFetch<TargetWithSkillModes[]>("/targets"),
@@ -165,7 +165,14 @@ function SkillInstallBlock({ skillName, sourceUrl }: { skillName: string; source
   const [installCollapsed, setInstallCollapsed] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const targetsWithSkills = (targets || []).filter((t) => t.skill_modes && t.skill_modes.length > 0);
+  const targetsWithSkills = (targets || [])
+    .map((t) => ({
+      ...t,
+      skill_modes: (t.skill_modes || []).filter(
+        (m) => !m.compatible_skill_types || m.compatible_skill_types.includes(skillType)
+      ),
+    }))
+    .filter((t) => t.skill_modes.length > 0);
 
   if (targetsWithSkills.length === 0) return null;
 
