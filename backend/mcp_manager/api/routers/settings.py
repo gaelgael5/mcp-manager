@@ -293,7 +293,7 @@ async def docker_image_status(
     }
 
 
-_build_status: dict[str, str] = {}  # image_name -> "building" | "done" | "error"
+_build_state: dict[str, dict] = {}  # image_name -> {status, logs, image_ref}
 
 
 @router.post("/settings/docker-build/{image_name}")
@@ -303,16 +303,15 @@ async def docker_build(
     request: Request,
     admin: dict = Depends(require_admin),
 ):
-    """Build a Docker image from Dockerfile.{image_name}."""
     full_name, tag = _compute_image_tag(image_name)
     image_ref = f"{full_name}:{tag}"
 
-    if _build_status.get(image_name) == "building":
-        return {"status": "already_building", "image_ref": image_ref}
+    if _build_state.get(image_name, {}).get("status") == "building":
+        return _build_state[image_name]
 
-    _build_status[image_name] = "building"
+    _build_state[image_name] = {"status": "building", "logs": "", "image_ref": image_ref}
     background_tasks.add_task(_run_build, image_name, full_name, tag)
-    return {"status": "started", "image_ref": image_ref}
+    return _build_state[image_name]
 
 
 @router.get("/settings/docker-build-status/{image_name}")
@@ -321,7 +320,7 @@ async def docker_build_status(
     request: Request,
     admin: dict = Depends(require_admin),
 ):
-    return {"status": _build_status.get(image_name, "idle")}
+    return _build_state.get(image_name, {"status": "idle", "logs": "", "image_ref": ""})
 
 
 def _run_build(image_name: str, full_name: str, tag: str):
@@ -333,18 +332,24 @@ def _run_build(image_name: str, full_name: str, tag: str):
 
     try:
         logger.info("Building %s from %s", image_ref, dockerfile)
-        result = subprocess.run(
+        proc = subprocess.Popen(
             ["docker", "build", "-t", image_ref, "-f", dockerfile, dockers_path],
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
             text=True,
-            timeout=600,
         )
-        if result.returncode == 0:
-            _build_status[image_name] = "done"
+        logs = ""
+        for line in proc.stdout:
+            logs += line
+            _build_state[image_name]["logs"] = logs
+
+        proc.wait(timeout=600)
+        if proc.returncode == 0:
+            _build_state[image_name]["status"] = "done"
             logger.info("Build %s succeeded", image_ref)
         else:
-            _build_status[image_name] = "error"
-            logger.error("Build %s failed: %s", image_ref, result.stderr[-500:])
+            _build_state[image_name]["status"] = "error"
+            logger.error("Build %s failed", image_ref)
     except Exception:
-        _build_status[image_name] = "error"
+        _build_state[image_name]["status"] = "error"
         logger.exception("Build %s crashed", image_ref)

@@ -50,7 +50,16 @@ interface DockerImageStatusInfo {
   exists: boolean;
 }
 
+interface BuildState {
+  status: string;
+  logs: string;
+  image_ref: string;
+}
+
 function DockerImageStatus({ imageName }: { imageName: string | undefined }) {
+  const [showLogs, setShowLogs] = useState(false);
+  const [copied, setCopied] = useState(false);
+
   const { data: status } = useQuery({
     queryKey: ["settings", "docker-image-status", imageName],
     queryFn: () => apiFetch<DockerImageStatusInfo>(`/settings/docker-image-status/${imageName}`),
@@ -58,32 +67,76 @@ function DockerImageStatus({ imageName }: { imageName: string | undefined }) {
     refetchInterval: 5000,
   });
 
+  const { data: buildState } = useQuery({
+    queryKey: ["settings", "docker-build-status", imageName],
+    queryFn: () => apiFetch<BuildState>(`/settings/docker-build-status/${imageName}`),
+    enabled: !!imageName && showLogs,
+    refetchInterval: showLogs ? 2000 : false,
+  });
+
   const qc = useQueryClient();
   const build = useMutation({
-    mutationFn: () => apiFetch<{ status: string }>(`/settings/docker-build/${imageName}`, { method: "POST" }),
+    mutationFn: () => apiFetch<BuildState>(`/settings/docker-build/${imageName}`, { method: "POST" }),
     onSuccess: () => {
+      setShowLogs(true);
       setTimeout(() => qc.invalidateQueries({ queryKey: ["settings", "docker-image-status"] }), 3000);
     },
   });
 
+  const building = buildState?.status === "building";
+
   if (!imageName || !status) return null;
 
   return (
-    <div className="flex items-center gap-2">
-      <Badge color={status.exists ? "green" : "red"}>
-        {status.exists ? status.tag.slice(0, 8) : "not built"}
-      </Badge>
-      {!status.exists && (
-        <Button size="sm" variant="secondary" onClick={() => build.mutate()} loading={build.isPending}>
-          Build
+    <>
+      <div className="flex items-center gap-2">
+        <Badge color={status.exists ? "green" : "red"}>
+          {status.exists ? status.image_ref : "not built"}
+        </Badge>
+        <Button size="sm" variant="secondary" onClick={() => { build.mutate(); }} loading={build.isPending || building}>
+          {status.exists ? "Rebuild" : "Build"}
         </Button>
+        {buildState && buildState.status !== "idle" && (
+          <button onClick={() => setShowLogs(true)} className="text-xs text-blue-600 hover:underline">
+            logs
+          </button>
+        )}
+      </div>
+
+      {showLogs && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg shadow-xl w-[700px] max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <div className="flex items-center gap-2">
+                <span className="font-medium">Build Logs</span>
+                <Badge color={building ? "yellow" : buildState?.status === "done" ? "green" : buildState?.status === "error" ? "red" : "gray"}>
+                  {buildState?.status || "idle"}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(buildState?.logs || "");
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="text-xs text-blue-600 hover:text-blue-700 px-2 py-1 border rounded"
+                >
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+                <button onClick={() => setShowLogs(false)} className="text-gray-400 hover:text-gray-600 text-lg px-2">
+                  &times;
+                </button>
+              </div>
+            </div>
+            <pre className="flex-1 overflow-auto p-4 text-xs font-mono bg-gray-900 text-green-400 whitespace-pre-wrap">
+              {buildState?.logs || "No logs yet..."}
+              {building && <span className="animate-pulse">_</span>}
+            </pre>
+          </div>
+        </div>
       )}
-      {status.exists && (
-        <Button size="sm" variant="secondary" onClick={() => build.mutate()} loading={build.isPending}>
-          Rebuild
-        </Button>
-      )}
-    </div>
+    </>
   );
 }
 
