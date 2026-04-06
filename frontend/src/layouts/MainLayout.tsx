@@ -4,14 +4,14 @@ import { useCurrentUser, setToken, clearToken } from "../api/auth";
 
 const publicLinks = [
   { to: "/", label: "Dashboard" },
-  { to: "/services", label: "Services MCP" },
+  { to: "/services", label: "MCP Services" },
   { to: "/targets", label: "Targets" },
-  { to: "/skills", label: "Skills" },
   { to: "/api-docs", label: "API" },
 ];
 
 const adminLinks = [
   { to: "/sync", label: "Sync" },
+  { to: "/skills", label: "Skill Sources" },
   { to: "/api-keys", label: "Keys" },
   { to: "/instances", label: "Community" },
   { to: "/settings", label: "Settings" },
