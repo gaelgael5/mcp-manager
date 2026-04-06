@@ -68,7 +68,7 @@ export function SkillsPage() {
   const qc = useQueryClient();
 
   const createSource = useMutation({
-    mutationFn: (body: { name: string; url: string; type: string }) =>
+    mutationFn: (body: { name: string; url: string; skills_path: string; type: string }) =>
       apiFetch<SkillSource>("/skill-sources", { method: "POST", body: JSON.stringify(body) }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["skill-sources"] }),
   });
