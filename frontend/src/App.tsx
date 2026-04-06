@@ -11,6 +11,8 @@ import { ApiKeysPage } from "./pages/ApiKeysPage";
 import { InstancesPage } from "./pages/InstancesPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { SkillsPage } from "./pages/SkillsPage";
+import { SkillsCatalogPage } from "./pages/SkillsCatalogPage";
+import { SkillDetailPage } from "./pages/SkillDetailPage";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +32,8 @@ export default function App() {
             <Route path="/instances" element={<InstancesPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/skills" element={<SkillsPage />} />
+            <Route path="/skills-catalog" element={<SkillsCatalogPage />} />
+            <Route path="/skills-catalog/:id" element={<SkillDetailPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -6,6 +6,7 @@ const publicLinks = [
   { to: "/", label: "Dashboard" },
   { to: "/services", label: "MCP Services" },
   { to: "/targets", label: "Targets" },
+  { to: "/skills-catalog", label: "Skills" },
   { to: "/api-docs", label: "API" },
 ];
 
