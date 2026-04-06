@@ -142,6 +142,7 @@ export function ServiceDetailPage() {
         onAdd={(p) => addParam.mutate(p)}
         onDelete={(id) => deleteParam.mutate(id)}
         detecting={detectParams.isPending}
+        isAdmin={isAdmin}
       />
 
       <Card>

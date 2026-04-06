@@ -9,9 +9,10 @@ interface ParametersBlockProps {
   onAdd: (p: { name: string; description: string; is_required: boolean; is_secret: boolean }) => void;
   onDelete: (id: string) => void;
   detecting: boolean;
+  isAdmin?: boolean;
 }
 
-export function ParametersBlock({ parameters, onDetect, onAdd, onDelete, detecting }: ParametersBlockProps) {
+export function ParametersBlock({ parameters, onDetect, onAdd, onDelete, detecting, isAdmin = false }: ParametersBlockProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
@@ -54,7 +55,7 @@ export function ParametersBlock({ parameters, onDetect, onAdd, onDelete, detecti
                       <p className="mt-1 text-xs text-gray-500">{p.description}</p>
                     )}
                   </div>
-                  <button onClick={() => onDelete(p.id)} className="text-xs text-gray-400 hover:text-red-500 ml-2">x</button>
+                  {isAdmin && <button onClick={() => onDelete(p.id)} className="text-xs text-gray-400 hover:text-red-500 ml-2">x</button>}
                 </div>
               ))}
             </div>
@@ -62,7 +63,7 @@ export function ParametersBlock({ parameters, onDetect, onAdd, onDelete, detecti
             <p className="text-sm text-gray-500">No parameters identified.</p>
           )}
 
-          {adding ? (
+          {isAdmin && adding ? (
             <div className="space-y-2 rounded-md border border-blue-200 bg-blue-50 p-3">
               <input
                 value={name}
@@ -92,7 +93,7 @@ export function ParametersBlock({ parameters, onDetect, onAdd, onDelete, detecti
                 <Button size="sm" variant="secondary" onClick={() => setAdding(false)}>Cancel</Button>
               </div>
             </div>
-          ) : (
+          ) : isAdmin ? (
             <div className="flex items-center gap-3 pt-1">
               <Button size="sm" onClick={onDetect} loading={detecting}>
                 Detect Parameters
@@ -101,7 +102,7 @@ export function ParametersBlock({ parameters, onDetect, onAdd, onDelete, detecti
                 Add Manually
               </Button>
             </div>
-          )}
+          ) : null}
         </div>
       )}
     </div>
