@@ -279,7 +279,9 @@ export function SettingsPage() {
   }
 
   const handleSave = () => {
-    saveConfig.mutate(localConfig);
+    saveConfig.mutate(localConfig, {
+      onError: (err) => alert(`Save failed: ${err}`),
+    });
   };
 
   const addProvider = () => {
