@@ -38,11 +38,49 @@ function useSaveLLMConfig() {
   });
 }
 
+interface DockerImage {
+  name: string;
+  default_args: Record<string, string>;
+}
+
+function useDockerImages() {
+  return useQuery({
+    queryKey: ["settings", "docker-images"],
+    queryFn: () => apiFetch<DockerImage[]>("/settings/docker-images"),
+  });
+}
+
 function ProviderEditor({ provider, onChange, onDelete }: {
   provider: LLMProvider;
   onChange: (p: LLMProvider) => void;
   onDelete: () => void;
 }) {
+  const { data: dockerImages } = useDockerImages();
+
+  const handleTypeChange = (newType: string) => {
+    if (newType === "ollama") {
+      onChange({ ...provider, type: "ollama", image: undefined, args: { url: "http://192.168.10.80:11434", model: "llama3.1:8b" } });
+    } else {
+      // Default to first docker image
+      const firstImage = dockerImages?.[0];
+      onChange({
+        ...provider,
+        type: "docker",
+        image: firstImage?.name || "claude",
+        args: firstImage?.default_args || {},
+      });
+    }
+  };
+
+  const handleImageChange = (imageName: string) => {
+    const img = dockerImages?.find((i) => i.name === imageName);
+    onChange({
+      ...provider,
+      image: imageName,
+      args: img?.default_args || provider.args,
+    });
+  };
+
   return (
     <Card>
       <div className="space-y-3">
@@ -59,7 +97,7 @@ function ProviderEditor({ provider, onChange, onDelete }: {
             <label className="block text-xs text-gray-500 mb-1">Type</label>
             <select
               value={provider.type}
-              onChange={(e) => onChange({ ...provider, type: e.target.value })}
+              onChange={(e) => handleTypeChange(e.target.value)}
               className="w-full rounded border border-gray-300 px-2 py-1 text-sm"
             >
               <option value="ollama">ollama</option>
@@ -69,12 +107,15 @@ function ProviderEditor({ provider, onChange, onDelete }: {
           {provider.type === "docker" && (
             <div>
               <label className="block text-xs text-gray-500 mb-1">Image</label>
-              <input
+              <select
                 value={provider.image || ""}
-                onChange={(e) => onChange({ ...provider, image: e.target.value })}
+                onChange={(e) => handleImageChange(e.target.value)}
                 className="w-full rounded border border-gray-300 px-2 py-1 text-sm"
-                placeholder="claude"
-              />
+              >
+                {dockerImages?.map((img) => (
+                  <option key={img.name} value={img.name}>{img.name}</option>
+                ))}
+              </select>
             </div>
           )}
         </div>
