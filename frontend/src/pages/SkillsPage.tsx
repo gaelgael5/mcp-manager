@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { apiFetch } from "../api/client";
 import { useCurrentUser } from "../api/auth";
 import { Card } from "../components/ui/Card";
@@ -13,12 +14,15 @@ interface SkillSource {
   url: string;
   skills_path: string;
   type: string;
+  has_summary: boolean;
   branch_hash: string | null;
   is_active: boolean;
   last_sync: string | null;
   last_sync_count: number;
   created_at: string;
 }
+
+const PAGE_SIZE = 20;
 
 const targetColors: Record<string, string> = {
   claude: "purple",
@@ -47,12 +51,6 @@ export function SkillsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["skill-sources"] }),
   });
 
-  const syncSource = useMutation({
-    mutationFn: (id: string) =>
-      apiFetch<{ status: string; added: number; updated: number }>(`/skill-sources/${id}/sync`, { method: "POST" }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["skill-sources"] }); qc.invalidateQueries({ queryKey: ["skills"] }); },
-  });
-
   const syncAll = useMutation({
     mutationFn: () =>
       apiFetch<{ status: string; added: number; updated: number }>("/skill-sources/sync-all", { method: "POST" }),
@@ -67,6 +65,7 @@ export function SkillsPage() {
 
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("");
+  const [page, setPage] = useState(1);
   const [newName, setNewName] = useState("");
   const [newUrl, setNewUrl] = useState("");
   const [newPath, setNewPath] = useState("skills");
@@ -82,6 +81,11 @@ export function SkillsPage() {
     });
   }, [sources, search, filterType]);
 
+  // Reset page when filters change
+  const totalPages = Math.max(1, Math.ceil(filteredSources.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedSources = filteredSources.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   const handleCreate = () => {
     if (!newName.trim() || !newUrl.trim()) return;
     createSource.mutate({ name: newName.trim(), url: newUrl.trim(), skills_path: newPath.trim(), type: newType });
@@ -96,8 +100,8 @@ export function SkillsPage() {
       {/* Sources */}
       <Card title="Skill Sources">
         <div className="flex gap-2 mb-3">
-          <SearchInput value={search} onChange={setSearch} placeholder="Search sources..." />
-          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
+          <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search sources..." />
+          <select value={filterType} onChange={(e) => { setFilterType(e.target.value); setPage(1); }} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
             <option value="">All types</option>
             <option value="claude">claude</option>
             <option value="copilot">copilot</option>
@@ -106,37 +110,65 @@ export function SkillsPage() {
           </select>
           <span className="text-xs text-gray-400 self-center whitespace-nowrap">{filteredSources.length}/{sources?.length || 0}</span>
         </div>
-        <div className="space-y-2">
-          {filteredSources.map((s) => (
-            <div key={s.id} className="flex items-center justify-between rounded border border-gray-100 bg-gray-50 px-3 py-2">
-              <div>
+        <div className="space-y-1">
+          {pagedSources.map((s) => (
+            <Link
+              key={s.id}
+              to={`/skills/${s.id}`}
+              className="flex items-center justify-between rounded border border-gray-100 bg-gray-50 px-3 py-2 hover:bg-blue-50 transition-colors cursor-pointer"
+            >
+              <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-sm">{s.name}</span>
+                  <span className="font-medium text-sm truncate">{s.name}</span>
                   <Badge color={targetColors[s.type] || "gray"}>{s.type}</Badge>
                   <Badge color={s.is_active ? "green" : "red"}>{s.is_active ? "active" : "inactive"}</Badge>
+                  {s.has_summary && <Badge color="purple">summarized</Badge>}
                 </div>
-                <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">{s.url}</a>
-                <span className="text-xs text-gray-400 ml-2">path: {s.skills_path || "skills"}</span>
+                <div className="text-xs text-gray-400 truncate">{s.url}</div>
                 <div className="text-xs text-gray-400">
-                  {s.last_sync ? `Last sync: ${new Date(s.last_sync).toLocaleString()} (${s.last_sync_count} skills)` : "Never synced"}
-                  {s.branch_hash && ` — ${s.branch_hash.slice(0, 8)}`}
+                  {s.last_sync ? `Synced: ${new Date(s.last_sync).toLocaleDateString()} (${s.last_sync_count} skills)` : "Never synced"}
                 </div>
               </div>
               {isAdmin && (
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={() => syncSource.mutate(s.id)} loading={syncSource.isPending}>Sync</Button>
-                  <Button size="sm" variant="danger" onClick={() => deleteSource.mutate(s.id)}>Remove</Button>
+                <div className="flex gap-2 shrink-0 ml-2" onClick={(e) => e.preventDefault()}>
+                  <Button size="sm" variant="danger" onClick={(e) => { e.preventDefault(); if (confirm(`Delete "${s.name}"?`)) deleteSource.mutate(s.id); }}>
+                    Remove
+                  </Button>
                 </div>
               )}
-            </div>
+            </Link>
           ))}
           {filteredSources.length === 0 && <p className="text-sm text-gray-500">{sources?.length ? "No sources match your search." : "No skill sources configured."}</p>}
-          {isAdmin && sources && sources.length > 0 && (
-            <div className="mt-2">
-              <Button size="sm" variant="secondary" onClick={() => syncAll.mutate()} loading={syncAll.isPending}>Sync All Sources</Button>
-            </div>
-          )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-3">
+            <button
+              onClick={() => setPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="px-2 py-1 text-xs rounded border border-gray-300 disabled:opacity-40 hover:bg-gray-100"
+            >
+              Prev
+            </button>
+            <span className="text-xs text-gray-500">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="px-2 py-1 text-xs rounded border border-gray-300 disabled:opacity-40 hover:bg-gray-100"
+            >
+              Next
+            </button>
+          </div>
+        )}
+
+        {isAdmin && (
+          <div className="mt-3 flex items-center gap-2">
+            <Button size="sm" variant="secondary" onClick={() => syncAll.mutate()} loading={syncAll.isPending}>Sync All Sources</Button>
+          </div>
+        )}
 
         {isAdmin && (
           <div className="mt-4 flex gap-3 items-end">

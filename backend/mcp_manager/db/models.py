@@ -157,6 +157,9 @@ class SkillSource(Base):
     url: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
     skills_path: Mapped[str] = mapped_column(String(255), default="")  # directory in the repo (empty = root)
     type: Mapped[str] = mapped_column(String(20), nullable=False)  # claude, copilot, gemini, cursor
+    description: Mapped[str | None] = mapped_column(Text)
+    summary_en: Mapped[str | None] = mapped_column(Text)
+    summary_fr: Mapped[str | None] = mapped_column(Text)
     branch_hash: Mapped[str | None] = mapped_column(String(64))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     last_sync: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

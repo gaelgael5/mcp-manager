@@ -35,6 +35,15 @@ async def list_skill_sources(db: AsyncSession = Depends(get_db)):
     return [_serialize_source(s) for s in sources]
 
 
+@router.get("/skill-sources/{source_id}")
+async def get_skill_source(source_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(SkillSource).where(SkillSource.id == source_id))
+    source = result.scalar_one_or_none()
+    if not source:
+        raise HTTPException(status_code=404, detail="Skill source not found")
+    return _serialize_source(source)
+
+
 @router.post("/skill-sources", status_code=201)
 async def create_skill_source(
     body: SkillSourceCreate,
@@ -207,6 +216,74 @@ async def generate_skill_summary(
     await db.commit()
 
     return {"status": "done", "summary_en": bool(skill.summary_en), "summary_fr": bool(skill.summary_fr)}
+
+
+@router.post("/skill-sources/{source_id}/generate-summary")
+async def generate_source_summary(
+    source_id: uuid.UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    admin: dict = Depends(require_admin),
+):
+    """Generate EN/FR summaries for a skill source workspace and index in RAG."""
+    import os
+    from mcp_manager.summarizer.ollama_client import ollama_generate
+    from mcp_manager.indexer.embedder import embed_text
+    from mcp_manager.db.models import McpEmbedding
+    from sqlalchemy import delete
+
+    result = await db.execute(select(SkillSource).where(SkillSource.id == source_id))
+    source = result.scalar_one_or_none()
+    if not source:
+        raise HTTPException(status_code=404, detail="Skill source not found")
+
+    # Build context from the source's skills
+    skills_result = await db.execute(
+        select(Skill).where(Skill.skill_source_id == source_id).order_by(Skill.name)
+    )
+    skills = skills_result.scalars().all()
+
+    skill_list = "\n".join(
+        f"- {s.name}: {s.description or 'no description'}" for s in skills
+    )
+    context = f"Source: {source.name}\nURL: {source.url}\nType: {source.type}\nSkills count: {len(skills)}\n\nSkills in this workspace:\n{skill_list}"
+
+    if len(context) > 8000:
+        context = context[:8000]
+
+    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "prompts")
+
+    # EN
+    with open(os.path.join(prompts_dir, "source_summary_en.md"), encoding="utf-8") as f:
+        prompt_en = f.read().replace("{content}", context)
+    source.summary_en = await ollama_generate(prompt_en)
+
+    # FR
+    with open(os.path.join(prompts_dir, "source_summary_fr.md"), encoding="utf-8") as f:
+        prompt_fr = f.read().replace("{content}", context)
+    source.summary_fr = await ollama_generate(prompt_fr)
+
+    # Index in RAG — use skill_id=None, store with a special chunk_type
+    await db.execute(delete(McpEmbedding).where(
+        McpEmbedding.chunk_type == "source_summary",
+        McpEmbedding.content.like(f"source:{source_id}%"),
+    ))
+    if source.summary_en:
+        vec = await embed_text(source.summary_en)
+        if vec:
+            db.add(McpEmbedding(
+                chunk_type="source_summary",
+                chunk_index=0,
+                content=f"source:{source_id} {source.summary_en}",
+                embedding=vec,
+            ))
+
+    await db.commit()
+    return {
+        "status": "done",
+        "summary_en": bool(source.summary_en),
+        "summary_fr": bool(source.summary_fr),
+    }
 
 
 @router.post("/skill-sources/{source_id}/sync")
@@ -406,6 +483,10 @@ def _serialize_source(s: SkillSource) -> dict:
         "url": s.url,
         "skills_path": s.skills_path,
         "type": s.type,
+        "description": s.description,
+        "summary_en": s.summary_en,
+        "summary_fr": s.summary_fr,
+        "has_summary": bool(s.summary_en),
         "branch_hash": s.branch_hash,
         "is_active": s.is_active,
         "last_sync": s.last_sync.isoformat() if s.last_sync else None,
