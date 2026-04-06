@@ -35,6 +35,7 @@ class McpService(Base):
     source_origins: Mapped[list[str] | None] = mapped_column(ARRAY(Text), default=list)
     repo_status: Mapped[str | None] = mapped_column(String(20))
     needs_reindex: Mapped[bool] = mapped_column(Boolean, default=False)
+    index_attempts: Mapped[int] = mapped_column(default=0)
     is_deprecated: Mapped[bool] = mapped_column(Boolean, default=False)
     search_vector = Column(TSVECTOR)
     created_at: Mapped[datetime] = mapped_column(

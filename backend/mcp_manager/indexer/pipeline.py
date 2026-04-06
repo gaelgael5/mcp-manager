@@ -37,7 +37,8 @@ async def run_index(limit: int = 100) -> dict[str, int]:
                 .where(McpService.needs_reindex == True)
                 .where(McpService.source_url != "")
                 .where(McpService.repo_status == "ok")
-                .order_by(McpService.updated_at.desc())
+                .where(McpService.index_attempts < 2)
+                .order_by(McpService.index_attempts.asc(), McpService.updated_at.desc())
                 .limit(min(batch_size, limit - processed))
             )
             services = result.scalars().all()
@@ -51,6 +52,7 @@ async def run_index(limit: int = 100) -> dict[str, int]:
                 except Exception:
                     logger.exception("Failed to index %s", service.name)
 
+                service.index_attempts = (service.index_attempts or 0) + 1
                 if indexed:
                     service.needs_reindex = False
                 processed += 1
@@ -69,20 +71,15 @@ async def run_index(limit: int = 100) -> dict[str, int]:
 
 async def _index_one(db, service: McpService, stats: dict) -> bool:
     """Index a single service. Returns True if content was generated."""
+    from mcp_manager.connectors.github_readme import fetch_github_readme
 
-    # 1. Fetch documentation
-    connector = get_connector(service.source_type)
-    if not connector:
-        stats["skipped_no_doc"] += 1
-        return False
+    # 1. Fetch documentation — try doc_url then source_url directly
+    doc_content = None
+    if service.doc_url:
+        doc_content = await fetch_github_readme(service.doc_url)
+    if not doc_content and service.source_url:
+        doc_content = await fetch_github_readme(service.source_url)
 
-    raw = RawMcpService(
-        name=service.name,
-        source_url=service.source_url,
-        source_type=service.source_type,
-        doc_url=service.doc_url,
-    )
-    doc_content = await connector.fetch_doc_content(raw)
     if not doc_content:
         stats["skipped_no_doc"] += 1
         return False
