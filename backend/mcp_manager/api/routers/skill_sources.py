@@ -165,7 +165,7 @@ async def generate_skill_summary(
     if len(cleaned) > 8000:
         cleaned = cleaned[:8000]
 
-    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "prompts")
+    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "prompts")
 
     # EN
     with open(os.path.join(prompts_dir, "skill_summary_en.md"), encoding="utf-8") as f:
@@ -274,7 +274,7 @@ async def _generate_skill_summaries(db: AsyncSession, source_id, raw_skills: lis
     from mcp_manager.indexer.embedder import embed_text
     from mcp_manager.db.models import McpEmbedding
 
-    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "prompts")
+    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "prompts")
     count = 0
 
     # Build raw content map by name
