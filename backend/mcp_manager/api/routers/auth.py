@@ -86,10 +86,11 @@ async def auth_callback(code: str, request: Request):
     }
     token = jwt.encode(payload, settings.jwt_secret, algorithm=JWT_ALGORITHM)
 
-    # Redirect to frontend with token
-    frontend_url = settings.cors_origins[0] if settings.cors_origins else "http://localhost:3001"
-    response = RedirectResponse(f"{frontend_url}/?token={token}")
-    return response
+    # Redirect to frontend — use the same origin as the request
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host", "localhost:3001")
+    scheme = request.headers.get("x-forwarded-proto", "http")
+    frontend_url = f"{scheme}://{host}"
+    return RedirectResponse(f"{frontend_url}/?token={token}")
 
 
 @router.get("/auth/me")
