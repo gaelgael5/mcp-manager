@@ -49,6 +49,7 @@ export function ApiKeysPage() {
   const revokeKey = useRevokeApiKey();
   const [name, setName] = useState("");
   const [newKey, setNewKey] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   if (!user?.is_admin) {
     return <p className="text-gray-500">Admin access required.</p>;
@@ -71,8 +72,12 @@ export function ApiKeysPage() {
       {newKey && (
         <div className="rounded-md border border-green-300 bg-green-50 p-4">
           <p className="text-sm font-medium text-green-800 mb-2">New API key created — copy it now, it won't be shown again:</p>
-          <code className="block text-sm font-mono bg-white border rounded p-2 break-all select-all">{newKey}</code>
-          <button onClick={() => { navigator.clipboard.writeText(newKey); }} className="mt-2 text-xs text-green-700 hover:text-green-900">Copy to clipboard</button>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 text-sm font-mono bg-white border rounded p-2 break-all select-all">{newKey}</code>
+            <Button size="sm" onClick={() => { navigator.clipboard.writeText(newKey); setCopied(true); setTimeout(() => setCopied(false), 2000); }}>
+              {copied ? "Copied!" : "Copy"}
+            </Button>
+          </div>
         </div>
       )}
 
