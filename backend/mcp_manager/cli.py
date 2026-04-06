@@ -290,8 +290,20 @@ def index(
 ):
     """Run indexation pipeline on services flagged needs_reindex."""
     logging.basicConfig(level=logging.INFO)
-    result = asyncio.run(_run_index(limit=limit))
-    typer.echo(f"Index complete: {result}")
+
+    # Start LLM providers (launches Docker containers if configured)
+    from mcp_manager.summarizer.ollama_client import get_llm_manager
+    manager = get_llm_manager()
+    manager.load()
+    typer.echo(f"LLM providers: {len(manager.drivers)} loaded")
+    manager.start_all()
+
+    try:
+        result = asyncio.run(_run_index(limit=limit))
+        typer.echo(f"Index complete: {result}")
+    finally:
+        manager.stop_all()
+        typer.echo("LLM providers stopped")
 
 
 async def _run_index(limit: int) -> dict:
