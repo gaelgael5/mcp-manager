@@ -80,11 +80,12 @@ export function SkillsPage() {
 
   const [newName, setNewName] = useState("");
   const [newUrl, setNewUrl] = useState("");
+  const [newPath, setNewPath] = useState("skills");
   const [newType, setNewType] = useState("claude");
 
   const handleCreate = () => {
     if (!newName.trim() || !newUrl.trim()) return;
-    createSource.mutate({ name: newName.trim(), url: newUrl.trim(), type: newType });
+    createSource.mutate({ name: newName.trim(), url: newUrl.trim(), skills_path: newPath.trim(), type: newType });
     setNewName("");
     setNewUrl("");
   };
@@ -105,6 +106,7 @@ export function SkillsPage() {
                   <Badge color={s.is_active ? "green" : "red"}>{s.is_active ? "active" : "inactive"}</Badge>
                 </div>
                 <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">{s.url}</a>
+                <span className="text-xs text-gray-400 ml-2">path: {s.skills_path || "skills"}</span>
                 <div className="text-xs text-gray-400">
                   {s.last_sync ? `Last sync: ${new Date(s.last_sync).toLocaleString()} (${s.last_sync_count} skills)` : "Never synced"}
                   {s.branch_hash && ` — ${s.branch_hash.slice(0, 8)}`}
@@ -127,6 +129,10 @@ export function SkillsPage() {
             <div>
               <label className="block text-xs text-gray-500 mb-1">URL</label>
               <input value={newUrl} onChange={(e) => setNewUrl(e.target.value)} placeholder="https://github.com/anthropics/skills" className="rounded-md border border-gray-300 px-3 py-2 text-sm w-80" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Skills Path</label>
+              <input value={newPath} onChange={(e) => setNewPath(e.target.value)} placeholder="skills" className="rounded-md border border-gray-300 px-3 py-2 text-sm w-32" />
             </div>
             <div>
               <label className="block text-xs text-gray-500 mb-1">Type</label>

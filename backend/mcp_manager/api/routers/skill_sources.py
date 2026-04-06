@@ -16,12 +16,14 @@ router = APIRouter(tags=["skills"])
 class SkillSourceCreate(BaseModel):
     name: str
     url: str
+    skills_path: str = "skills"
     type: str  # claude, copilot, gemini, cursor
 
 
 class SkillSourceUpdate(BaseModel):
     name: str | None = None
     url: str | None = None
+    skills_path: str | None = None
     type: str | None = None
     is_active: bool | None = None
 
@@ -43,6 +45,7 @@ async def create_skill_source(
     source = SkillSource(
         name=body.name,
         url=body.url.rstrip("/"),
+        skills_path=body.skills_path,
         type=body.type,
     )
     db.add(source)
@@ -67,6 +70,8 @@ async def update_skill_source(
         source.name = body.name
     if body.url is not None:
         source.url = body.url.rstrip("/")
+    if body.skills_path is not None:
+        source.skills_path = body.skills_path
     if body.type is not None:
         source.type = body.type
     if body.is_active is not None:
@@ -123,6 +128,7 @@ def _serialize_source(s: SkillSource) -> dict:
         "id": str(s.id),
         "name": s.name,
         "url": s.url,
+        "skills_path": s.skills_path,
         "type": s.type,
         "branch_hash": s.branch_hash,
         "is_active": s.is_active,

@@ -154,6 +154,7 @@ class SkillSource(Base):
     )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     url: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
+    skills_path: Mapped[str] = mapped_column(String(255), default="skills")  # directory in the repo containing skills
     type: Mapped[str] = mapped_column(String(20), nullable=False)  # claude, copilot, gemini, cursor
     branch_hash: Mapped[str | None] = mapped_column(String(64))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
