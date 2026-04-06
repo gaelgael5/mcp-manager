@@ -5,6 +5,7 @@ import { useSummaries, useGenerateSummary } from "../api/summaries";
 import { useInstallations, useGenerateInstallations } from "../api/installations";
 import { useTargets } from "../api/targets";
 import { useParameters, useDetectParameters, useAddParameter, useDeleteParameter } from "../api/parameters";
+import { useCurrentUser } from "../api/auth";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -26,6 +27,9 @@ export function ServiceDetailPage() {
   const detectParams = useDetectParameters(id!);
   const addParam = useAddParameter(id!);
   const deleteParam = useDeleteParameter();
+
+  const { data: user } = useCurrentUser();
+  const isAdmin = user?.is_admin === true;
 
   const [editingUrl, setEditingUrl] = useState(false);
   const [urlInput, setUrlInput] = useState("");
@@ -98,12 +102,12 @@ export function ServiceDetailPage() {
         ) : service.source_url ? (
           <div className="mt-2 flex items-center gap-2">
             <a href={service.source_url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">{service.source_url}</a>
-            <button onClick={handleStartEdit} className="text-xs text-gray-400 hover:text-gray-600">edit</button>
+            {isAdmin && <button onClick={handleStartEdit} className="text-xs text-gray-400 hover:text-gray-600">edit</button>}
           </div>
         ) : (
           <div className="mt-2 flex items-center gap-2">
             <span className="text-sm text-gray-400">No repository URL</span>
-            <Button size="sm" variant="secondary" onClick={handleStartEdit}>Add URL</Button>
+            {isAdmin && <Button size="sm" variant="secondary" onClick={handleStartEdit}>Add URL</Button>}
           </div>
         )}
       </div>
@@ -111,22 +115,24 @@ export function ServiceDetailPage() {
       <Card title="Summary">
         <div className="space-y-3">
           <SummaryView summaries={summariesData?.items ?? []} />
-          <div className="flex items-center gap-3 pt-2">
-            <Button
-              variant={hasSummaries ? "secondary" : "primary"}
-              size="sm"
-              onClick={() => generateSummary.mutate()}
-              loading={generateSummary.isPending}
-            >
-              {hasSummaries ? "Regenerate Summary" : "Generate Summary"}
-            </Button>
-            {generateSummary.isSuccess && (
-              <span className="text-sm text-green-600">Summaries generated</span>
-            )}
-            {generateSummary.isError && (
-              <span className="text-sm text-red-600">Failed to generate summary</span>
-            )}
-          </div>
+          {isAdmin && (
+            <div className="flex items-center gap-3 pt-2">
+              <Button
+                variant={hasSummaries ? "secondary" : "primary"}
+                size="sm"
+                onClick={() => generateSummary.mutate()}
+                loading={generateSummary.isPending}
+              >
+                {hasSummaries ? "Regenerate Summary" : "Generate Summary"}
+              </Button>
+              {generateSummary.isSuccess && (
+                <span className="text-sm text-green-600">Summaries generated</span>
+              )}
+              {generateSummary.isError && (
+                <span className="text-sm text-red-600">Failed to generate summary</span>
+              )}
+            </div>
+          )}
         </div>
       </Card>
 
@@ -155,6 +161,7 @@ export function ServiceDetailPage() {
             ) : (
               <p className="text-sm text-gray-500">No installation recipes available.</p>
             )}
+            {isAdmin && (
             <div className="flex items-center gap-3 pt-2">
               <Button
                 variant={hasInstalls ? "secondary" : "primary"}
@@ -171,6 +178,7 @@ export function ServiceDetailPage() {
                 <span className="text-sm text-red-600">Failed to generate recipes</span>
               )}
             </div>
+          )}
           </div>
         )}
       </Card>

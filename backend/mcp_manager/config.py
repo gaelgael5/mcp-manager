@@ -7,6 +7,10 @@ class Settings(BaseSettings):
     ollama_summary_model: str = "llama3.1"
     cors_origins: list[str] = ["http://localhost:3001"]
     github_token: str = ""
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    admin_email: str = ""
+    jwt_secret: str = "mcp-manager-jwt-secret-change-me"
 
     model_config = {"env_prefix": "", "env_file": ".env"}
 

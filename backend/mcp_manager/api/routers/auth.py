@@ -1,0 +1,129 @@
+"""Google OAuth authentication + JWT session."""
+import logging
+from datetime import datetime, timedelta, timezone
+from urllib.parse import urlencode
+
+import httpx
+import jwt
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi.responses import RedirectResponse
+
+from mcp_manager.config import settings
+
+router = APIRouter(tags=["auth"])
+logger = logging.getLogger(__name__)
+
+GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRY_HOURS = 24
+
+
+@router.get("/auth/login")
+async def login(request: Request):
+    """Redirect to Google OAuth consent screen."""
+    # Build callback URL from request
+    callback_url = str(request.url_for("auth_callback"))
+    # If behind proxy, fix scheme
+    callback_url = callback_url.replace("https://", "http://")
+
+    params = {
+        "client_id": settings.google_client_id,
+        "redirect_uri": callback_url,
+        "response_type": "code",
+        "scope": "email profile",
+        "access_type": "offline",
+        "prompt": "consent",
+    }
+    return RedirectResponse(f"{GOOGLE_AUTH_URL}?{urlencode(params)}")
+
+
+@router.get("/auth/callback", name="auth_callback")
+async def auth_callback(code: str, request: Request):
+    """Handle Google OAuth callback, issue JWT."""
+    callback_url = str(request.url_for("auth_callback"))
+    callback_url = callback_url.replace("https://", "http://")
+
+    # Exchange code for token
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(GOOGLE_TOKEN_URL, data={
+            "client_id": settings.google_client_id,
+            "client_secret": settings.google_client_secret,
+            "code": code,
+            "redirect_uri": callback_url,
+            "grant_type": "authorization_code",
+        })
+        if resp.status_code != 200:
+            logger.error("Token exchange failed: %s", resp.text)
+            raise HTTPException(status_code=400, detail="Token exchange failed")
+        tokens = resp.json()
+
+    # Get user info
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(GOOGLE_USERINFO_URL, headers={
+            "Authorization": f"Bearer {tokens['access_token']}"
+        })
+        if resp.status_code != 200:
+            raise HTTPException(status_code=400, detail="Failed to get user info")
+        user_info = resp.json()
+
+    email = user_info.get("email", "")
+    name = user_info.get("name", "")
+    picture = user_info.get("picture", "")
+    is_admin = email.lower() == settings.admin_email.lower()
+
+    # Create JWT
+    payload = {
+        "email": email,
+        "name": name,
+        "picture": picture,
+        "is_admin": is_admin,
+        "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRY_HOURS),
+    }
+    token = jwt.encode(payload, settings.jwt_secret, algorithm=JWT_ALGORITHM)
+
+    # Redirect to frontend with token
+    frontend_url = settings.cors_origins[0] if settings.cors_origins else "http://localhost:3001"
+    response = RedirectResponse(f"{frontend_url}/?token={token}")
+    return response
+
+
+@router.get("/auth/me")
+async def get_current_user(request: Request):
+    """Get current user from JWT in Authorization header."""
+    user = _get_user_from_request(request)
+    if not user:
+        return {"authenticated": False}
+    return {
+        "authenticated": True,
+        "email": user.get("email"),
+        "name": user.get("name"),
+        "picture": user.get("picture"),
+        "is_admin": user.get("is_admin", False),
+    }
+
+
+def _get_user_from_request(request: Request) -> dict | None:
+    """Extract and verify JWT from Authorization header."""
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        return None
+    token = auth[7:]
+    try:
+        payload = jwt.decode(token, settings.jwt_secret, algorithms=[JWT_ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+
+
+def require_admin(request: Request) -> dict:
+    """Dependency: require authenticated admin user."""
+    user = _get_user_from_request(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user

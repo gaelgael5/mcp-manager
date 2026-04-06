@@ -66,7 +66,13 @@
       "mcp__plugin_playwright_playwright__browser_network_requests",
       "Bash(tar --exclude='.git' --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='dist' --exclude='.env' --exclude='.playwright-mcp' -czf /tmp/mcp-manager.tar.gz .)",
       "Bash(sed:*)",
-      "Bash(python3 -c \"import sys,json; [print\\(f' {t[\\\\\"name\\\\\"]}'\\) for t in json.load\\(sys.stdin\\)]\")"
+      "Bash(python3 -c \"import sys,json; [print\\(f' {t[\\\\\"name\\\\\"]}'\\) for t in json.load\\(sys.stdin\\)]\")",
+      "Bash(netstat -ano)",
+      "Bash(ls -t C:/Users/g.beard/AppData/Local/superpowers/browser/2026-04-04/session-1775296027086/*.png)",
+      "Bash(tasklist)",
+      "Bash(tasklist //FI \"IMAGENAME eq chrome.exe\")",
+      "Bash(taskkill //F //IM chrome.exe)",
+      "Bash(\"C:/Program Files/Google/Chrome/Application/chrome.exe\" --remote-debugging-port=9222)"
     ]
   }
 }
