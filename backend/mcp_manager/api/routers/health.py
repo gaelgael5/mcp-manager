@@ -66,6 +66,32 @@ async def detailed_health(db: AsyncSession = Depends(get_db)):
         except Exception:
             pass
 
+        # Estimate remaining time based on indexation throughput
+        eta = None
+        indexable = (await db.execute(
+            select(func.count()).select_from(McpService)
+            .where(McpService.needs_reindex == True)
+            .where(McpService.repo_status == "ok")
+            .where(McpService.index_attempts < 2)
+            .where(McpService.source_url != "")
+        )).scalar() or 0
+
+        if indexable > 0 and with_summaries > 0:
+            first_summary = (await db.execute(
+                select(func.min(McpSummary.created_at))
+            )).scalar()
+            last_summary = (await db.execute(
+                select(func.max(McpSummary.created_at))
+            )).scalar()
+            if first_summary and last_summary and first_summary != last_summary:
+                elapsed_hours = (last_summary - first_summary).total_seconds() / 3600
+                if elapsed_hours > 0:
+                    rate = with_summaries / elapsed_hours  # services/hour
+                    remaining_hours = indexable / rate
+                    h = int(remaining_hours)
+                    m = int((remaining_hours - h) * 60)
+                    eta = f"{h}h{m:02d}m ({int(rate)} services/h)"
+
         uptime = (datetime.now(timezone.utc) - START_TIME).total_seconds()
 
         return {
@@ -80,6 +106,8 @@ async def detailed_health(db: AsyncSession = Depends(get_db)):
                 "with_summaries": with_summaries,
                 "with_embeddings": with_embeddings,
                 "needs_reindex": needs_reindex,
+                "indexable_remaining": indexable,
+                "eta": eta,
                 "summary_coverage": f"{round(with_summaries / total * 100, 1)}%" if total > 0 else "0%",
                 "embedding_coverage": f"{round(with_embeddings / total * 100, 1)}%" if total > 0 else "0%",
             },
