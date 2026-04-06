@@ -303,6 +303,33 @@ TARGETS = [
             {"runtime": "uvx", "action_type": "cmd", "template": "uvx {package}"},
         ],
     },
+    # === New agents ===
+    {
+        "name": "Antigravity",
+        "description": "Google Antigravity AI agent (antigravity.google)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+        ],
+    },
+    {
+        "name": "Kiro",
+        "description": "Kiro AI IDE (kiro.dev)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "npx", "args": ["-y", "{package}"]}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "uvx", "args": ["{package}"]}}}'},
+            {"runtime": "docker", "action_type": "insert_in_file", "template": '{"mcpServers": {"{name}": {"command": "docker", "args": ["run", "-i", "--rm", "{package}"]}}}'},
+        ],
+    },
+    {
+        "name": "Junie",
+        "description": "JetBrains Junie AI agent (junie.jetbrains.com)",
+        "modes": [
+            {"runtime": "npx", "action_type": "insert_in_file", "template": '{"servers": {"{name}": {"command": "npx", "args": ["-y", "{package}"], "disabled": false}}}'},
+            {"runtime": "uvx", "action_type": "insert_in_file", "template": '{"servers": {"{name}": {"command": "uvx", "args": ["{package}"], "disabled": false}}}'},
+            {"runtime": "docker", "action_type": "insert_in_file", "template": '{"servers": {"{name}": {"command": "docker", "args": ["run", "-i", "--rm", "{package}"], "disabled": false}}}'},
+        ],
+    },
 ]
 
 

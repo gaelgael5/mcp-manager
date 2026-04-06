@@ -76,7 +76,12 @@
       "Bash(ls:*)",
       "Bash(wc -l skills/*/SKILL.md)",
       "Bash(grep -h \"^name:\" skills/*/SKILL.md)",
-      "Bash(grep -h \"^description:\" skills/*/SKILL.md)"
+      "Bash(grep -h \"^description:\" skills/*/SKILL.md)",
+      "mcp__plugin_playwright_playwright__browser_tabs",
+      "WebFetch(domain:skillsmp.com)",
+      "WebFetch(domain:smartscope.blog)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:bibek-poudel.medium.com)"
     ]
   }
 }
