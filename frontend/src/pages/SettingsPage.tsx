@@ -120,7 +120,22 @@ function ProviderEditor({ provider, onChange, onDelete }: {
           )}
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Args (JSON)</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-xs text-gray-500">Args (JSON)</label>
+            <button
+              onClick={() => {
+                const img = dockerImages?.find((i) => i.name === provider.image);
+                if (img) {
+                  onChange({ ...provider, args: { ...img.default_args } });
+                } else if (provider.type === "ollama") {
+                  onChange({ ...provider, args: { url: "http://192.168.10.80:11434", model: "llama3.1:8b" } });
+                }
+              }}
+              className="text-xs text-gray-400 hover:text-gray-600"
+            >
+              reset
+            </button>
+          </div>
           <textarea
             value={JSON.stringify(provider.args, null, 2)}
             onChange={(e) => {
