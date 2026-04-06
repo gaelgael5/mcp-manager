@@ -146,6 +146,52 @@ class McpParameter(Base):
     service: Mapped["McpService"] = relationship(back_populates="parameters")
 
 
+class SkillSource(Base):
+    __tablename__ = "skill_sources"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    url: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
+    type: Mapped[str] = mapped_column(String(20), nullable=False)  # claude, copilot, gemini, cursor
+    branch_hash: Mapped[str | None] = mapped_column(String(64))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    last_sync: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_sync_count: Mapped[int] = mapped_column(default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    skills: Mapped[list["Skill"]] = relationship(back_populates="source", cascade="all, delete-orphan")
+
+
+class Skill(Base):
+    __tablename__ = "skills"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    skill_source_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("skill_sources.id", ondelete="CASCADE"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    content: Mapped[str | None] = mapped_column(Text)
+    target_type: Mapped[str] = mapped_column(String(20), nullable=False)  # claude-code, copilot, cursor, gemini
+    licence: Mapped[str | None] = mapped_column(String(50))
+    source_url: Mapped[str | None] = mapped_column(Text)
+    category: Mapped[str | None] = mapped_column(String(100))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    source: Mapped["SkillSource"] = relationship(back_populates="skills")
+
+
 class McpInstance(Base):
     __tablename__ = "mcp_instances"
 

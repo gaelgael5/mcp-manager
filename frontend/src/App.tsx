@@ -10,6 +10,7 @@ import { ApiDocsPage } from "./pages/ApiDocsPage";
 import { ApiKeysPage } from "./pages/ApiKeysPage";
 import { InstancesPage } from "./pages/InstancesPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { SkillsPage } from "./pages/SkillsPage";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/api-keys" element={<ApiKeysPage />} />
             <Route path="/instances" element={<InstancesPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/skills" element={<SkillsPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

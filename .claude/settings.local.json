@@ -73,7 +73,10 @@
       "Bash(tasklist //FI \"IMAGENAME eq chrome.exe\")",
       "Bash(taskkill //F //IM chrome.exe)",
       "Bash(\"C:/Program Files/Google/Chrome/Application/chrome.exe\" --remote-debugging-port=9222)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(wc -l skills/*/SKILL.md)",
+      "Bash(grep -h \"^name:\" skills/*/SKILL.md)",
+      "Bash(grep -h \"^description:\" skills/*/SKILL.md)"
     ]
   }
 }
