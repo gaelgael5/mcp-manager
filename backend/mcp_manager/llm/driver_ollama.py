@@ -14,10 +14,11 @@ class OllamaDriver:
     async def generate(self, prompt: str) -> str:
         endpoint = f"{self.url}/api/generate"
         payload = {"model": self.model, "prompt": prompt, "stream": False}
-        async with httpx.AsyncClient(timeout=120.0) as client:
+        async with httpx.AsyncClient(timeout=300.0) as client:
             resp = await client.post(endpoint, json=payload)
             resp.raise_for_status()
-            return resp.json().get("response", "").strip()
+            text = resp.json().get("response", "").strip()
+            return text.replace("\x00", "")
 
     async def embed(self, text: str) -> list[float] | None:
         endpoint = f"{self.url}/api/embed"

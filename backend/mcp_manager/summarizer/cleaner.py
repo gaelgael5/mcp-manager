@@ -7,6 +7,9 @@ def clean_markdown(content: str | None) -> str:
     if not content:
         return ""
 
+    # Remove null bytes — PostgreSQL rejects them in text columns
+    content = content.replace("\x00", "")
+
     lines = content.split("\n")
     result: list[str] = []
     in_skip_section = False

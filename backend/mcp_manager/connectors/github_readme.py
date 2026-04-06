@@ -29,7 +29,7 @@ async def fetch_github_readme(source_url: str) -> str | None:
         async with httpx.AsyncClient(timeout=15.0) as client:
             resp = await client.get(readme_url, headers=headers)
             if resp.status_code == 200:
-                return resp.text
+                return resp.text.replace("\x00", "")
 
         # Also try without subfolder (root README)
         parts = base.split("/tree/")
@@ -39,7 +39,7 @@ async def fetch_github_readme(source_url: str) -> str | None:
         async with httpx.AsyncClient(timeout=15.0) as client:
             resp = await client.get(f"{root_raw}/{branch}/README.md", headers=headers)
             if resp.status_code == 200:
-                return resp.text
+                return resp.text.replace("\x00", "")
 
     # Try each branch
     raw_base = base.replace("github.com", "raw.githubusercontent.com")
@@ -47,6 +47,6 @@ async def fetch_github_readme(source_url: str) -> str | None:
         for branch in BRANCHES:
             resp = await client.get(f"{raw_base}/{branch}/README.md", headers=headers)
             if resp.status_code == 200:
-                return resp.text
+                return resp.text.replace("\x00", "")
 
     return None
