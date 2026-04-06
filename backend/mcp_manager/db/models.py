@@ -146,6 +146,23 @@ class McpParameter(Base):
     service: Mapped["McpService"] = relationship(back_populates="parameters")
 
 
+class McpInstance(Base):
+    __tablename__ = "mcp_instances"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    url: Mapped[str] = mapped_column(Text, unique=True, nullable=False)  # https://mcp.other.org
+    api_key: Mapped[str | None] = mapped_column(Text)  # X-API-Key for the remote instance
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    last_sync: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_sync_count: Mapped[int] = mapped_column(default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
 class ApiKey(Base):
     __tablename__ = "api_keys"
 

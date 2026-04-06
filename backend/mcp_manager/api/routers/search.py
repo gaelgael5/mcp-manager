@@ -24,16 +24,26 @@ async def search_services(
     repo_status: str | None = Query(None, description="Filter by repo status: ok, 404"),
     has_summaries: bool | None = Query(None, description="Filter by summary availability"),
     targets: str | None = Query(None, description="Comma-separated target names to include recipes for"),
+    updated_since: str | None = Query(None, description="ISO timestamp — only services updated after this date (e.g. 2026-04-01T00:00:00Z)"),
     page: int = Query(1, ge=1, le=1000),
     per_page: int = Query(10, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
 ):
+    # Parse updated_since
+    since_dt = None
+    if updated_since:
+        from datetime import datetime as dt, timezone as tz
+        try:
+            since_dt = dt.fromisoformat(updated_since.replace("Z", "+00:00"))
+        except ValueError:
+            pass
+
     # Semantic search path — uses pgvector similarity
     if q and semantic:
         return await _semantic_search(
             q=q, transport=transport, category=category, source_type=source_type,
             repo_status=repo_status, has_summaries=has_summaries, targets=targets,
-            page=page, per_page=per_page, db=db,
+            updated_since=since_dt, page=page, per_page=per_page, db=db,
         )
 
     # Standard text search — tsvector rank OR ILIKE fallback
@@ -49,6 +59,8 @@ async def search_services(
         )
 
     query = _apply_filters(query, transport, category, source_type, repo_status, has_summaries)
+    if since_dt:
+        query = query.where(McpService.updated_at >= since_dt)
 
     count_query = select(func.count()).select_from(query.subquery())
     total = (await db.execute(count_query)).scalar() or 0
@@ -69,7 +81,7 @@ async def search_services(
 
 async def _semantic_search(
     q: str, transport, category, source_type, repo_status, has_summaries,
-    targets, page, per_page, db: AsyncSession,
+    targets, updated_since, page, per_page, db: AsyncSession,
 ):
     """Search using vector similarity in pgvector."""
     from mcp_manager.indexer.embedder import embed_text
@@ -98,6 +110,9 @@ async def _semantic_search(
     if repo_status:
         where_parts.append("s.repo_status = :repo_status")
         params["repo_status"] = repo_status
+    if updated_since:
+        where_parts.append("s.updated_at >= :updated_since")
+        params["updated_since"] = updated_since
 
     where_clause = (" AND " + " AND ".join(where_parts)) if where_parts else ""
 

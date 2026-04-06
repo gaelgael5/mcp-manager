@@ -7,6 +7,7 @@ const publicLinks = [
   { to: "/services", label: "Services" },
   { to: "/targets", label: "Targets" },
   { to: "/api-docs", label: "API" },
+  { to: "/instances", label: "Instances" },
 ];
 
 const adminLinks = [
