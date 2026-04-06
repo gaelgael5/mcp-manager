@@ -34,7 +34,21 @@ cat > "${CRON_SCRIPT}" << 'CRONSCRIPT'
 #!/bin/bash
 # MCP Manager — Cron job (sync + enrich + index)
 LOG="/root/cron-mcp.log"
+LOCK="/tmp/mcp-manager-cron.lock"
 cd /root/mcp-manager
+
+# Verrou : empecher les executions paralleles
+if [ -f "$LOCK" ]; then
+    pid=$(cat "$LOCK" 2>/dev/null)
+    if kill -0 "$pid" 2>/dev/null; then
+        echo "$(date '+%Y-%m-%d %H:%M:%S') === SKIPPED (previous run still active, PID $pid) ===" >> $LOG
+        exit 0
+    fi
+    # Stale lock — process mort, on continue
+    rm -f "$LOCK"
+fi
+echo $$ > "$LOCK"
+trap 'rm -f "$LOCK"' EXIT
 
 echo "$(date '+%Y-%m-%d %H:%M:%S') === CRON START ===" >> $LOG
 
