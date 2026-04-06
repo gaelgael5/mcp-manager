@@ -83,6 +83,11 @@ UPDATE mcp_services s SET search_vector = to_tsvector('english',
 ) WHERE id IN (SELECT DISTINCT mcp_service_id FROM mcp_summaries);
 " >> $LOG 2>&1
 
+# 7. Cleanup revoked API keys older than 24h
+docker compose exec -T mcp-manager-postgres psql -U langgraph -d langgraph -c "
+DELETE FROM api_keys WHERE is_active = FALSE AND created_at < now() - interval '24 hours';
+" >> $LOG 2>&1
+
 echo "$(date '+%Y-%m-%d %H:%M:%S') === CRON DONE ===" >> $LOG
 
 # Rotate log (keep last 1000 lines)
