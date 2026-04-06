@@ -46,6 +46,7 @@ services:
     volumes:
       - ./dockers:/app/dockers:ro
       - ./backend/config:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       mcp-manager-postgres:
         condition: service_healthy

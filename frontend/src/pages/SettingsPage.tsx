@@ -43,6 +43,50 @@ interface DockerImage {
   default_args: Record<string, string>;
 }
 
+interface DockerImageStatusInfo {
+  image_name: string;
+  tag: string;
+  image_ref: string;
+  exists: boolean;
+}
+
+function DockerImageStatus({ imageName }: { imageName: string | undefined }) {
+  const { data: status } = useQuery({
+    queryKey: ["settings", "docker-image-status", imageName],
+    queryFn: () => apiFetch<DockerImageStatusInfo>(`/settings/docker-image-status/${imageName}`),
+    enabled: !!imageName,
+    refetchInterval: 5000,
+  });
+
+  const qc = useQueryClient();
+  const build = useMutation({
+    mutationFn: () => apiFetch<{ status: string }>(`/settings/docker-build/${imageName}`, { method: "POST" }),
+    onSuccess: () => {
+      setTimeout(() => qc.invalidateQueries({ queryKey: ["settings", "docker-image-status"] }), 3000);
+    },
+  });
+
+  if (!imageName || !status) return null;
+
+  return (
+    <div className="flex items-center gap-2">
+      <Badge color={status.exists ? "green" : "red"}>
+        {status.exists ? status.tag.slice(0, 8) : "not built"}
+      </Badge>
+      {!status.exists && (
+        <Button size="sm" variant="secondary" onClick={() => build.mutate()} loading={build.isPending}>
+          Build
+        </Button>
+      )}
+      {status.exists && (
+        <Button size="sm" variant="secondary" onClick={() => build.mutate()} loading={build.isPending}>
+          Rebuild
+        </Button>
+      )}
+    </div>
+  );
+}
+
 function useDockerImages() {
   return useQuery({
     queryKey: ["settings", "docker-images"],
@@ -115,15 +159,18 @@ function ProviderEditor({ provider, onChange, onDelete }: {
           {provider.type === "docker" && (
             <div>
               <label className="block text-xs text-gray-500 mb-1">Image</label>
-              <select
-                value={provider.image || ""}
-                onChange={(e) => handleImageChange(e.target.value)}
-                className="w-full rounded border border-gray-300 px-2 py-1 text-sm"
-              >
-                {dockerImages?.map((img) => (
-                  <option key={img.name} value={img.name}>{img.name}</option>
-                ))}
-              </select>
+              <div className="flex items-center gap-2">
+                <select
+                  value={provider.image || ""}
+                  onChange={(e) => handleImageChange(e.target.value)}
+                  className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm"
+                >
+                  {dockerImages?.map((img) => (
+                    <option key={img.name} value={img.name}>{img.name}</option>
+                  ))}
+                </select>
+                <DockerImageStatus imageName={provider.image} />
+              </div>
             </div>
           )}
         </div>

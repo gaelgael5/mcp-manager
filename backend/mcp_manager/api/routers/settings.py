@@ -1,8 +1,10 @@
 """Settings API — edit LLM providers config (admin only)."""
+import hashlib
 import os
 import re
+import subprocess
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from pydantic import BaseModel
 
 from mcp_manager.api.routers.auth import require_admin
@@ -237,3 +239,112 @@ async def get_docker_run_cmd(
     cmd = cmd.replace("{phase}", "worker")
 
     return {"cmd": cmd}
+
+
+def _compute_image_tag(image_name: str) -> tuple[str, str]:
+    """Compute Docker image name and tag from Dockerfile + related files.
+
+    Returns (full_image_name, hash_tag).
+    Image name: agent-{image_name}
+    Tag: short hash of Dockerfile + entrypoint content
+    """
+    dockers_path = os.path.abspath(DOCKERS_DIR)
+    hasher = hashlib.sha256()
+
+    # Hash Dockerfile
+    dockerfile = os.path.join(dockers_path, f"Dockerfile.{image_name}")
+    if os.path.isfile(dockerfile):
+        with open(dockerfile, "rb") as f:
+            hasher.update(f.read())
+
+    # Hash entrypoint if exists
+    for pattern in [f"entrypoint.{image_name}*", f"entrypoint.{image_name}-code*"]:
+        import glob
+        for path in glob.glob(os.path.join(dockers_path, pattern)):
+            with open(path, "rb") as f:
+                hasher.update(f.read())
+
+    tag = hasher.hexdigest()[:12]
+    return f"agent-{image_name}", tag
+
+
+@router.get("/settings/docker-image-status/{image_name}")
+async def docker_image_status(
+    image_name: str,
+    request: Request,
+    admin: dict = Depends(require_admin),
+):
+    """Check if Docker image exists and return its expected name:tag."""
+    full_name, tag = _compute_image_tag(image_name)
+    image_ref = f"{full_name}:{tag}"
+
+    # Check if image exists
+    result = subprocess.run(
+        ["docker", "image", "inspect", image_ref],
+        capture_output=True,
+    )
+    exists = result.returncode == 0
+
+    return {
+        "image_name": full_name,
+        "tag": tag,
+        "image_ref": image_ref,
+        "exists": exists,
+    }
+
+
+_build_status: dict[str, str] = {}  # image_name -> "building" | "done" | "error"
+
+
+@router.post("/settings/docker-build/{image_name}")
+async def docker_build(
+    image_name: str,
+    background_tasks: BackgroundTasks,
+    request: Request,
+    admin: dict = Depends(require_admin),
+):
+    """Build a Docker image from Dockerfile.{image_name}."""
+    full_name, tag = _compute_image_tag(image_name)
+    image_ref = f"{full_name}:{tag}"
+
+    if _build_status.get(image_name) == "building":
+        return {"status": "already_building", "image_ref": image_ref}
+
+    _build_status[image_name] = "building"
+    background_tasks.add_task(_run_build, image_name, full_name, tag)
+    return {"status": "started", "image_ref": image_ref}
+
+
+@router.get("/settings/docker-build-status/{image_name}")
+async def docker_build_status(
+    image_name: str,
+    request: Request,
+    admin: dict = Depends(require_admin),
+):
+    return {"status": _build_status.get(image_name, "idle")}
+
+
+def _run_build(image_name: str, full_name: str, tag: str):
+    import logging
+    logger = logging.getLogger(__name__)
+    dockers_path = os.path.abspath(DOCKERS_DIR)
+    dockerfile = os.path.join(dockers_path, f"Dockerfile.{image_name}")
+    image_ref = f"{full_name}:{tag}"
+
+    try:
+        logger.info("Building %s from %s", image_ref, dockerfile)
+        result = subprocess.run(
+            ["docker", "build", "-t", image_ref, "-f", dockerfile, dockers_path],
+            capture_output=True,
+            text=True,
+            timeout=600,
+        )
+        if result.returncode == 0:
+            _build_status[image_name] = "done"
+            logger.info("Build %s succeeded", image_ref)
+        else:
+            _build_status[image_name] = "error"
+            logger.error("Build %s failed: %s", image_ref, result.stderr[-500:])
+    except Exception:
+        _build_status[image_name] = "error"
+        logger.exception("Build %s crashed", image_ref)
