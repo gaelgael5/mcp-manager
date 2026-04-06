@@ -21,7 +21,7 @@
 
 <run type="cmd">
 docker run -it --rm \
-  --name agent-{workflow_id}-{phase}-claude-code \
+  --name agent-{id provider}-claude-code \
   --network host \
   -e ANTHROPIC_API_KEY={API_KEY} \
   -v {WORKSPACE_PATH}:/app \

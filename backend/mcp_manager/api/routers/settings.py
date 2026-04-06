@@ -79,28 +79,62 @@ async def list_docker_images(request: Request, admin: dict = Depends(require_adm
     return images
 
 
+def _extract_env_vars_from_pattern(pattern: str) -> tuple[str, str] | None:
+    """Extract VAR_NAME and default from ${VAR} or ${VAR:-default} patterns."""
+    if not isinstance(pattern, str):
+        return None
+    for match in re.finditer(r"\$\{([^}]+)\}", pattern):
+        inner = match.group(1)
+        if ":-" in inner:
+            var_name, default = inner.split(":-", 1)
+            return var_name, default
+        return inner, ""
+    return None
+
+
 @router.get("/settings/env-keys")
 async def get_env_keys(request: Request, admin: dict = Depends(require_admin)):
-    """Get environment variable values referenced by providers (${VAR} patterns)."""
-    config = load_config()
+    """Get all environment variables referenced by providers and docker run files."""
     keys: dict[str, dict] = {}
 
+    # Scan provider args
+    config = load_config()
     for provider in config.get("llm", []):
-        for arg_key, arg_val in provider.get("args", {}).items():
-            if isinstance(arg_val, str) and arg_val.startswith("${"):
-                inner = arg_val[2:-1]
-                default = ""
-                if ":-" in inner:
-                    var_name, default = inner.split(":-", 1)
-                else:
-                    var_name = inner
-                current = os.environ.get(var_name, default)
+        for arg_val in provider.get("args", {}).values():
+            parsed = _extract_env_vars_from_pattern(str(arg_val))
+            if parsed:
+                var_name, default = parsed
                 keys[var_name] = {
                     "name": var_name,
                     "default": default,
-                    "current": current,
-                    "pattern": arg_val,
+                    "current": os.environ.get(var_name, default),
+                    "pattern": str(arg_val),
                 }
+
+    # Scan <default> blocks in run.*.md files
+    dockers_path = os.path.abspath(DOCKERS_DIR)
+    if os.path.isdir(dockers_path):
+        for filename in os.listdir(dockers_path):
+            if not filename.startswith("run.") or not filename.endswith(".md"):
+                continue
+            with open(os.path.join(dockers_path, filename), encoding="utf-8") as f:
+                content = f.read()
+            match = re.search(r"<default>(.*?)</default>", content, re.DOTALL)
+            if match:
+                for line in match.group(1).strip().split("\n"):
+                    line = line.strip()
+                    if "=" in line:
+                        _, val = line.split("=", 1)
+                        parsed = _extract_env_vars_from_pattern(val.strip())
+                        if parsed:
+                            var_name, default = parsed
+                            if var_name not in keys:
+                                keys[var_name] = {
+                                    "name": var_name,
+                                    "default": default,
+                                    "current": os.environ.get(var_name, default),
+                                    "pattern": val.strip(),
+                                }
 
     return list(keys.values())
 
@@ -157,10 +191,16 @@ async def update_env_keys(
 @router.get("/settings/docker-run-cmd/{image_name}")
 async def get_docker_run_cmd(
     image_name: str,
-    request: Request,
+    provider_id: int = 0,
+    request: Request = None,
     admin: dict = Depends(require_admin),
 ):
-    """Generate the docker run command for a provider, with resolved env vars."""
+    """Generate the docker run command for a provider.
+
+    Step 1: Replace {KEY} (no $) with the value from <default> block (which may be ${VAR})
+    Step 2: Replace {workflow_id} with provider_id, {phase} with 'worker'
+    Step 3: Keep ${VAR} patterns as-is — they're resolved at runtime
+    """
     dockers_path = os.path.abspath(DOCKERS_DIR)
     run_file = os.path.join(dockers_path, f"run.{image_name}.md")
 
@@ -177,7 +217,7 @@ async def get_docker_run_cmd(
 
     cmd = cmd_match.group(1).strip()
 
-    # Resolve {VAR} patterns from defaults + env
+    # Parse <default> block: KEY = ${VAR} or ${VAR:-default}
     default_match = re.search(r"<default>(.*?)</default>", content, re.DOTALL)
     defaults = {}
     if default_match:
@@ -187,17 +227,13 @@ async def get_docker_run_cmd(
                 k, v = line.split("=", 1)
                 defaults[k.strip()] = v.strip()
 
-    # Resolve defaults then env
-    for key, pattern in defaults.items():
-        resolved = pattern
-        if pattern.startswith("${"):
-            inner = pattern[2:-1]
-            default = ""
-            if ":-" in inner:
-                var_name, default = inner.split(":-", 1)
-            else:
-                var_name = inner
-            resolved = os.environ.get(var_name, default)
-        cmd = cmd.replace(f"{{{key}}}", resolved)
+    # Step 1: Replace {KEY} patterns (not ${KEY}) with default values
+    # This turns {API_KEY} into ${ANTHROPIC_API_KEY}
+    for key, val in defaults.items():
+        cmd = cmd.replace(f"{{{key}}}", val)
+
+    # Step 2: Replace special patterns
+    cmd = cmd.replace("{workflow_id}", str(provider_id))
+    cmd = cmd.replace("{phase}", "worker")
 
     return {"cmd": cmd}

@@ -165,10 +165,10 @@ function useEnvKeys() {
   });
 }
 
-function useDockerRunCmd(imageName: string | undefined) {
+function useDockerRunCmd(imageName: string | undefined, providerId: number) {
   return useQuery({
-    queryKey: ["settings", "docker-run-cmd", imageName],
-    queryFn: () => apiFetch<{ cmd: string }>(`/settings/docker-run-cmd/${imageName}`),
+    queryKey: ["settings", "docker-run-cmd", imageName, providerId],
+    queryFn: () => apiFetch<{ cmd: string }>(`/settings/docker-run-cmd/${imageName}?provider_id=${providerId}`),
     enabled: !!imageName,
   });
 }
@@ -232,8 +232,8 @@ function EnvKeysBlock() {
   );
 }
 
-function DockerRunPreview({ imageName }: { imageName: string | undefined }) {
-  const { data } = useDockerRunCmd(imageName);
+function DockerRunPreview({ imageName, providerId }: { imageName: string | undefined; providerId: number }) {
+  const { data } = useDockerRunCmd(imageName, providerId);
   if (!imageName || !data?.cmd) return null;
   return (
     <div className="mt-2">
@@ -330,7 +330,7 @@ export function SettingsPage() {
                 setLocalConfig({ ...localConfig, llm: localConfig.llm.filter((_, j) => j !== i) });
               }}
             />
-            {p.type === "docker" && <DockerRunPreview imageName={p.image} />}
+            {p.type === "docker" && <DockerRunPreview imageName={p.image} providerId={p.id} />}
           </div>
         ))}
         <Button variant="secondary" size="sm" onClick={addProvider}>Add Provider</Button>
