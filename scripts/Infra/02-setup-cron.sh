@@ -5,17 +5,22 @@
 # A executer DANS le container LXC (en tant que root).
 # Installe le script cron + active le crontab toutes les 6h.
 #
-# Usage depuis l'hote Proxmox :
-#   pct exec <CTID> -- bash -c "$(cat 02-setup-cron.sh)"
+# Usage :
+#   ./02-setup-cron.sh                       # Default: toutes les 6h, 500 services/run
+#   ./02-setup-cron.sh "0 */4 * * *"         # Toutes les 4h
+#   ./02-setup-cron.sh "0 */6 * * *" 1000    # 6h, 1000 services/run
 #
-# Ou via SSH :
+# Via SSH :
 #   ssh root@192.168.10.99 "bash -s" < scripts/Infra/02-setup-cron.sh
 ###############################################################################
 set -eu
 
+# ── Configuration ────────────────────────────────────────────────────────────
 PROJECT_DIR="/root/mcp-manager"
 CRON_SCRIPT="/root/cron-mcp-manager.sh"
 CRON_LOG="/root/cron-mcp.log"
+CRON_SCHEDULE="${1:-0 */6 * * *}"    # Default: toutes les 6h. Usage: ./02-setup-cron.sh "0 */4 * * *"
+INDEX_LIMIT="${2:-500}"               # Nombre de services a indexer par run
 
 echo "==========================================="
 echo "  Setup Cron MCP Manager"
@@ -54,7 +59,7 @@ AND needs_reindex = FALSE AND index_attempts < 2;
 
 # 5. Index batch (summary + embeddings + params + recettes)
 echo "$(date +%H:%M:%S) — Index..." >> $LOG
-docker compose exec -T mcp-backend python -m mcp_manager.cli index --limit 500 2>&1 | grep "^Index complete:" >> $LOG
+docker compose exec -T mcp-backend python -m mcp_manager.cli index --limit INDEX_LIMIT_PLACEHOLDER 2>&1 | grep "^Index complete:" >> $LOG
 
 # 6. Update search vectors for newly indexed services
 docker compose exec -T mcp-manager-postgres psql -U langgraph -d langgraph -c "
@@ -70,8 +75,9 @@ echo "$(date '+%Y-%m-%d %H:%M:%S') === CRON DONE ===" >> $LOG
 tail -1000 $LOG > ${LOG}.tmp && mv ${LOG}.tmp $LOG
 CRONSCRIPT
 
+sed -i "s/INDEX_LIMIT_PLACEHOLDER/${INDEX_LIMIT}/" "${CRON_SCRIPT}"
 chmod +x "${CRON_SCRIPT}"
-echo "  -> ${CRON_SCRIPT} cree"
+echo "  -> ${CRON_SCRIPT} cree (index limit: ${INDEX_LIMIT})"
 
 # ── 2. Installer le crontab ─────────────────────────────────────────────────
 echo "[2/3] Installation du crontab..."
@@ -79,8 +85,8 @@ echo "[2/3] Installation du crontab..."
 # Supprimer l'ancien cron si existant
 crontab -l 2>/dev/null | grep -v "cron-mcp-manager" > /tmp/crontab.tmp || true
 
-# Ajouter le nouveau cron toutes les 6h
-echo "0 */6 * * * ${CRON_SCRIPT}" >> /tmp/crontab.tmp
+# Ajouter le nouveau cron
+echo "${CRON_SCHEDULE} ${CRON_SCRIPT}" >> /tmp/crontab.tmp
 
 crontab /tmp/crontab.tmp
 rm /tmp/crontab.tmp
