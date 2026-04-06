@@ -179,14 +179,14 @@ async def generate_skill_summary(
 
     # Embedding
     await db.execute(delete(McpEmbedding).where(
-        McpEmbedding.mcp_service_id == skill.id,
+        McpEmbedding.skill_id == skill.id,
         McpEmbedding.chunk_type == "skill_summary",
     ))
     if skill.summary_en:
         vec = await embed_text(skill.summary_en)
         if vec:
             db.add(McpEmbedding(
-                mcp_service_id=skill.id,
+                skill_id=skill.id,
                 chunk_type="skill_summary",
                 chunk_index=0,
                 content=skill.summary_en,
@@ -318,7 +318,7 @@ async def _generate_skill_summaries(db: AsyncSession, source_id, raw_skills: lis
             vec = await embed_text(skill.summary_en)
             if vec:
                 db.add(McpEmbedding(
-                    mcp_service_id=skill.id,  # Reuse embeddings table
+                    skill_id=skill.id,  # Reuse embeddings table
                     chunk_type="skill_summary",
                     chunk_index=0,
                     content=skill.summary_en,

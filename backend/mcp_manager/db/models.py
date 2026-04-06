@@ -239,15 +239,16 @@ class McpEmbedding(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    mcp_service_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("mcp_services.id", ondelete="CASCADE"), nullable=False
+    mcp_service_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("mcp_services.id", ondelete="CASCADE")
     )
-    chunk_type: Mapped[str] = mapped_column(String(20), nullable=False)  # "summary" or "doc_chunk"
+    skill_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("skills.id", ondelete="CASCADE")
+    )
+    chunk_type: Mapped[str] = mapped_column(String(20), nullable=False)  # "summary", "doc_chunk", "skill_summary"
     chunk_index: Mapped[int] = mapped_column(default=0)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     embedding = mapped_column(Vector(EMBEDDING_DIM))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
-
-    service: Mapped["McpService"] = relationship()
