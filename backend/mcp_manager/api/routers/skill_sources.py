@@ -167,15 +167,25 @@ async def generate_skill_summary(
 
     prompts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "prompts")
 
+    import logging
+    gen_logger = logging.getLogger(__name__)
+
     # EN
     with open(os.path.join(prompts_dir, "skill_summary_en.md"), encoding="utf-8") as f:
         prompt_en = f.read().replace("{content}", cleaned)
     skill.summary_en = await ollama_generate(prompt_en)
+    gen_logger.info("Skill %s EN summary: %d chars", skill.name, len(skill.summary_en or ""))
 
     # FR
     with open(os.path.join(prompts_dir, "skill_summary_fr.md"), encoding="utf-8") as f:
         prompt_fr = f.read().replace("{content}", cleaned)
     skill.summary_fr = await ollama_generate(prompt_fr)
+    gen_logger.info("Skill %s FR summary: %d chars", skill.name, len(skill.summary_fr or ""))
+
+    # Retry FR if empty
+    if not skill.summary_fr:
+        gen_logger.warning("FR summary empty, retrying...")
+        skill.summary_fr = await ollama_generate(prompt_fr)
 
     # Embedding
     await db.execute(delete(McpEmbedding).where(
