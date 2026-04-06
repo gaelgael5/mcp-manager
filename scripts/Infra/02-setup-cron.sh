@@ -83,7 +83,11 @@ UPDATE mcp_services s SET search_vector = to_tsvector('english',
 ) WHERE id IN (SELECT DISTINCT mcp_service_id FROM mcp_summaries);
 " >> $LOG 2>&1
 
-# 7. Cleanup revoked API keys older than 24h
+# 7. Sync federated instances
+echo "$(date +%H:%M:%S) — Instance sync..." >> $LOG
+docker compose exec -T mcp-backend python -m mcp_manager.cli sync-instances 2>&1 | grep "^Instance sync" >> $LOG
+
+# 8. Cleanup revoked API keys older than 24h
 docker compose exec -T mcp-manager-postgres psql -U langgraph -d langgraph -c "
 DELETE FROM api_keys WHERE is_active = FALSE AND created_at < now() - interval '24 hours';
 " >> $LOG 2>&1

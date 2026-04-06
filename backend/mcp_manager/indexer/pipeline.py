@@ -195,6 +195,18 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
                 ))
                 stats["recipes"] += 1
 
+    # 6. Update search vector with summary
+    if en_summary_text:
+        from sqlalchemy import text as sql_text
+        await db.execute(
+            sql_text("""
+                UPDATE mcp_services SET search_vector = to_tsvector('english',
+                    coalesce(name, '') || ' ' || coalesce(category, '') || ' ' || :summary
+                ) WHERE id = :sid
+            """),
+            {"summary": en_summary_text, "sid": service.id},
+        )
+
     service.repo_status = "ok"
     return True
 

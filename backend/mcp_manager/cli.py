@@ -299,5 +299,68 @@ async def _run_index(limit: int) -> dict:
     return await run_index(limit=limit)
 
 
+@app.command()
+def sync_instances():
+    """Sync services from all active MCP Manager instances."""
+    logging.basicConfig(level=logging.INFO)
+    result = asyncio.run(_run_sync_instances())
+    typer.echo(f"Instance sync complete: {result}")
+
+
+async def _run_sync_instances() -> dict[str, int]:
+    from sqlalchemy import select
+    from datetime import datetime, timezone
+    from mcp_manager.db.session import SessionLocal
+    from mcp_manager.db.models import McpService, McpInstance
+    from mcp_manager.connectors.mcp_manager_instance import McpManagerInstanceConnector
+
+    stats = {"new": 0, "updated": 0, "instances": 0}
+
+    async with SessionLocal() as db:
+        result = await db.execute(
+            select(McpInstance).where(McpInstance.is_active == True)
+        )
+        instances = result.scalars().all()
+
+        for instance in instances:
+            logger.info("Syncing instance: %s (%s)", instance.name, instance.url)
+            connector = McpManagerInstanceConnector(
+                instance_url=instance.url,
+                api_key=instance.api_key,
+                last_sync=instance.last_sync.isoformat() if instance.last_sync else None,
+            )
+            try:
+                services = await connector.fetch_services()
+                count = 0
+                for raw in services:
+                    existing = await db.execute(
+                        select(McpService).where(
+                            McpService.source_type == "mcp_instance",
+                            McpService.name == raw.name,
+                        )
+                    )
+                    existing_svc = existing.scalar_one_or_none()
+                    if not existing_svc:
+                        db.add(McpService(
+                            name=raw.name, source_url=raw.source_url,
+                            source_type="mcp_instance", doc_url=raw.doc_url,
+                            transport=raw.transport, category=raw.category,
+                        ))
+                        stats["new"] += 1
+                        count += 1
+                    else:
+                        stats["updated"] += 1
+
+                instance.last_sync = datetime.now(timezone.utc)
+                instance.last_sync_count = count
+                stats["instances"] += 1
+                await db.commit()
+                logger.info("Instance %s: %d new services", instance.name, count)
+            except Exception:
+                logger.exception("Failed to sync instance %s", instance.name)
+
+    return stats
+
+
 if __name__ == "__main__":
     app()
