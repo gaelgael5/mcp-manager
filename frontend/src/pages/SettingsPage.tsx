@@ -56,6 +56,14 @@ function ProviderEditor({ provider, onChange, onDelete }: {
   onDelete: () => void;
 }) {
   const { data: dockerImages } = useDockerImages();
+  const [argsText, setArgsText] = useState(JSON.stringify(provider.args, null, 2));
+  const [argsValid, setArgsValid] = useState(true);
+
+  // Sync argsText when provider.args changes externally (type change, image change, reset)
+  useEffect(() => {
+    setArgsText(JSON.stringify(provider.args, null, 2));
+    setArgsValid(true);
+  }, [JSON.stringify(provider.args)]);
 
   const handleTypeChange = (newType: string) => {
     if (newType === "ollama") {
@@ -137,14 +145,20 @@ function ProviderEditor({ provider, onChange, onDelete }: {
             </button>
           </div>
           <textarea
-            value={JSON.stringify(provider.args, null, 2)}
+            value={argsText}
             onChange={(e) => {
+              setArgsText(e.target.value);
               try {
-                onChange({ ...provider, args: JSON.parse(e.target.value) });
-              } catch { /* ignore invalid JSON while typing */ }
+                const parsed = JSON.parse(e.target.value);
+                onChange({ ...provider, args: parsed });
+                setArgsValid(true);
+              } catch {
+                setArgsValid(false);
+              }
             }}
-            className="w-full rounded border border-gray-300 px-2 py-1 text-xs font-mono h-20"
+            className={`w-full rounded border px-2 py-1 text-xs font-mono h-20 ${argsValid ? "border-gray-300" : "border-red-400 bg-red-50"}`}
           />
+          {!argsValid && <p className="text-xs text-red-500 mt-1">Invalid JSON</p>}
         </div>
       </div>
     </Card>
