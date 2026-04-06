@@ -123,6 +123,82 @@ async def get_skill(skill_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     return _serialize_skill(skill)
 
 
+@router.post("/skills/{skill_id}/generate-summary")
+async def generate_skill_summary(
+    skill_id: uuid.UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    admin: dict = Depends(require_admin),
+):
+    """Generate summary for a single skill."""
+    import os
+    from mcp_manager.summarizer.ollama_client import ollama_generate
+    from mcp_manager.indexer.embedder import embed_text
+    from mcp_manager.db.models import McpEmbedding
+    from mcp_manager.connectors.skill_scanner import scan_skill_source
+    from sqlalchemy import delete
+
+    result = await db.execute(select(Skill).where(Skill.id == skill_id))
+    skill = result.scalar_one_or_none()
+    if not skill:
+        raise HTTPException(status_code=404, detail="Skill not found")
+
+    # Get the source to re-fetch the raw content
+    src_result = await db.execute(select(SkillSource).where(SkillSource.id == skill.skill_source_id))
+    source = src_result.scalar_one_or_none()
+    if not source:
+        raise HTTPException(status_code=400, detail="Skill source not found")
+
+    # Re-scan to get raw content for this skill
+    raw_skills = await scan_skill_source(source.url, source.skills_path, source.type)
+    raw_content = None
+    for raw in raw_skills:
+        if raw["name"] == skill.name:
+            raw_content = raw.get("raw_content", "")
+            break
+
+    if not raw_content:
+        raise HTTPException(status_code=404, detail="Could not fetch skill content")
+
+    from mcp_manager.summarizer.cleaner import clean_markdown
+    cleaned = clean_markdown(raw_content)
+    if len(cleaned) > 8000:
+        cleaned = cleaned[:8000]
+
+    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "prompts")
+
+    # EN
+    with open(os.path.join(prompts_dir, "skill_summary_en.md"), encoding="utf-8") as f:
+        prompt_en = f.read().replace("{content}", cleaned)
+    skill.summary_en = await ollama_generate(prompt_en)
+
+    # FR
+    with open(os.path.join(prompts_dir, "skill_summary_fr.md"), encoding="utf-8") as f:
+        prompt_fr = f.read().replace("{content}", cleaned)
+    skill.summary_fr = await ollama_generate(prompt_fr)
+
+    # Embedding
+    await db.execute(delete(McpEmbedding).where(
+        McpEmbedding.mcp_service_id == skill.id,
+        McpEmbedding.chunk_type == "skill_summary",
+    ))
+    if skill.summary_en:
+        vec = await embed_text(skill.summary_en)
+        if vec:
+            db.add(McpEmbedding(
+                mcp_service_id=skill.id,
+                chunk_type="skill_summary",
+                chunk_index=0,
+                content=skill.summary_en,
+                embedding=vec,
+            ))
+
+    skill.needs_summary = False
+    await db.commit()
+
+    return {"status": "done", "summary_en": bool(skill.summary_en), "summary_fr": bool(skill.summary_fr)}
+
+
 @router.post("/skill-sources/{source_id}/sync")
 async def sync_skill_source(
     source_id: uuid.UUID,

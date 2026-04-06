@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Markdown from "react-markdown";
 import { apiFetch } from "../api/client";
+import { useCurrentUser } from "../api/auth";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
+import { Button } from "../components/ui/Button";
 import { Tabs } from "../components/ui/Tabs";
 
 interface SkillDetail {
@@ -41,8 +43,16 @@ const licenceInfo: Record<string, { color: string; description: string }> = {
 
 export function SkillDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { data: user } = useCurrentUser();
+  const isAdmin = user?.is_admin === true;
+  const qc = useQueryClient();
   const [contentTab, setContentTab] = useState("en");
   const [collapsed, setCollapsed] = useState(false);
+
+  const generateSummary = useMutation({
+    mutationFn: () => apiFetch<{ status: string }>(`/skills/${id}/generate-summary`, { method: "POST" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["skill", id] }),
+  });
 
   const { data: skill } = useQuery({
     queryKey: ["skill", id],
@@ -93,9 +103,23 @@ export function SkillDetailPage() {
           ) : (
             <p className="text-sm text-gray-500">No summary generated yet.</p>
           )}
-          <button onClick={() => setCollapsed(!collapsed)} className="text-xs text-gray-400 hover:text-gray-600">
-            {collapsed ? "Expand" : "Collapse"}
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setCollapsed(!collapsed)} className="text-xs text-gray-400 hover:text-gray-600">
+              {collapsed ? "Expand" : "Collapse"}
+            </button>
+            {isAdmin && (
+              <Button
+                size="sm"
+                variant={skill.has_summary ? "secondary" : "primary"}
+                onClick={() => generateSummary.mutate()}
+                loading={generateSummary.isPending}
+              >
+                {skill.has_summary ? "Regenerate Summary" : "Generate Summary"}
+              </Button>
+            )}
+            {generateSummary.isSuccess && <span className="text-sm text-green-600">Summaries generated</span>}
+            {generateSummary.isError && <span className="text-sm text-red-600">Failed</span>}
+          </div>
         </div>
       </Card>
 
