@@ -52,6 +52,10 @@ services:
       OLLAMA_SUMMARY_MODEL: ${OLLAMA_SUMMARY_MODEL:-llama3.1}
       CORS_ORIGINS: '["http://localhost:3001","http://192.168.10.99:3001"]'
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      JWT_SECRET: ${JWT_SECRET:-mcp-manager-jwt-secret}
     healthcheck:
       test: curl -f http://localhost:8000/api/v1/health || exit 1
       interval: 30s
