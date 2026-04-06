@@ -95,6 +95,7 @@ export function SkillsCatalogPage() {
                 <h3 className="font-medium text-gray-900">{skill.name}</h3>
                 <div className="mt-1 flex flex-wrap gap-1.5">
                   <Badge color={targetColors[skill.target_type] || "gray"}>{skill.target_type}</Badge>
+                  {sources && <Badge color="blue">{sources.find((s) => s.id === skill.skill_source_id)?.name || "unknown"}</Badge>}
                   {skill.licence && <Badge color="gray">{skill.licence}</Badge>}
                   {skill.category && <Badge>{skill.category}</Badge>}
                 </div>
