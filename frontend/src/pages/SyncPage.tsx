@@ -35,6 +35,12 @@ export function SyncPage() {
           <Button variant="secondary" onClick={() => triggerSync.mutate("glama")} loading={status?.running} disabled={status?.running}>
             Glama
           </Button>
+          <Button variant="secondary" onClick={() => triggerSync.mutate("pulsemcp")} loading={status?.running} disabled={status?.running}>
+            PulseMCP
+          </Button>
+          <Button variant="secondary" onClick={() => triggerSync.mutate("mcp_servers_repo")} loading={status?.running} disabled={status?.running}>
+            MCP Servers Repo
+          </Button>
         </div>
         {status?.last_stats && (
           <div className="grid grid-cols-3 gap-4 text-center mt-4">
