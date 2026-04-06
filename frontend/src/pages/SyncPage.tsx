@@ -65,6 +65,12 @@ export function SyncPage() {
           <Button variant="secondary" onClick={() => triggerIndex.mutate(1000)} loading={triggerIndex.isPending || indexing} disabled={indexing}>
             Index 1000
           </Button>
+          <Button variant="secondary" onClick={() => triggerIndex.mutate(5000)} loading={triggerIndex.isPending || indexing} disabled={indexing}>
+            Index 5000
+          </Button>
+          <Button variant="danger" onClick={() => triggerIndex.mutate(999999)} loading={triggerIndex.isPending || indexing} disabled={indexing}>
+            Index All
+          </Button>
         </div>
         {indexing && <p className="text-sm text-blue-600 mt-2">Indexing in progress...</p>}
         {(status as any)?.last_index && (
