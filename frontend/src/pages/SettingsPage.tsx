@@ -136,6 +136,98 @@ function ProviderEditor({ provider, onChange, onDelete }: {
   );
 }
 
+interface EnvKey {
+  name: string;
+  default: string;
+  current: string;
+  pattern: string;
+}
+
+function useEnvKeys() {
+  return useQuery({
+    queryKey: ["settings", "env-keys"],
+    queryFn: () => apiFetch<EnvKey[]>("/settings/env-keys"),
+  });
+}
+
+function useDockerRunCmd(imageName: string | undefined) {
+  return useQuery({
+    queryKey: ["settings", "docker-run-cmd", imageName],
+    queryFn: () => apiFetch<{ cmd: string }>(`/settings/docker-run-cmd/${imageName}`),
+    enabled: !!imageName,
+  });
+}
+
+function EnvKeysBlock() {
+  const { data: envKeys } = useEnvKeys();
+  const [localKeys, setLocalKeys] = useState<Record<string, string>>({});
+  const [initialized, setInitialized] = useState(false);
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    if (envKeys && !initialized) {
+      const kv: Record<string, string> = {};
+      envKeys.forEach((k) => { kv[k.name] = k.current; });
+      setLocalKeys(kv);
+      setInitialized(true);
+    }
+  }, [envKeys, initialized]);
+
+  const saveKeys = useMutation({
+    mutationFn: (keys: Record<string, string>) =>
+      apiFetch<{ status: string }>("/settings/env-keys", {
+        method: "PUT",
+        body: JSON.stringify({ keys }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["settings", "env-keys"] });
+      qc.invalidateQueries({ queryKey: ["settings", "docker-run-cmd"] });
+    },
+  });
+
+  if (!envKeys || envKeys.length === 0) return null;
+
+  return (
+    <Card title="Environment Keys">
+      <div className="space-y-3">
+        {envKeys.map((k) => (
+          <div key={k.name} className="flex items-center gap-2">
+            <label className="w-48 text-xs font-mono text-gray-600 truncate">{k.name}</label>
+            <input
+              type={k.name.includes("KEY") || k.name.includes("SECRET") ? "password" : "text"}
+              value={localKeys[k.name] || ""}
+              onChange={(e) => setLocalKeys({ ...localKeys, [k.name]: e.target.value })}
+              className="flex-1 rounded border border-gray-300 px-2 py-1 text-xs font-mono"
+              placeholder={k.pattern}
+            />
+            <button
+              onClick={() => setLocalKeys({ ...localKeys, [k.name]: k.default })}
+              className="text-xs text-gray-400 hover:text-gray-600"
+              title={`Reset to default: ${k.default || "(empty)"}`}
+            >
+              reset
+            </button>
+          </div>
+        ))}
+        <Button size="sm" onClick={() => saveKeys.mutate(localKeys)} loading={saveKeys.isPending}>
+          {saveKeys.isSuccess ? "Saved!" : "Save Keys"}
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+function DockerRunPreview({ imageName }: { imageName: string | undefined }) {
+  const { data } = useDockerRunCmd(imageName);
+  if (!imageName || !data?.cmd) return null;
+  return (
+    <div className="mt-2">
+      <label className="block text-xs text-gray-500 mb-1">Launch command</label>
+      <pre className="text-xs font-mono bg-gray-50 border rounded p-2 overflow-x-auto whitespace-pre-wrap">{data.cmd}</pre>
+    </div>
+  );
+}
+
 export function SettingsPage() {
   const { data: user } = useCurrentUser();
   const { data: config } = useLLMConfig();
@@ -206,21 +298,25 @@ export function SettingsPage() {
         </div>
       </Card>
 
+      <EnvKeysBlock />
+
       <div className="space-y-3">
         <h2 className="text-lg font-medium">LLM Providers</h2>
         {localConfig.llm.map((p, i) => (
-          <ProviderEditor
-            key={p.id}
-            provider={p}
-            onChange={(updated) => {
-              const llm = [...localConfig.llm];
-              llm[i] = updated;
-              setLocalConfig({ ...localConfig, llm });
-            }}
-            onDelete={() => {
-              setLocalConfig({ ...localConfig, llm: localConfig.llm.filter((_, j) => j !== i) });
-            }}
-          />
+          <div key={p.id}>
+            <ProviderEditor
+              provider={p}
+              onChange={(updated) => {
+                const llm = [...localConfig.llm];
+                llm[i] = updated;
+                setLocalConfig({ ...localConfig, llm });
+              }}
+              onDelete={() => {
+                setLocalConfig({ ...localConfig, llm: localConfig.llm.filter((_, j) => j !== i) });
+              }}
+            />
+            {p.type === "docker" && <DockerRunPreview imageName={p.image} />}
+          </div>
         ))}
         <Button variant="secondary" size="sm" onClick={addProvider}>Add Provider</Button>
       </div>

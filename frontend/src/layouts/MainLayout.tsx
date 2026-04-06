@@ -12,7 +12,7 @@ const publicLinks = [
 const adminLinks = [
   { to: "/sync", label: "Sync" },
   { to: "/api-keys", label: "Keys" },
-  { to: "/instances", label: "Instances" },
+  { to: "/instances", label: "Community" },
   { to: "/settings", label: "Settings" },
 ];
 
