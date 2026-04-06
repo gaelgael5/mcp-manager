@@ -160,20 +160,22 @@ async def sync_skill_source(
         skill = existing.scalar_one_or_none()
         if skill:
             skill.description = raw["description"]
-            skill.content = raw["content"]
             skill.licence = raw["licence"]
+            skill.licence_url = raw.get("licence_url")
             skill.source_url = raw["source_url"]
+            skill.needs_summary = True
             updated += 1
         else:
             db.add(Skill(
                 skill_source_id=source_id,
                 name=raw["name"],
                 description=raw["description"],
-                content=raw["content"],
                 target_type=source.type,
                 licence=raw["licence"],
+                licence_url=raw.get("licence_url"),
                 source_url=raw["source_url"],
                 category=raw.get("category"),
+                needs_summary=True,
             ))
             added += 1
 
@@ -182,7 +184,76 @@ async def sync_skill_source(
     source.last_sync_count = added + updated
     await db.commit()
 
-    return {"status": "done", "added": added, "updated": updated}
+    # Generate summaries for new/updated skills
+    summaries_generated = await _generate_skill_summaries(db, source_id, raw_skills)
+
+    return {"status": "done", "added": added, "updated": updated, "summaries": summaries_generated}
+
+
+async def _generate_skill_summaries(db: AsyncSession, source_id, raw_skills: list[dict]) -> int:
+    """Generate summaries for skills that need it."""
+    import os
+    from mcp_manager.summarizer.ollama_client import ollama_generate
+    from mcp_manager.summarizer.cleaner import clean_markdown
+    from mcp_manager.indexer.embedder import embed_text
+    from mcp_manager.db.models import McpEmbedding
+
+    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "prompts")
+    count = 0
+
+    # Build raw content map by name
+    content_map = {r["name"]: r.get("raw_content", "") for r in raw_skills}
+
+    result = await db.execute(
+        select(Skill).where(Skill.skill_source_id == source_id, Skill.needs_summary == True)
+    )
+    skills = result.scalars().all()
+
+    for skill in skills:
+        raw_content = content_map.get(skill.name, "")
+        if not raw_content:
+            continue
+
+        cleaned = clean_markdown(raw_content)
+        if not cleaned:
+            continue
+
+        if len(cleaned) > 8000:
+            cleaned = cleaned[:8000]
+
+        # Generate EN summary
+        try:
+            with open(os.path.join(prompts_dir, "skill_summary_en.md"), encoding="utf-8") as f:
+                prompt_en = f.read().replace("{content}", cleaned)
+            skill.summary_en = await ollama_generate(prompt_en)
+        except Exception:
+            pass
+
+        # Generate FR summary
+        try:
+            with open(os.path.join(prompts_dir, "skill_summary_fr.md"), encoding="utf-8") as f:
+                prompt_fr = f.read().replace("{content}", cleaned)
+            skill.summary_fr = await ollama_generate(prompt_fr)
+        except Exception:
+            pass
+
+        # Embed summary for RAG search
+        if skill.summary_en:
+            vec = await embed_text(skill.summary_en)
+            if vec:
+                db.add(McpEmbedding(
+                    mcp_service_id=skill.id,  # Reuse embeddings table
+                    chunk_type="skill_summary",
+                    chunk_index=0,
+                    content=skill.summary_en,
+                    embedding=vec,
+                ))
+
+        skill.needs_summary = False
+        count += 1
+        await db.commit()
+
+    return count
 
 
 @router.post("/skill-sources/sync-all")
@@ -263,11 +334,14 @@ def _serialize_skill(s: Skill) -> dict:
         "skill_source_id": str(s.skill_source_id),
         "name": s.name,
         "description": s.description,
-        "content": s.content,
+        "summary_en": s.summary_en,
+        "summary_fr": s.summary_fr,
         "target_type": s.target_type,
         "licence": s.licence,
+        "licence_url": s.licence_url,
         "source_url": s.source_url,
         "category": s.category,
+        "has_summary": bool(s.summary_en),
         "created_at": s.created_at.isoformat() if s.created_at else None,
         "updated_at": s.updated_at.isoformat() if s.updated_at else None,
     }

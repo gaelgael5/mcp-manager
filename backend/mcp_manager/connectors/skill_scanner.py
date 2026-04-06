@@ -85,11 +85,22 @@ async def scan_skill_source(url: str, skills_path: str, source_type: str) -> lis
             # Parse YAML frontmatter
             name, description, licence = _parse_frontmatter(content, skill_name)
 
+            # Build licence URL
+            licence_url = None
+            for branch in ["main", "master"]:
+                lic_url = f"https://github.com/{owner}/{repo}/blob/{branch}/{skill_dir}/LICENSE.txt"
+                lic_raw = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{skill_dir}/LICENSE.txt"
+                lic_resp = await client.get(lic_raw, headers=headers)
+                if lic_resp.status_code == 200:
+                    licence_url = lic_url
+                    break
+
             skills.append({
                 "name": name,
                 "description": description,
-                "content": content,
+                "raw_content": content,  # Used for summary generation, not stored
                 "licence": licence,
+                "licence_url": licence_url,
                 "source_url": source_url,
                 "category": None,
             })

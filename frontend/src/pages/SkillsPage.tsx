@@ -19,23 +19,11 @@ interface SkillSource {
   created_at: string;
 }
 
-interface Skill {
-  id: string;
-  skill_source_id: string;
-  name: string;
-  description: string | null;
-  content: string | null;
-  target_type: string;
-  licence: string | null;
-  source_url: string | null;
-  category: string | null;
-}
-
 const targetColors: Record<string, string> = {
-  "claude-code": "purple",
-  "copilot": "blue",
-  "cursor": "green",
-  "gemini": "yellow",
+  claude: "purple",
+  copilot: "blue",
+  cursor: "green",
+  gemini: "yellow",
 };
 
 function useSkillSources() {
@@ -45,32 +33,10 @@ function useSkillSources() {
   });
 }
 
-function useSkills(sourceId?: string, targetType?: string) {
-  const params = new URLSearchParams();
-  if (sourceId) params.set("source_id", sourceId);
-  if (targetType) params.set("target_type", targetType);
-  const qs = params.toString();
-  return useQuery({
-    queryKey: ["skills", qs],
-    queryFn: () => apiFetch<Skill[]>(`/skills?${qs}`),
-  });
-}
-
 export function SkillsPage() {
   const { data: user } = useCurrentUser();
   const isAdmin = user?.is_admin === true;
   const { data: sources } = useSkillSources();
-  const [selectedSource, setSelectedSource] = useState<string>("");
-  const [selectedTarget, setSelectedTarget] = useState<string>("");
-  const { data: skills } = useSkills(selectedSource || undefined, selectedTarget || undefined);
-  const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const filteredSkills = (skills || []).filter((s) => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return s.name.toLowerCase().includes(q) || (s.description || "").toLowerCase().includes(q);
-  });
 
   const qc = useQueryClient();
 
@@ -175,64 +141,6 @@ export function SkillsPage() {
           </div>
         )}
       </Card>
-
-      {/* Skills */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg font-medium">Skills Catalog</h2>
-            {skills && <span className="text-sm text-gray-500">{filteredSkills.length} skills</span>}
-          </div>
-          <div className="flex gap-2">
-            <input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search skills..."
-              className="rounded border border-gray-300 px-2 py-1 text-xs w-48"
-            />
-            <select value={selectedSource} onChange={(e) => setSelectedSource(e.target.value)} className="rounded border border-gray-300 px-2 py-1 text-xs">
-              <option value="">All sources</option>
-              {sources?.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-            <select value={selectedTarget} onChange={(e) => setSelectedTarget(e.target.value)} className="rounded border border-gray-300 px-2 py-1 text-xs">
-              <option value="">All targets</option>
-              <option value="claude">claude</option>
-              <option value="copilot">copilot</option>
-              <option value="cursor">cursor</option>
-              <option value="gemini">gemini</option>
-            </select>
-          </div>
-        </div>
-
-        {filteredSkills.map((skill) => (
-          <Card key={skill.id}>
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{skill.name}</span>
-                  <Badge color={targetColors[skill.target_type] || "gray"}>{skill.target_type}</Badge>
-                  {skill.licence && <Badge color="gray">{skill.licence}</Badge>}
-                  {skill.category && <Badge>{skill.category}</Badge>}
-                </div>
-                {skill.description && <p className="text-sm text-gray-600 mt-1 line-clamp-2">{skill.description}</p>}
-                {skill.source_url && (
-                  <a href={skill.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 block">{skill.source_url}</a>
-                )}
-              </div>
-              <button
-                onClick={() => setExpandedSkill(expandedSkill === skill.id ? null : skill.id)}
-                className="text-xs text-gray-400 hover:text-gray-600"
-              >
-                {expandedSkill === skill.id ? "Collapse" : "View"}
-              </button>
-            </div>
-            {expandedSkill === skill.id && skill.content && (
-              <pre className="mt-3 text-xs font-mono bg-gray-50 border rounded p-3 overflow-auto max-h-96 whitespace-pre-wrap">{skill.content}</pre>
-            )}
-          </Card>
-        ))}
-        {filteredSkills.length === 0 && <p className="text-sm text-gray-500">{skills?.length === 0 ? "No skills indexed yet. Add a source and sync." : "No skills match your search."}</p>}
-      </div>
     </div>
   );
 }
