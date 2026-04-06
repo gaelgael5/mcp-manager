@@ -29,3 +29,17 @@ export function useTriggerIndex() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
   });
 }
+
+export function useTriggerScrapeSkills() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (opts?: { limit?: number; skipSummaries?: boolean }) => {
+      const params = new URLSearchParams();
+      if (opts?.limit) params.set("limit", String(opts.limit));
+      if (opts?.skipSummaries) params.set("skip_summaries", "true");
+      const qs = params.toString() ? `?${params.toString()}` : "";
+      return apiFetch<{ status: string }>(`/services/scrape-skills${qs}`, { method: "POST" });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
+  });
+}

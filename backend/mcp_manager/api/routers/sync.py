@@ -31,6 +31,19 @@ async def trigger_index(
     return {"status": "started", "limit": limit}
 
 
+@router.post("/services/scrape-skills")
+async def trigger_scrape_skills(
+    background_tasks: BackgroundTasks,
+    limit: int = Query(None),
+    skip_summaries: bool = Query(False),
+):
+    if _sync_status.get("scraping"):
+        return {"status": "already_running"}
+    _sync_status["scraping"] = True
+    background_tasks.add_task(_run_scrape_skills_bg, limit, skip_summaries)
+    return {"status": "started"}
+
+
 @router.get("/services/sync/status")
 async def sync_status():
     return _sync_status
@@ -88,6 +101,21 @@ async def _run_sync_bg(source: str | None):
         logger.exception("Sync failed")
     finally:
         _sync_status["running"] = False
+
+
+async def _run_scrape_skills_bg(limit: int | None, skip_summaries: bool):
+    from datetime import datetime, timezone
+    try:
+        from scripts.scrape_skills_sh import scrape_skills_sh
+        await scrape_skills_sh(limit=limit, skip_summaries=skip_summaries)
+        _sync_status["last_scrape"] = {
+            "time": datetime.now(timezone.utc).isoformat(),
+            "limit": limit,
+        }
+    except Exception:
+        logger.exception("Scrape skills failed")
+    finally:
+        _sync_status["scraping"] = False
 
 
 async def _run_index_bg(limit: int):

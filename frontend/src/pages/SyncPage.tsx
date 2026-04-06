@@ -1,4 +1,4 @@
-import { useSyncStatus, useTriggerSync, useTriggerIndex } from "../api/sync";
+import { useSyncStatus, useTriggerSync, useTriggerIndex, useTriggerScrapeSkills } from "../api/sync";
 import { useCurrentUser } from "../api/auth";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -9,6 +9,7 @@ export function SyncPage() {
   const { data: status } = useSyncStatus();
   const triggerSync = useTriggerSync();
   const triggerIndex = useTriggerIndex();
+  const scrapeSkills = useTriggerScrapeSkills();
 
   if (!user?.is_admin) {
     return <p className="text-gray-500">Admin access required.</p>;
@@ -47,6 +48,29 @@ export function SyncPage() {
             <div><p className="text-2xl font-bold text-green-600">{status.last_stats.new}</p><p className="text-xs text-gray-500">New</p></div>
             <div><p className="text-2xl font-bold text-blue-600">{status.last_stats.updated}</p><p className="text-xs text-gray-500">Updated</p></div>
             <div><p className="text-2xl font-bold text-gray-400">{status.last_stats.unchanged}</p><p className="text-xs text-gray-500">Unchanged</p></div>
+          </div>
+        )}
+      </Card>
+
+      <Card title="Scrape Skills.sh">
+        <p className="text-sm text-gray-500 mb-3">
+          Crawl skills.sh catalog, create Skill Sources + Skills with install commands and summaries.
+        </p>
+        <div className="flex gap-3">
+          <Button onClick={() => scrapeSkills.mutate({ limit: 10, skipSummaries: true })} loading={scrapeSkills.isPending || (status as any)?.scraping} disabled={(status as any)?.scraping}>
+            Test (10, no summary)
+          </Button>
+          <Button variant="secondary" onClick={() => scrapeSkills.mutate({ skipSummaries: true })} loading={scrapeSkills.isPending || (status as any)?.scraping} disabled={(status as any)?.scraping}>
+            All (no summary)
+          </Button>
+          <Button variant="secondary" onClick={() => scrapeSkills.mutate({})} loading={scrapeSkills.isPending || (status as any)?.scraping} disabled={(status as any)?.scraping}>
+            All + Summaries
+          </Button>
+        </div>
+        {(status as any)?.scraping && <p className="text-sm text-blue-600 mt-2">Scraping in progress...</p>}
+        {(status as any)?.last_scrape && (
+          <div className="mt-3 text-xs text-gray-500">
+            Last scrape: {(status as any).last_scrape.time}
           </div>
         )}
       </Card>
