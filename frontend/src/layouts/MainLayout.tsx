@@ -2,12 +2,16 @@ import { useEffect } from "react";
 import { Outlet, NavLink, useSearchParams } from "react-router-dom";
 import { useCurrentUser, setToken, clearToken } from "../api/auth";
 
-const links = [
+const publicLinks = [
   { to: "/", label: "Dashboard" },
   { to: "/services", label: "Services" },
   { to: "/targets", label: "Targets" },
-  { to: "/sync", label: "Sync" },
   { to: "/api-docs", label: "API" },
+];
+
+const adminLinks = [
+  { to: "/sync", label: "Sync" },
+  { to: "/api-keys", label: "Keys" },
 ];
 
 export function MainLayout() {
@@ -40,7 +44,7 @@ export function MainLayout() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-8">
             <span className="font-bold text-lg">MCP Manager</span>
-            {links.map((l) => (
+            {publicLinks.map((l) => (
               <NavLink
                 key={l.to}
                 to={l.to}
@@ -52,11 +56,17 @@ export function MainLayout() {
                 {l.label}
               </NavLink>
             ))}
-            {user?.is_admin && (
-              <NavLink to="/api-keys" className={({ isActive }) => `text-sm ${isActive ? "text-blue-600 font-medium" : "text-gray-600 hover:text-gray-900"}`}>
-                Keys
+            {user?.is_admin && adminLinks.map((l) => (
+              <NavLink
+                key={l.to}
+                to={l.to}
+                className={({ isActive }) =>
+                  `text-sm ${isActive ? "text-blue-600 font-medium" : "text-gray-600 hover:text-gray-900"}`
+                }
+              >
+                {l.label}
               </NavLink>
-            )}
+            ))}
           </div>
           <div className="flex items-center gap-3">
             {user?.authenticated ? (

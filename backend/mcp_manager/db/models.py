@@ -154,7 +154,7 @@ class ApiKey(Base):
     )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     key_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
-    key_prefix: Mapped[str] = mapped_column(String(10), nullable=False)  # "mcp_xxxx" for display
+    key_prefix: Mapped[str] = mapped_column(String(20), nullable=False)  # "mcp_xxxx..." for display
     owner_email: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

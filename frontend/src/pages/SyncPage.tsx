@@ -1,11 +1,17 @@
 import { useSyncStatus, useTriggerSync } from "../api/sync";
+import { useCurrentUser } from "../api/auth";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { SyncStatusBar } from "../components/domain/SyncStatusBar";
 
 export function SyncPage() {
+  const { data: user } = useCurrentUser();
   const { data: status } = useSyncStatus();
   const triggerSync = useTriggerSync();
+
+  if (!user?.is_admin) {
+    return <p className="text-gray-500">Admin access required.</p>;
+  }
 
   return (
     <div className="space-y-6">

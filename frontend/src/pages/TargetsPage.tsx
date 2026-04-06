@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTargets, useCreateTarget, useUpdateTarget } from "../api/targets";
+import { useCurrentUser } from "../api/auth";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -48,7 +49,7 @@ function ModeEditor({ modes, onChange }: { modes: InstallMode[]; onChange: (m: I
   );
 }
 
-function TargetCard({ target }: { target: InstallTarget }) {
+function TargetCard({ target, isAdmin }: { target: InstallTarget; isAdmin: boolean }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(target.name);
   const [desc, setDesc] = useState(target.description || "");
@@ -69,7 +70,7 @@ function TargetCard({ target }: { target: InstallTarget }) {
             <p className="font-medium">{target.name}</p>
             {target.description && <p className="text-sm text-gray-500 mt-1">{target.description}</p>}
           </div>
-          <button onClick={() => setEditing(true)} className="text-xs text-gray-400 hover:text-gray-600">edit</button>
+          {isAdmin && <button onClick={() => setEditing(true)} className="text-xs text-gray-400 hover:text-gray-600">edit</button>}
         </div>
         {target.modes && target.modes.length > 0 ? (
           <div className="mt-3 space-y-1">
@@ -115,6 +116,8 @@ function TargetCard({ target }: { target: InstallTarget }) {
 
 export function TargetsPage() {
   const { data: targets } = useTargets();
+  const { data: user } = useCurrentUser();
+  const isAdmin = user?.is_admin === true;
   const createTarget = useCreateTarget();
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
@@ -130,21 +133,23 @@ export function TargetsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Install Targets</h1>
       <div className="grid grid-cols-1 gap-4">
-        {targets?.map((t) => <TargetCard key={t.id} target={t} />)}
+        {targets?.map((t) => <TargetCard key={t.id} target={t} isAdmin={isAdmin} />)}
       </div>
-      <Card title="Add Target">
-        <div className="flex gap-3 items-end">
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">Name</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} className="rounded-md border border-gray-300 px-3 py-2 text-sm" />
+      {isAdmin && (
+        <Card title="Add Target">
+          <div className="flex gap-3 items-end">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Name</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} className="rounded-md border border-gray-300 px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Description</label>
+              <input value={desc} onChange={(e) => setDesc(e.target.value)} className="rounded-md border border-gray-300 px-3 py-2 text-sm" />
+            </div>
+            <Button onClick={handleCreate} loading={createTarget.isPending}>Add</Button>
           </div>
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">Description</label>
-            <input value={desc} onChange={(e) => setDesc(e.target.value)} className="rounded-md border border-gray-300 px-3 py-2 text-sm" />
-          </div>
-          <Button onClick={handleCreate} loading={createTarget.isPending}>Add</Button>
-        </div>
-      </Card>
+        </Card>
+      )}
     </div>
   );
 }
