@@ -12,15 +12,21 @@ from mcp_manager.config import settings
 
 logger = logging.getLogger(__name__)
 
+
+class CloudflareBlocked(Exception):
+    pass
+
+
 BASE_URL = "https://www.pulsemcp.com"
 HEADERS = {
-    "User-Agent": "MCPManager/1.0 (MCP service catalog)",
-    "Accept": "text/html,application/xhtml+xml",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
 }
-# Max concurrent detail page fetches
-CONCURRENCY = 5
-# Delay between listing page fetches (seconds)
-PAGE_DELAY = 1.0
+# Gentle scraping to avoid Cloudflare blocks
+CONCURRENCY = 1
+PAGE_DELAY = 3.0
+DETAIL_DELAY = 2.0
 
 
 @register_connector
@@ -34,16 +40,22 @@ class PulseMcpConnector(AbstractConnector):
 
         services: list[RawMcpService] = []
         semaphore = asyncio.Semaphore(CONCURRENCY)
+        blocked = False
 
         async with httpx.AsyncClient(timeout=30.0, headers=HEADERS, follow_redirects=True) as client:
-            tasks = [self._fetch_detail(client, semaphore, slug) for slug in slugs]
-            results = await asyncio.gather(*tasks, return_exceptions=True)
+            for i, slug in enumerate(slugs):
+                try:
+                    service = await self._fetch_detail(client, semaphore, slug)
+                    if service:
+                        services.append(service)
+                except CloudflareBlocked:
+                    logger.warning("PulseMCP: Cloudflare blocked after %d details, stopping", i)
+                    break
+                except Exception:
+                    logger.debug("Failed to fetch detail: %s", slug)
 
-        for result in results:
-            if isinstance(result, RawMcpService):
-                services.append(result)
-            elif isinstance(result, Exception):
-                logger.debug("Failed to fetch detail: %s", result)
+                if (i + 1) % 50 == 0:
+                    logger.info("PulseMCP: %d/%d details fetched (%d services)", i + 1, len(slugs), len(services))
 
         logger.info("PulseMCP: fetched %d services with details", len(services))
         return services
@@ -99,9 +111,12 @@ class PulseMcpConnector(AbstractConnector):
         async with semaphore:
             url = f"{BASE_URL}/servers/{slug}"
             resp = await client.get(url)
+            if resp.status_code == 403:
+                logger.warning("PulseMCP: 403 on %s — Cloudflare block, stopping", slug)
+                raise CloudflareBlocked()
             if resp.status_code != 200:
                 return None
-            await asyncio.sleep(0.5)  # Rate limit
+            await asyncio.sleep(DETAIL_DELAY)
 
         soup = BeautifulSoup(resp.text, "html.parser")
 
