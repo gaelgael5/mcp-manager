@@ -1,0 +1,14 @@
+{
+  "workers": 1,
+  "claude_rate_limit_per_second": 1,
+  "llm": [
+    {
+      "id": 1,
+      "type": "ollama",
+      "args": {
+        "url": "http://192.168.10.80:11434",
+        "model": "llama3.1:8b"
+      }
+    }
+  ]
+}

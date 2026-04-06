@@ -72,7 +72,8 @@
       "Bash(tasklist)",
       "Bash(tasklist //FI \"IMAGENAME eq chrome.exe\")",
       "Bash(taskkill //F //IM chrome.exe)",
-      "Bash(\"C:/Program Files/Google/Chrome/Application/chrome.exe\" --remote-debugging-port=9222)"
+      "Bash(\"C:/Program Files/Google/Chrome/Application/chrome.exe\" --remote-debugging-port=9222)",
+      "Bash(ls:*)"
     ]
   }
 }

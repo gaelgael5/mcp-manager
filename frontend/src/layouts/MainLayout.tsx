@@ -13,6 +13,7 @@ const publicLinks = [
 const adminLinks = [
   { to: "/sync", label: "Sync" },
   { to: "/api-keys", label: "Keys" },
+  { to: "/settings", label: "Settings" },
 ];
 
 export function MainLayout() {
