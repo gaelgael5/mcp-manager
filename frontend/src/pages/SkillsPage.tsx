@@ -64,6 +64,13 @@ export function SkillsPage() {
   const [selectedTarget, setSelectedTarget] = useState<string>("");
   const { data: skills } = useSkills(selectedSource || undefined, selectedTarget || undefined);
   const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredSkills = (skills || []).filter((s) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return s.name.toLowerCase().includes(q) || (s.description || "").toLowerCase().includes(q);
+  });
 
   const qc = useQueryClient();
 
@@ -71,6 +78,18 @@ export function SkillsPage() {
     mutationFn: (body: { name: string; url: string; skills_path: string; type: string }) =>
       apiFetch<SkillSource>("/skill-sources", { method: "POST", body: JSON.stringify(body) }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["skill-sources"] }),
+  });
+
+  const syncSource = useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<{ status: string; added: number; updated: number }>(`/skill-sources/${id}/sync`, { method: "POST" }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["skill-sources"] }); qc.invalidateQueries({ queryKey: ["skills"] }); },
+  });
+
+  const syncAll = useMutation({
+    mutationFn: () =>
+      apiFetch<{ status: string; added: number; updated: number }>("/skill-sources/sync-all", { method: "POST" }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["skill-sources"] }); qc.invalidateQueries({ queryKey: ["skills"] }); },
   });
 
   const deleteSource = useMutation({
@@ -114,11 +133,19 @@ export function SkillsPage() {
                 </div>
               </div>
               {isAdmin && (
-                <Button size="sm" variant="danger" onClick={() => deleteSource.mutate(s.id)}>Remove</Button>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => syncSource.mutate(s.id)} loading={syncSource.isPending}>Sync</Button>
+                  <Button size="sm" variant="danger" onClick={() => deleteSource.mutate(s.id)}>Remove</Button>
+                </div>
               )}
             </div>
           ))}
           {(!sources || sources.length === 0) && <p className="text-sm text-gray-500">No skill sources configured.</p>}
+          {isAdmin && sources && sources.length > 0 && (
+            <div className="mt-2">
+              <Button size="sm" variant="secondary" onClick={() => syncAll.mutate()} loading={syncAll.isPending}>Sync All Sources</Button>
+            </div>
+          )}
         </div>
 
         {isAdmin && (
@@ -152,15 +179,24 @@ export function SkillsPage() {
       {/* Skills */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium">Skills Catalog</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-medium">Skills Catalog</h2>
+            {skills && <span className="text-sm text-gray-500">{filteredSkills.length} skills</span>}
+          </div>
           <div className="flex gap-2">
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search skills..."
+              className="rounded border border-gray-300 px-2 py-1 text-xs w-48"
+            />
             <select value={selectedSource} onChange={(e) => setSelectedSource(e.target.value)} className="rounded border border-gray-300 px-2 py-1 text-xs">
               <option value="">All sources</option>
               {sources?.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
             <select value={selectedTarget} onChange={(e) => setSelectedTarget(e.target.value)} className="rounded border border-gray-300 px-2 py-1 text-xs">
               <option value="">All targets</option>
-              <option value="claude-code">claude-code</option>
+              <option value="claude">claude</option>
               <option value="copilot">copilot</option>
               <option value="cursor">cursor</option>
               <option value="gemini">gemini</option>
@@ -168,7 +204,7 @@ export function SkillsPage() {
           </div>
         </div>
 
-        {skills?.map((skill) => (
+        {filteredSkills.map((skill) => (
           <Card key={skill.id}>
             <div className="flex items-start justify-between">
               <div>
@@ -195,7 +231,7 @@ export function SkillsPage() {
             )}
           </Card>
         ))}
-        {skills?.length === 0 && <p className="text-sm text-gray-500">No skills indexed yet. Add a source and sync.</p>}
+        {filteredSkills.length === 0 && <p className="text-sm text-gray-500">{skills?.length === 0 ? "No skills indexed yet. Add a source and sync." : "No skills match your search."}</p>}
       </div>
     </div>
   );

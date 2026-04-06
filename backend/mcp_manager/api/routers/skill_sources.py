@@ -123,6 +123,125 @@ async def get_skill(skill_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     return _serialize_skill(skill)
 
 
+@router.post("/skill-sources/{source_id}/sync")
+async def sync_skill_source(
+    source_id: uuid.UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    admin: dict = Depends(require_admin),
+):
+    """Sync skills from a source repo."""
+    from datetime import datetime, timezone
+    from mcp_manager.connectors.skill_scanner import scan_skill_source, get_repo_branch_hash
+
+    result = await db.execute(select(SkillSource).where(SkillSource.id == source_id))
+    source = result.scalar_one_or_none()
+    if not source:
+        raise HTTPException(status_code=404, detail="Skill source not found")
+
+    # Check if repo changed
+    new_hash = await get_repo_branch_hash(source.url)
+    if new_hash and new_hash == source.branch_hash:
+        return {"status": "unchanged", "message": "Branch hash unchanged, skipping"}
+
+    # Scan the repo
+    raw_skills = await scan_skill_source(source.url, source.skills_path, source.type)
+
+    # Upsert skills
+    added = 0
+    updated = 0
+    for raw in raw_skills:
+        existing = await db.execute(
+            select(Skill).where(
+                Skill.skill_source_id == source_id,
+                Skill.name == raw["name"],
+            )
+        )
+        skill = existing.scalar_one_or_none()
+        if skill:
+            skill.description = raw["description"]
+            skill.content = raw["content"]
+            skill.licence = raw["licence"]
+            skill.source_url = raw["source_url"]
+            updated += 1
+        else:
+            db.add(Skill(
+                skill_source_id=source_id,
+                name=raw["name"],
+                description=raw["description"],
+                content=raw["content"],
+                target_type=source.type,
+                licence=raw["licence"],
+                source_url=raw["source_url"],
+                category=raw.get("category"),
+            ))
+            added += 1
+
+    source.branch_hash = new_hash
+    source.last_sync = datetime.now(timezone.utc)
+    source.last_sync_count = added + updated
+    await db.commit()
+
+    return {"status": "done", "added": added, "updated": updated}
+
+
+@router.post("/skill-sources/sync-all")
+async def sync_all_skill_sources(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    admin: dict = Depends(require_admin),
+):
+    """Sync all active skill sources."""
+    from datetime import datetime, timezone
+    from mcp_manager.connectors.skill_scanner import scan_skill_source, get_repo_branch_hash
+
+    result = await db.execute(select(SkillSource).where(SkillSource.is_active == True))
+    sources = result.scalars().all()
+
+    total_added = 0
+    total_updated = 0
+
+    for source in sources:
+        new_hash = await get_repo_branch_hash(source.url)
+        if new_hash and new_hash == source.branch_hash:
+            continue
+
+        raw_skills = await scan_skill_source(source.url, source.skills_path, source.type)
+
+        for raw in raw_skills:
+            existing = await db.execute(
+                select(Skill).where(
+                    Skill.skill_source_id == source.id,
+                    Skill.name == raw["name"],
+                )
+            )
+            skill = existing.scalar_one_or_none()
+            if skill:
+                skill.description = raw["description"]
+                skill.content = raw["content"]
+                skill.licence = raw["licence"]
+                skill.source_url = raw["source_url"]
+                total_updated += 1
+            else:
+                db.add(Skill(
+                    skill_source_id=source.id,
+                    name=raw["name"],
+                    description=raw["description"],
+                    content=raw["content"],
+                    target_type=source.type,
+                    licence=raw["licence"],
+                    source_url=raw["source_url"],
+                ))
+                total_added += 1
+
+        source.branch_hash = new_hash
+        source.last_sync = datetime.now(timezone.utc)
+        source.last_sync_count = len(raw_skills)
+
+    await db.commit()
+    return {"status": "done", "added": total_added, "updated": total_updated}
+
+
 def _serialize_source(s: SkillSource) -> dict:
     return {
         "id": str(s.id),
