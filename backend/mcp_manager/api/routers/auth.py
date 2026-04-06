@@ -20,13 +20,17 @@ JWT_ALGORITHM = "HS256"
 JWT_EXPIRY_HOURS = 24
 
 
+def _get_callback_url(request: Request) -> str:
+    """Build callback URL preserving the original host from the request."""
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host", "localhost")
+    scheme = request.headers.get("x-forwarded-proto", "http")
+    return f"{scheme}://{host}/api/v1/auth/callback"
+
+
 @router.get("/auth/login")
 async def login(request: Request):
     """Redirect to Google OAuth consent screen."""
-    # Build callback URL from request
-    callback_url = str(request.url_for("auth_callback"))
-    # If behind proxy, fix scheme
-    callback_url = callback_url.replace("https://", "http://")
+    callback_url = _get_callback_url(request)
 
     params = {
         "client_id": settings.google_client_id,
@@ -42,8 +46,7 @@ async def login(request: Request):
 @router.get("/auth/callback", name="auth_callback")
 async def auth_callback(code: str, request: Request):
     """Handle Google OAuth callback, issue JWT."""
-    callback_url = str(request.url_for("auth_callback"))
-    callback_url = callback_url.replace("https://", "http://")
+    callback_url = _get_callback_url(request)
 
     # Exchange code for token
     async with httpx.AsyncClient() as client:
