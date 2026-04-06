@@ -241,6 +241,54 @@ async def get_docker_run_cmd(
     return {"cmd": cmd}
 
 
+@router.post("/settings/llm-test")
+async def test_llm_providers(
+    request: Request,
+    admin: dict = Depends(require_admin),
+):
+    """Test each configured LLM provider with a simple prompt."""
+    from mcp_manager.summarizer.ollama_client import get_llm_manager
+    import time
+
+    manager = get_llm_manager()
+    manager.load()
+
+    results = []
+    config = load_config()
+
+    for i, provider in enumerate(config.get("llm", [])):
+        pid = provider.get("id", i)
+        ptype = provider.get("type", "?")
+
+        if i >= len(manager.drivers):
+            results.append({"id": pid, "type": ptype, "status": "error", "message": "No driver loaded"})
+            continue
+
+        driver = manager.drivers[i]
+        start = time.monotonic()
+        try:
+            response = await driver.generate("Reply with exactly: OK")
+            elapsed = round(time.monotonic() - start, 2)
+            results.append({
+                "id": pid,
+                "type": ptype,
+                "status": "ok",
+                "response": response[:200],
+                "elapsed_seconds": elapsed,
+            })
+        except Exception as e:
+            elapsed = round(time.monotonic() - start, 2)
+            results.append({
+                "id": pid,
+                "type": ptype,
+                "status": "error",
+                "message": str(e)[:200],
+                "elapsed_seconds": elapsed,
+            })
+
+    return {"results": results}
+
+
 def _compute_image_tag(image_name: str) -> tuple[str, str]:
     """Compute Docker image name and tag from Dockerfile + related files.
 

@@ -451,8 +451,60 @@ export function SettingsPage() {
             {p.type === "docker" && <DockerRunPreview imageName={p.image} providerId={p.id} />}
           </div>
         ))}
-        <Button variant="secondary" size="sm" onClick={addProvider}>Add Provider</Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" size="sm" onClick={addProvider}>Add Provider</Button>
+          <TestLLMButton />
+        </div>
       </div>
     </div>
+  );
+}
+
+interface TestResult {
+  id: number;
+  type: string;
+  status: string;
+  response?: string;
+  message?: string;
+  elapsed_seconds?: number;
+}
+
+function TestLLMButton() {
+  const [results, setResults] = useState<TestResult[] | null>(null);
+  const test = useMutation({
+    mutationFn: () => apiFetch<{ results: TestResult[] }>("/settings/llm-test", { method: "POST" }),
+    onSuccess: (data) => setResults(data.results),
+  });
+
+  return (
+    <>
+      <Button size="sm" onClick={() => test.mutate()} loading={test.isPending}>
+        Test Providers
+      </Button>
+      {results && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg shadow-xl w-[500px] max-h-[60vh] flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <span className="font-medium">LLM Provider Tests</span>
+              <button onClick={() => setResults(null)} className="text-gray-400 hover:text-gray-600 text-lg px-2">&times;</button>
+            </div>
+            <div className="p-4 space-y-3 overflow-auto">
+              {results.map((r) => (
+                <div key={r.id} className="rounded border p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge color={r.type === "ollama" ? "blue" : "purple"}>{r.type}</Badge>
+                    <span className="text-sm font-medium">Provider #{r.id}</span>
+                    <Badge color={r.status === "ok" ? "green" : "red"}>{r.status}</Badge>
+                    {r.elapsed_seconds != null && <span className="text-xs text-gray-400">{r.elapsed_seconds}s</span>}
+                  </div>
+                  {r.response && <pre className="text-xs font-mono text-gray-600 mt-1">{r.response}</pre>}
+                  {r.message && <pre className="text-xs font-mono text-red-500 mt-1">{r.message}</pre>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
