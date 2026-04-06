@@ -5,8 +5,8 @@ import { useCurrentUser, setToken, clearToken } from "../api/auth";
 const publicLinks = [
   { to: "/", label: "Dashboard" },
   { to: "/services", label: "MCP Services" },
-  { to: "/targets", label: "Targets" },
   { to: "/skills-catalog", label: "Skills" },
+  { to: "/targets", label: "Targets" },
   { to: "/api-docs", label: "API" },
 ];
 

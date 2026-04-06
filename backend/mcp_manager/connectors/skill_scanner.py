@@ -38,8 +38,13 @@ async def scan_skill_source(url: str, skills_path: str, source_type: str) -> lis
 
     skills = []
 
+    # Normalize path: empty or "." means root
+    scan_path = skills_path.strip().strip("/")
+    if scan_path in ("", "."):
+        scan_path = ""
+
     async with httpx.AsyncClient(timeout=30.0) as client:
-        await _scan_dir(client, owner, repo, skills_path, source_type, headers, skills, depth=0)
+        await _scan_dir(client, owner, repo, scan_path, source_type, headers, skills, depth=0)
 
     logger.info("Scanned %s: found %d skills", url, len(skills))
     return skills
@@ -53,7 +58,8 @@ async def _scan_dir(
     if depth > 3:
         return
 
-    api_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{dir_path}"
+    api_path = f"contents/{dir_path}" if dir_path else "contents"
+    api_url = f"https://api.github.com/repos/{owner}/{repo}/{api_path}"
     resp = await client.get(api_url, headers=headers)
     if resp.status_code != 200:
         return
@@ -71,7 +77,7 @@ async def _scan_dir(
         if skill_name.startswith(".") or skill_name in {"node_modules", "__pycache__", "spec", "template"}:
             continue
 
-        skill_dir = f"{dir_path}/{skill_name}" if dir_path != "." else skill_name
+        skill_dir = f"{dir_path}/{skill_name}" if dir_path else skill_name
         source_url = f"https://github.com/{owner}/{repo}/tree/main/{skill_dir}"
 
         # Try to find the skill file in this dir
