@@ -326,7 +326,9 @@ export function SettingsPage() {
   }
 
   const handleSave = () => {
+    if (!localConfig) return;
     saveConfig.mutate(localConfig, {
+      onSuccess: () => alert("Config saved!"),
       onError: (err) => alert(`Save failed: ${err}`),
     });
   };
