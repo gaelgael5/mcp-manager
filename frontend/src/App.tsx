@@ -7,6 +7,7 @@ import { ServiceDetailPage } from "./pages/ServiceDetailPage";
 import { TargetsPage } from "./pages/TargetsPage";
 import { SyncPage } from "./pages/SyncPage";
 import { ApiDocsPage } from "./pages/ApiDocsPage";
+import { ApiKeysPage } from "./pages/ApiKeysPage";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/targets" element={<TargetsPage />} />
             <Route path="/sync" element={<SyncPage />} />
             <Route path="/api-docs" element={<ApiDocsPage />} />
+            <Route path="/api-keys" element={<ApiKeysPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

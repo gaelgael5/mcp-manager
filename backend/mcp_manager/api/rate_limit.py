@@ -84,8 +84,27 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if "/health" in path:
             return await call_next(request)
 
-        # Check if authenticated
+        # Check if authenticated (JWT or API key)
         user = _get_user_from_request(request)
+
+        # Validate API key if present
+        api_key_header = request.headers.get("X-API-Key", "")
+        auth_header = request.headers.get("Authorization", "")
+        if not api_key_header and auth_header.startswith("Bearer mcp_"):
+            api_key_header = auth_header[7:]
+
+        if api_key_header:
+            from mcp_manager.db.session import SessionLocal
+            from mcp_manager.api.routers.api_keys import validate_api_key
+            async with SessionLocal() as db:
+                api_user = await validate_api_key(api_key_header, db)
+            if api_user:
+                user = api_user
+            else:
+                return JSONResponse(
+                    status_code=401,
+                    content={"detail": "Invalid or expired API key"},
+                )
 
         # Admin: no limits
         if user and user.get("is_admin"):

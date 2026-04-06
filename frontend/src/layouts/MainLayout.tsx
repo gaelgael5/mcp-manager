@@ -52,6 +52,11 @@ export function MainLayout() {
                 {l.label}
               </NavLink>
             ))}
+            {user?.is_admin && (
+              <NavLink to="/api-keys" className={({ isActive }) => `text-sm ${isActive ? "text-blue-600 font-medium" : "text-gray-600 hover:text-gray-900"}`}>
+                Keys
+              </NavLink>
+            )}
           </div>
           <div className="flex items-center gap-3">
             {user?.authenticated ? (

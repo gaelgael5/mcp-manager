@@ -109,18 +109,28 @@ async def get_current_user(request: Request):
 
 
 def _get_user_from_request(request: Request) -> dict | None:
-    """Extract and verify JWT from Authorization header."""
+    """Extract user from JWT (Authorization: Bearer) or API key (X-API-Key)."""
+    # Try JWT first
     auth = request.headers.get("Authorization", "")
-    if not auth.startswith("Bearer "):
-        return None
-    token = auth[7:]
-    try:
-        payload = jwt.decode(token, settings.jwt_secret, algorithms=[JWT_ALGORITHM])
-        return payload
-    except jwt.ExpiredSignatureError:
-        return None
-    except jwt.InvalidTokenError:
-        return None
+    if auth.startswith("Bearer ") and not auth[7:].startswith("mcp_"):
+        token = auth[7:]
+        try:
+            payload = jwt.decode(token, settings.jwt_secret, algorithms=[JWT_ALGORITHM])
+            return payload
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            return None
+
+    # Try API key (X-API-Key header or Bearer mcp_xxx)
+    api_key = request.headers.get("X-API-Key", "")
+    if not api_key and auth.startswith("Bearer mcp_"):
+        api_key = auth[7:]
+    if api_key:
+        # Store for async validation in middleware — sync check here via cache
+        request.state.api_key = api_key
+        # Return a placeholder; actual validation is async in rate_limit middleware
+        return {"email": "api_key", "is_admin": False, "is_api_key": True, "pending_validation": True}
+
+    return None
 
 
 def require_admin(request: Request) -> dict:
