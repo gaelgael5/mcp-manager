@@ -144,6 +144,70 @@ export function SkillDetailPage() {
           <p className="text-sm text-gray-700 leading-relaxed">{skill.description}</p>
         </Card>
       )}
+
+      {/* Installation */}
+      <SkillInstallBlock skillName={skill.name} sourceUrl={skill.source_url || ""} />
     </div>
+  );
+}
+
+interface TargetWithSkillModes {
+  id: string;
+  name: string;
+  skill_modes: { action_type: string; template: string }[];
+}
+
+function SkillInstallBlock({ skillName, sourceUrl }: { skillName: string; sourceUrl: string }) {
+  const { data: targets } = useQuery({
+    queryKey: ["targets"],
+    queryFn: () => apiFetch<TargetWithSkillModes[]>("/targets"),
+  });
+  const [installCollapsed, setInstallCollapsed] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const targetsWithSkills = (targets || []).filter((t) => t.skill_modes && t.skill_modes.length > 0);
+
+  if (targetsWithSkills.length === 0) return null;
+
+  const renderCmd = (template: string) => {
+    return template.replace("{name}", skillName).replace("{source_url}", sourceUrl);
+  };
+
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-medium">Installation</h3>
+        <button onClick={() => setInstallCollapsed(!installCollapsed)} className="text-xs text-gray-400 hover:text-gray-600">
+          {installCollapsed ? "Expand" : "Collapse"}
+        </button>
+      </div>
+      {!installCollapsed && (
+        <div className="space-y-2">
+          {targetsWithSkills.map((t) =>
+            t.skill_modes.map((mode, i) => {
+              const cmd = renderCmd(mode.template);
+              const key = `${t.id}-${i}`;
+              return (
+                <div key={key} className="rounded-md border border-gray-200 bg-gray-50 p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium text-gray-700">{t.name}</span>
+                    <button onClick={() => handleCopy(cmd, key)} className="text-xs text-blue-600 hover:text-blue-700">
+                      {copiedId === key ? "Copied!" : "Copy"}
+                    </button>
+                  </div>
+                  <pre className="text-sm font-mono text-gray-800 overflow-x-auto whitespace-pre-wrap">{cmd}</pre>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+    </Card>
   );
 }
