@@ -43,6 +43,9 @@ services:
     restart: unless-stopped
     ports:
       - "0.0.0.0:8000:8000"
+    volumes:
+      - ./dockers:/app/dockers:ro
+      - ./backend/config:/app/config
     depends_on:
       mcp-manager-postgres:
         condition: service_healthy

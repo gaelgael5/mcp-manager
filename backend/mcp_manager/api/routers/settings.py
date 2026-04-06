@@ -10,7 +10,7 @@ from mcp_manager.llm.config import load_config, save_config
 
 router = APIRouter(tags=["settings"])
 
-DOCKERS_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "..", "dockers")
+DOCKERS_DIR = os.environ.get("DOCKERS_DIR", os.path.join(os.path.dirname(__file__), "..", "..", "..", "dockers"))
 
 
 @router.get("/settings/llm")
