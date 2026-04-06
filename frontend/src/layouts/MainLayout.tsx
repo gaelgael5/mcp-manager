@@ -7,12 +7,12 @@ const publicLinks = [
   { to: "/services", label: "Services" },
   { to: "/targets", label: "Targets" },
   { to: "/api-docs", label: "API" },
-  { to: "/instances", label: "Instances" },
 ];
 
 const adminLinks = [
   { to: "/sync", label: "Sync" },
   { to: "/api-keys", label: "Keys" },
+  { to: "/instances", label: "Instances" },
   { to: "/settings", label: "Settings" },
 ];
 
