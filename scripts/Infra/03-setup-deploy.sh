@@ -64,11 +64,19 @@ LOG="/root/deploy.log"
 
 echo "\$(date '+%Y-%m-%d %H:%M:%S') === DEPLOY START ===" >> \$LOG
 
+# Save user config before pull
+cp -f backend/config/llm_providers.json /tmp/llm_providers.json.bak 2>/dev/null || true
+cp -f .env /tmp/mcp-manager-env.bak 2>/dev/null || true
+
 # Pull latest
 echo "\$(date +%H:%M:%S) — Git pull..." >> \$LOG
 git fetch origin ${BRANCH}
 git reset --hard origin/${BRANCH} >> \$LOG 2>&1
 echo "\$(date +%H:%M:%S) — \$(git log --oneline -1)" >> \$LOG
+
+# Restore user config
+cp -f /tmp/llm_providers.json.bak backend/config/llm_providers.json 2>/dev/null || true
+cp -f /tmp/mcp-manager-env.bak .env 2>/dev/null || true
 
 # Rebuild & restart
 echo "\$(date +%H:%M:%S) — Rebuilding..." >> \$LOG
