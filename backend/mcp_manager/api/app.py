@@ -2,9 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from mcp_manager.config import settings
 from mcp_manager.api.routers import services, summaries, installations, targets, sync, stats, parameters, search, openapi_search, health, auth
+from mcp_manager.api.rate_limit import RateLimitMiddleware
 
 def create_app() -> FastAPI:
     app = FastAPI(title="MCP Manager", version="0.1.0")
+    app.add_middleware(RateLimitMiddleware)
     app.add_middleware(
         CORSMiddleware, allow_origins=settings.cors_origins,
         allow_credentials=True, allow_methods=["*"], allow_headers=["*"],
