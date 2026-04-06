@@ -50,7 +50,7 @@ services:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@mcp-manager-postgres:5432/${POSTGRES_DB}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://192.168.10.80:11434}
       OLLAMA_SUMMARY_MODEL: ${OLLAMA_SUMMARY_MODEL:-llama3.1}
-      CORS_ORIGINS: '["http://localhost:3001","http://192.168.10.99:3001"]'
+      CORS_ORIGINS: '["http://localhost:3001","http://192.168.10.99:3001","https://mcp.yoops.org"]'
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
