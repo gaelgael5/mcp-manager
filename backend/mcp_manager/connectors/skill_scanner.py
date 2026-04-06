@@ -39,76 +39,80 @@ async def scan_skill_source(url: str, skills_path: str, source_type: str) -> lis
     skills = []
 
     async with httpx.AsyncClient(timeout=30.0) as client:
-        # List directories in skills_path
-        api_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{skills_path}"
-        resp = await client.get(api_url, headers=headers)
-        if resp.status_code != 200:
-            logger.warning("Failed to list %s: %d", api_url, resp.status_code)
-            return []
+        await _scan_dir(client, owner, repo, skills_path, source_type, headers, skills, depth=0)
 
-        entries = resp.json()
-        if not isinstance(entries, list):
-            return []
+    logger.info("Scanned %s: found %d skills", url, len(skills))
+    return skills
 
-        for entry in entries:
-            if entry.get("type") != "dir":
-                continue
 
-            skill_name = entry["name"]
-            skill_dir = f"{skills_path}/{skill_name}"
-            source_url = f"https://github.com/{owner}/{repo}/tree/main/{skill_dir}"
+async def _scan_dir(
+    client: httpx.AsyncClient, owner: str, repo: str, dir_path: str,
+    source_type: str, headers: dict, skills: list, depth: int,
+):
+    """Recursively scan a directory for skill files (max depth 3)."""
+    if depth > 3:
+        return
 
-            # Try to find the skill file
-            skill_files = SKILL_FILES.get(source_type, ["SKILL.md"])
-            content = None
+    api_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{dir_path}"
+    resp = await client.get(api_url, headers=headers)
+    if resp.status_code != 200:
+        return
 
+    entries = resp.json()
+    if not isinstance(entries, list):
+        return
+
+    for entry in entries:
+        if entry.get("type") != "dir":
+            continue
+
+        skill_name = entry["name"]
+        # Skip hidden dirs and common non-skill dirs
+        if skill_name.startswith(".") or skill_name in {"node_modules", "__pycache__", "spec", "template"}:
+            continue
+
+        skill_dir = f"{dir_path}/{skill_name}" if dir_path != "." else skill_name
+        source_url = f"https://github.com/{owner}/{repo}/tree/main/{skill_dir}"
+
+        # Try to find the skill file in this dir
+        skill_files = SKILL_FILES.get(source_type, ["SKILL.md"])
+        content = None
+
+        for branch in ["main", "master"]:
+            if content:
+                break
             for skill_file in skill_files:
-                raw_url = f"https://raw.githubusercontent.com/{owner}/{repo}/main/{skill_dir}/{skill_file}"
+                raw_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{skill_dir}/{skill_file}"
                 file_resp = await client.get(raw_url, headers=headers)
                 if file_resp.status_code == 200:
                     content = file_resp.text
                     break
 
-            if not content:
-                # Try master branch
-                for skill_file in skill_files:
-                    raw_url = f"https://raw.githubusercontent.com/{owner}/{repo}/master/{skill_dir}/{skill_file}"
-                    file_resp = await client.get(raw_url, headers=headers)
-                    if file_resp.status_code == 200:
-                        content = file_resp.text
-                        break
-
-            if not content:
-                logger.debug("No skill file found in %s", skill_dir)
-                continue
-
-            # Parse YAML frontmatter
+        if content:
             name, description, licence = _parse_frontmatter(content, skill_name)
 
             # Build licence URL
             licence_url = None
             for branch in ["main", "master"]:
-                lic_url = f"https://github.com/{owner}/{repo}/blob/{branch}/{skill_dir}/LICENSE.txt"
                 lic_raw = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{skill_dir}/LICENSE.txt"
                 lic_resp = await client.get(lic_raw, headers=headers)
                 if lic_resp.status_code == 200:
-                    licence_url = lic_url
+                    licence_url = f"https://github.com/{owner}/{repo}/blob/{branch}/{skill_dir}/LICENSE.txt"
                     break
 
             skills.append({
                 "name": name,
                 "description": description,
-                "raw_content": content,  # Used for summary generation, not stored
+                "raw_content": content,
                 "licence": licence,
                 "licence_url": licence_url,
                 "source_url": source_url,
                 "category": None,
             })
-
-            logger.debug("Found skill: %s", name)
-
-    logger.info("Scanned %s: found %d skills", url, len(skills))
-    return skills
+            logger.debug("Found skill: %s in %s", name, skill_dir)
+        else:
+            # No skill file here — recurse into subdirectories
+            await _scan_dir(client, owner, repo, skill_dir, source_type, headers, skills, depth + 1)
 
 
 def _parse_frontmatter(content: str, fallback_name: str) -> tuple[str, str | None, str | None]:
