@@ -57,7 +57,7 @@ export function DashboardPage() {
       </div>
 
       {/* Indexation progress */}
-      <Card title="Indexation Progress">
+      <Card title="MCP Services Indexation Progress">
         <div className="space-y-3">
           <ProgressBar value={idx?.with_summaries ?? 0} max={total} label="Summaries" color="blue" />
           <ProgressBar value={idx?.with_embeddings ?? 0} max={total} label="Embeddings" color="purple" />
