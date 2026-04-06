@@ -374,5 +374,17 @@ async def _run_sync_instances() -> dict[str, int]:
     return stats
 
 
+@app.command()
+def scrape_skills(
+    limit: int | None = typer.Option(None, help="Max number of skills to scrape"),
+    skip_summaries: bool = typer.Option(False, help="Skip summary generation"),
+):
+    """Scrape skills.sh catalog into SkillSources + Skills."""
+    logging.basicConfig(level=logging.INFO)
+    from scripts.scrape_skills_sh import scrape_skills_sh
+    asyncio.run(scrape_skills_sh(limit=limit, skip_summaries=skip_summaries))
+    typer.echo("Scrape complete.")
+
+
 if __name__ == "__main__":
     app()

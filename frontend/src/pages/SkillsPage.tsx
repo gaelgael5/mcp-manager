@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../api/client";
 import { useCurrentUser } from "../api/auth";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
+import { SearchInput } from "../components/ui/SearchInput";
 
 interface SkillSource {
   id: string;
@@ -64,10 +65,22 @@ export function SkillsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["skill-sources"] }),
   });
 
+  const [search, setSearch] = useState("");
+  const [filterType, setFilterType] = useState("");
   const [newName, setNewName] = useState("");
   const [newUrl, setNewUrl] = useState("");
   const [newPath, setNewPath] = useState("skills");
   const [newType, setNewType] = useState("claude");
+
+  const filteredSources = useMemo(() => {
+    if (!sources) return [];
+    return sources.filter((s) => {
+      const q = search.toLowerCase();
+      const matchSearch = !q || s.name.toLowerCase().includes(q) || s.url.toLowerCase().includes(q);
+      const matchType = !filterType || s.type === filterType;
+      return matchSearch && matchType;
+    });
+  }, [sources, search, filterType]);
 
   const handleCreate = () => {
     if (!newName.trim() || !newUrl.trim()) return;
@@ -82,8 +95,19 @@ export function SkillsPage() {
 
       {/* Sources */}
       <Card title="Skill Sources">
+        <div className="flex gap-2 mb-3">
+          <SearchInput value={search} onChange={setSearch} placeholder="Search sources..." />
+          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
+            <option value="">All types</option>
+            <option value="claude">claude</option>
+            <option value="copilot">copilot</option>
+            <option value="cursor">cursor</option>
+            <option value="gemini">gemini</option>
+          </select>
+          <span className="text-xs text-gray-400 self-center whitespace-nowrap">{filteredSources.length}/{sources?.length || 0}</span>
+        </div>
         <div className="space-y-2">
-          {sources?.map((s) => (
+          {filteredSources.map((s) => (
             <div key={s.id} className="flex items-center justify-between rounded border border-gray-100 bg-gray-50 px-3 py-2">
               <div>
                 <div className="flex items-center gap-2">
@@ -106,7 +130,7 @@ export function SkillsPage() {
               )}
             </div>
           ))}
-          {(!sources || sources.length === 0) && <p className="text-sm text-gray-500">No skill sources configured.</p>}
+          {filteredSources.length === 0 && <p className="text-sm text-gray-500">{sources?.length ? "No sources match your search." : "No skill sources configured."}</p>}
           {isAdmin && sources && sources.length > 0 && (
             <div className="mt-2">
               <Button size="sm" variant="secondary" onClick={() => syncAll.mutate()} loading={syncAll.isPending}>Sync All Sources</Button>

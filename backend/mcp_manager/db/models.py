@@ -186,6 +186,8 @@ class Skill(Base):
     licence_url: Mapped[str | None] = mapped_column(Text)
     source_url: Mapped[str | None] = mapped_column(Text)
     category: Mapped[str | None] = mapped_column(String(100))
+    install_command: Mapped[str | None] = mapped_column(Text)
+    weekly_installs: Mapped[int] = mapped_column(default=0)
     needs_summary: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

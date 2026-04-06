@@ -54,6 +54,10 @@ CREATE TABLE IF NOT EXISTS mcp_installations (
     CONSTRAINT uq_service_target UNIQUE (mcp_service_id, install_target_id)
 );
 
+-- Note: skills table managed by SQLAlchemy, but for fresh installs ensure install_command column
+-- ALTER TABLE skills ADD COLUMN IF NOT EXISTS install_command TEXT;
+-- ALTER TABLE skills ADD COLUMN IF NOT EXISTS weekly_installs INTEGER DEFAULT 0;
+
 CREATE INDEX IF NOT EXISTS idx_services_source_type ON mcp_services(source_type);
 CREATE INDEX IF NOT EXISTS idx_summaries_culture ON mcp_summaries(culture);
 CREATE INDEX IF NOT EXISTS idx_installations_target ON mcp_installations(install_target_id);

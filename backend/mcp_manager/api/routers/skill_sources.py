@@ -427,6 +427,8 @@ def _serialize_skill(s: Skill) -> dict:
         "licence_url": s.licence_url,
         "source_url": s.source_url,
         "category": s.category,
+        "install_command": s.install_command,
+        "weekly_installs": s.weekly_installs,
         "has_summary": bool(s.summary_en),
         "created_at": s.created_at.isoformat() if s.created_at else None,
         "updated_at": s.updated_at.isoformat() if s.updated_at else None,
