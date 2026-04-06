@@ -19,6 +19,18 @@ async def trigger_sync(
     background_tasks.add_task(_run_sync_bg, source)
     return {"status": "started"}
 
+@router.post("/services/index")
+async def trigger_index(
+    background_tasks: BackgroundTasks,
+    limit: int = Query(500),
+):
+    if _sync_status.get("indexing"):
+        return {"status": "already_running"}
+    _sync_status["indexing"] = True
+    background_tasks.add_task(_run_index_bg, limit)
+    return {"status": "started", "limit": limit}
+
+
 @router.get("/services/sync/status")
 async def sync_status():
     return _sync_status
@@ -76,3 +88,27 @@ async def _run_sync_bg(source: str | None):
         logger.exception("Sync failed")
     finally:
         _sync_status["running"] = False
+
+
+async def _run_index_bg(limit: int):
+    from datetime import datetime, timezone
+    try:
+        from mcp_manager.summarizer.ollama_client import get_llm_manager
+        from mcp_manager.indexer.pipeline import run_index
+
+        manager = get_llm_manager()
+        manager.load()
+        manager.start_all()
+
+        try:
+            result = await run_index(limit=limit)
+            _sync_status["last_index"] = {
+                "stats": result,
+                "time": datetime.now(timezone.utc).isoformat(),
+            }
+        finally:
+            manager.stop_all()
+    except Exception:
+        logger.exception("Index failed")
+    finally:
+        _sync_status["indexing"] = False

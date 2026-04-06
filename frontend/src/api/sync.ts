@@ -20,3 +20,12 @@ export function useTriggerSync() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
   });
 }
+
+export function useTriggerIndex() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (limit: number = 500) =>
+      apiFetch<{ status: string }>(`/services/index?limit=${limit}`, { method: "POST" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
+  });
+}
