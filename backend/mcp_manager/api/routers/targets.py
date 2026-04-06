@@ -33,6 +33,7 @@ def _serialize(t: InstallTarget) -> dict:
         "name": t.name,
         "description": t.description,
         "modes": t.modes or [],
+        "skill_modes": t.skill_modes or [],
         "created_at": t.created_at.isoformat() if t.created_at else None,
     }
 

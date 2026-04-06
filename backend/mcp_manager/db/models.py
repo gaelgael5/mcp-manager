@@ -85,6 +85,7 @@ class InstallTarget(Base):
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     modes: Mapped[list] = mapped_column(JSONB, default=list)
+    skill_modes: Mapped[list] = mapped_column(JSONB, default=list)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

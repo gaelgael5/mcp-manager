@@ -20,6 +20,9 @@ TARGETS = [
             {"runtime": "python", "action_type": "cmd", "template": "claude mcp add {name} -- python -m {package}"},
             {"runtime": "node", "action_type": "cmd", "template": "claude mcp add {name} -- node {package}"},
         ],
+        "skill_modes": [
+            {"action_type": "cmd", "template": "claude skill add {source_url}"},
+        ],
     },
     {
         "name": "claude_desktop",
@@ -332,6 +335,45 @@ TARGETS = [
     },
 ]
 
+# Skill installation modes per target
+# {source_url} = URL of the skill (GitHub folder URL)
+# {name} = skill name
+SKILL_MODES = {
+    "claude_code": [
+        {"action_type": "cmd", "template": "claude skill add {source_url}"},
+    ],
+    "OpenAI Codex CLI": [
+        {"action_type": "cmd", "template": "npx codex skills install {name}"},
+    ],
+    "Kiro": [
+        {"action_type": "cmd", "template": "npx skills add {source_url}"},
+    ],
+    "Cursor": [
+        {"action_type": "insert_in_file", "template": "Copy skill content into .cursor/rules/{name}.mdc"},
+    ],
+    "Windsurf": [
+        {"action_type": "insert_in_file", "template": "Copy skill content into .windsurf/rules/{name}.md"},
+    ],
+    "Gemini CLI": [
+        {"action_type": "insert_in_file", "template": "Copy skill content into .gemini/GEMINI.md"},
+    ],
+    "Antigravity": [
+        {"action_type": "insert_in_file", "template": "Copy skill folder into ~/.gemini/antigravity/skills/{name}/SKILL.md"},
+    ],
+    "GitHub Copilot": [
+        {"action_type": "insert_in_file", "template": "Copy skill content into .github/copilot-instructions.md"},
+    ],
+    "VS Code": [
+        {"action_type": "insert_in_file", "template": "Copy skill content into .github/copilot-instructions.md"},
+    ],
+    "Junie": [
+        {"action_type": "insert_in_file", "template": "Copy skill content into .junie/guidelines.md"},
+    ],
+    "JetBrains": [
+        {"action_type": "insert_in_file", "template": "Copy skill content into .junie/guidelines.md"},
+    ],
+}
+
 
 async def main():
     from sqlalchemy import select
@@ -340,6 +382,7 @@ async def main():
 
     async with SessionLocal() as db:
         for t in TARGETS:
+            skill_modes = t.get("skill_modes") or SKILL_MODES.get(t["name"], [])
             result = await db.execute(
                 select(InstallTarget).where(InstallTarget.name == t["name"])
             )
@@ -348,14 +391,16 @@ async def main():
             if existing:
                 existing.description = t["description"]
                 existing.modes = t["modes"]
-                print(f"  Updated: {t['name']} ({len(t['modes'])} modes)")
+                existing.skill_modes = skill_modes
+                print(f"  Updated: {t['name']} ({len(t['modes'])} modes, {len(skill_modes)} skill modes)")
             else:
                 db.add(InstallTarget(
                     name=t["name"],
                     description=t["description"],
                     modes=t["modes"],
+                    skill_modes=skill_modes,
                 ))
-                print(f"  Created: {t['name']} ({len(t['modes'])} modes)")
+                print(f"  Created: {t['name']} ({len(t['modes'])} modes, {len(skill_modes)} skill modes)")
 
         await db.commit()
 

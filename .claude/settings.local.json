@@ -81,7 +81,11 @@
       "WebFetch(domain:skillsmp.com)",
       "WebFetch(domain:smartscope.blog)",
       "WebFetch(domain:medium.com)",
-      "WebFetch(domain:bibek-poudel.medium.com)"
+      "WebFetch(domain:bibek-poudel.medium.com)",
+      "WebFetch(domain:docs.github.com)",
+      "WebFetch(domain:docs.cursor.com)",
+      "WebFetch(domain:cursor.com)",
+      "WebFetch(domain:code.visualstudio.com)"
     ]
   }
 }
