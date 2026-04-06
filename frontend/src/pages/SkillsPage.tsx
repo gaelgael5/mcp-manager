@@ -10,6 +10,7 @@ interface SkillSource {
   id: string;
   name: string;
   url: string;
+  skills_path: string;
   type: string;
   branch_hash: string | null;
   is_active: boolean;
