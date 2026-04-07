@@ -41,9 +41,25 @@ export function SkillSourceDetailPage() {
   const qc = useQueryClient();
   const [tab, setTab] = useState("en");
 
+  interface Skill {
+    id: string;
+    name: string;
+    description: string | null;
+    target_type: string;
+    install_command: string | null;
+    weekly_installs: number;
+    has_summary: boolean;
+  }
+
   const { data: source } = useQuery({
     queryKey: ["skill-source", id],
     queryFn: () => apiFetch<SkillSourceDetail>(`/skill-sources/${id}`),
+    enabled: !!id,
+  });
+
+  const { data: skills } = useQuery({
+    queryKey: ["skills", `source_id=${id}`],
+    queryFn: () => apiFetch<Skill[]>(`/skills?source_id=${id}`),
     enabled: !!id,
   });
 
@@ -56,7 +72,7 @@ export function SkillSourceDetailPage() {
     mutationFn: () => apiFetch<{ status: string }>(`/skill-sources/${id}/sync`, { method: "POST" }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["skill-source", id] });
-      qc.invalidateQueries({ queryKey: ["skills"] });
+      qc.invalidateQueries({ queryKey: ["skills", `source_id=${id}`] });
     },
   });
 
@@ -142,6 +158,29 @@ export function SkillSourceDetailPage() {
       {source.skills_path && (
         <Card title="Installation">
           <pre className="text-sm font-mono bg-gray-50 border rounded p-3 overflow-x-auto">{source.skills_path}</pre>
+        </Card>
+      )}
+
+      {/* Skills list */}
+      {skills && skills.length > 0 && (
+        <Card title={`Skills (${skills.length})`}>
+          <div className="space-y-1">
+            {skills.map((s) => (
+              <Link
+                key={s.id}
+                to={`/skills-catalog/${s.id}`}
+                className="flex items-center justify-between rounded border border-gray-100 bg-gray-50 px-3 py-2 hover:bg-blue-50 transition-colors"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-sm font-medium truncate">{s.name}</span>
+                  {s.has_summary && <Badge color="green">summarized</Badge>}
+                </div>
+                <div className="flex items-center gap-2 text-xs text-gray-400 shrink-0">
+                  {s.description && <span className="truncate max-w-xs">{s.description}</span>}
+                </div>
+              </Link>
+            ))}
+          </div>
         </Card>
       )}
     </div>
