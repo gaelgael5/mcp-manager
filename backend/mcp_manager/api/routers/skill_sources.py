@@ -218,6 +218,23 @@ async def generate_skill_summary(
     return {"status": "done", "summary_en": bool(skill.summary_en), "summary_fr": bool(skill.summary_fr)}
 
 
+def _derive_repo_url(skills_sh_url: str) -> str | None:
+    """Derive GitHub repo URL from skills.sh URL.
+
+    https://skills.sh/kirorab/12306-skill/12306 → https://github.com/kirorab/12306-skill
+    """
+    if not skills_sh_url or "skills.sh" not in skills_sh_url:
+        return None
+    parts = skills_sh_url.rstrip("/").split("/")
+    # URL: https://skills.sh/{owner}/{repo}/{skill}
+    # parts: ['https:', '', 'skills.sh', owner, repo, skill]
+    if len(parts) >= 5:
+        owner = parts[3]
+        repo = parts[4]
+        return f"https://github.com/{owner}/{repo}"
+    return None
+
+
 @router.post("/skill-sources/{source_id}/generate-summary")
 async def generate_source_summary(
     source_id: uuid.UUID,
@@ -225,10 +242,16 @@ async def generate_source_summary(
     db: AsyncSession = Depends(get_db),
     admin: dict = Depends(require_admin),
 ):
-    """Generate EN/FR summaries for a skill source workspace and index in RAG."""
+    """Generate EN/FR summaries for a skill source and index in RAG.
+
+    Derives the GitHub repo URL from the skills.sh URL, fetches the README,
+    and uses it as context for summary generation.
+    """
     import os
     from mcp_manager.summarizer.ollama_client import ollama_generate
+    from mcp_manager.summarizer.cleaner import clean_markdown
     from mcp_manager.indexer.embedder import embed_text
+    from mcp_manager.connectors.github_readme import fetch_github_readme
     from mcp_manager.db.models import McpEmbedding
     from sqlalchemy import delete
 
@@ -237,19 +260,22 @@ async def generate_source_summary(
     if not source:
         raise HTTPException(status_code=404, detail="Skill source not found")
 
-    # Build context from the source's skills
-    skills_result = await db.execute(
-        select(Skill).where(Skill.skill_source_id == source_id).order_by(Skill.name)
-    )
-    skills = skills_result.scalars().all()
+    # Derive and store repo_url if missing
+    if not source.repo_url:
+        source.repo_url = _derive_repo_url(source.url)
 
-    skill_list = "\n".join(
-        f"- {s.name}: {s.description or 'no description'}" for s in skills
-    )
-    context = f"Source: {source.name}\nURL: {source.url}\nType: {source.type}\nSkills count: {len(skills)}\n\nSkills in this workspace:\n{skill_list}"
+    # Fetch README from GitHub repo for context
+    context = ""
+    if source.repo_url:
+        readme = await fetch_github_readme(source.repo_url)
+        if readme:
+            context = clean_markdown(readme)
+            if len(context) > 6000:
+                context = context[:6000]
 
-    if len(context) > 8000:
-        context = context[:8000]
+    # Fallback: use source metadata
+    if not context:
+        context = f"Skill source: {source.name}\nURL: {source.url}\nType: {source.type}"
 
     prompts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "prompts")
 
@@ -263,7 +289,7 @@ async def generate_source_summary(
         prompt_fr = f.read().replace("{content}", context)
     source.summary_fr = await ollama_generate(prompt_fr)
 
-    # Index in RAG — use skill_id=None, store with a special chunk_type
+    # Index in RAG
     await db.execute(delete(McpEmbedding).where(
         McpEmbedding.chunk_type == "source_summary",
         McpEmbedding.content.like(f"source:{source_id}%"),
@@ -281,6 +307,7 @@ async def generate_source_summary(
     await db.commit()
     return {
         "status": "done",
+        "repo_url": source.repo_url,
         "summary_en": bool(source.summary_en),
         "summary_fr": bool(source.summary_fr),
     }
@@ -481,6 +508,7 @@ def _serialize_source(s: SkillSource) -> dict:
         "id": str(s.id),
         "name": s.name,
         "url": s.url,
+        "repo_url": s.repo_url,
         "skills_path": s.skills_path,
         "type": s.type,
         "description": s.description,

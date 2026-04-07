@@ -15,6 +15,7 @@ interface SkillSourceDetail {
   url: string;
   skills_path: string;
   type: string;
+  repo_url: string | null;
   description: string | null;
   summary_en: string | null;
   summary_fr: string | null;
@@ -95,6 +96,11 @@ export function SkillSourceDetailPage() {
         <a href={source.url} target="_blank" rel="noopener noreferrer" className="mt-2 block text-sm text-blue-600 hover:underline">
           {source.url}
         </a>
+        {source.repo_url && (
+          <a href={source.repo_url} target="_blank" rel="noopener noreferrer" className="block text-sm text-gray-600 hover:underline">
+            {source.repo_url}
+          </a>
+        )}
         <div className="text-xs text-gray-400 mt-1">
           {source.last_sync ? `Last sync: ${new Date(source.last_sync).toLocaleString()}` : "Never synced"}
           {source.branch_hash && ` — ${source.branch_hash.slice(0, 8)}`}

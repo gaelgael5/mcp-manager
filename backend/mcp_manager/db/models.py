@@ -155,6 +155,7 @@ class SkillSource(Base):
     )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     url: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
+    repo_url: Mapped[str | None] = mapped_column(Text)  # GitHub repo URL
     skills_path: Mapped[str] = mapped_column(String(255), default="")  # directory in the repo (empty = root)
     type: Mapped[str] = mapped_column(String(20), nullable=False)  # claude, copilot, gemini, cursor
     description: Mapped[str | None] = mapped_column(Text)

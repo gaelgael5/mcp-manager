@@ -97,12 +97,14 @@ async def scrape_skills_sh(limit: int | None = None, skip_summaries: bool = Fals
             if source:
                 source.name = name
                 source.description = install_cmd
+                source.repo_url = github_url
                 total_updated += 1
             else:
                 source = SkillSource(
                     name=name,
                     url=skills_sh_url,
-                    skills_path=install_cmd,  # store install command in skills_path
+                    repo_url=github_url,
+                    skills_path=install_cmd,
                     type="claude",
                 )
                 db.add(source)
