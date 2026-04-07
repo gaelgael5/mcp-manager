@@ -21,6 +21,11 @@ class OllamaDriver:
             return text.replace("\x00", "")
 
     async def embed(self, text: str) -> list[float] | None:
+        if not text or not text.strip():
+            return None
+        text = text.replace("\x00", "").strip()
+        if not text:
+            return None
         endpoint = f"{self.url}/api/embed"
         payload = {"model": "mxbai-embed-large", "input": text}
         try:
