@@ -320,22 +320,47 @@ async def sync_skill_source(
     db: AsyncSession = Depends(get_db),
     admin: dict = Depends(require_admin),
 ):
-    """Sync skills from a source repo."""
+    """Sync skills from a source repo.
+
+    For skills.sh sources (with repo_url): scans the GitHub repo for a skills/ directory
+    containing SKILL.md files. Marks source as no_skills_dir/repo_404 if not found.
+    """
     from datetime import datetime, timezone
-    from mcp_manager.connectors.skill_scanner import scan_skill_source, get_repo_branch_hash
 
     result = await db.execute(select(SkillSource).where(SkillSource.id == source_id))
     source = result.scalar_one_or_none()
     if not source:
         raise HTTPException(status_code=404, detail="Skill source not found")
 
-    # Check if repo changed
-    new_hash = await get_repo_branch_hash(source.url)
-    if new_hash and new_hash == source.branch_hash:
-        return {"status": "unchanged", "message": "Branch hash unchanged, skipping"}
+    # Derive repo_url if missing
+    if not source.repo_url and "skills.sh" in (source.url or ""):
+        parts = source.url.rstrip("/").split("/")
+        if len(parts) >= 5:
+            source.repo_url = f"https://github.com/{parts[3]}/{parts[4]}"
 
-    # Scan the repo
-    raw_skills = await scan_skill_source(source.url, source.skills_path, source.type)
+    if source.repo_url:
+        # Skills.sh source → scan GitHub repo for skills/ directory
+        from mcp_manager.connectors.skillssh_scanner import scan_repo_skills
+
+        scan_result = await scan_repo_skills(source.repo_url)
+        source.repo_status = scan_result["status"]
+        raw_skills = scan_result["skills"]
+
+        if not raw_skills:
+            source.last_sync = datetime.now(timezone.utc)
+            source.last_sync_count = 0
+            await db.commit()
+            return {"status": scan_result["status"], "added": 0, "updated": 0}
+    else:
+        # Legacy source → use original scanner
+        from mcp_manager.connectors.skill_scanner import scan_skill_source, get_repo_branch_hash
+
+        new_hash = await get_repo_branch_hash(source.url)
+        if new_hash and new_hash == source.branch_hash:
+            return {"status": "unchanged", "message": "Branch hash unchanged, skipping"}
+
+        raw_skills = await scan_skill_source(source.url, source.skills_path, source.type)
+        source.branch_hash = new_hash
 
     # Upsert skills
     added = 0
@@ -350,9 +375,9 @@ async def sync_skill_source(
         skill = existing.scalar_one_or_none()
         if skill:
             skill.description = raw["description"]
-            skill.licence = raw["licence"]
+            skill.licence = raw.get("licence")
             skill.licence_url = raw.get("licence_url")
-            skill.source_url = raw["source_url"]
+            skill.source_url = raw.get("source_url")
             skill.needs_summary = True
             updated += 1
         else:
@@ -361,23 +386,20 @@ async def sync_skill_source(
                 name=raw["name"],
                 description=raw["description"],
                 target_type=source.type,
-                licence=raw["licence"],
+                licence=raw.get("licence"),
                 licence_url=raw.get("licence_url"),
-                source_url=raw["source_url"],
+                source_url=raw.get("source_url"),
                 category=raw.get("category"),
                 needs_summary=True,
             ))
             added += 1
 
-    source.branch_hash = new_hash
+    source.repo_status = "ok"
     source.last_sync = datetime.now(timezone.utc)
     source.last_sync_count = added + updated
     await db.commit()
 
-    # Generate summaries for new/updated skills
-    summaries_generated = await _generate_skill_summaries(db, source_id, raw_skills)
-
-    return {"status": "done", "added": added, "updated": updated, "summaries": summaries_generated}
+    return {"status": "done", "added": added, "updated": updated}
 
 
 async def _generate_skill_summaries(db: AsyncSession, source_id, raw_skills: list[dict]) -> int:
@@ -515,6 +537,7 @@ def _serialize_source(s: SkillSource) -> dict:
         "summary_en": s.summary_en,
         "summary_fr": s.summary_fr,
         "has_summary": bool(s.summary_en),
+        "repo_status": s.repo_status,
         "branch_hash": s.branch_hash,
         "is_active": s.is_active,
         "last_sync": s.last_sync.isoformat() if s.last_sync else None,

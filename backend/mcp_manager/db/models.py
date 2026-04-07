@@ -161,6 +161,7 @@ class SkillSource(Base):
     description: Mapped[str | None] = mapped_column(Text)
     summary_en: Mapped[str | None] = mapped_column(Text)
     summary_fr: Mapped[str | None] = mapped_column(Text)
+    repo_status: Mapped[str | None] = mapped_column(String(20))  # "ok", "no_skills_dir", "repo_404", etc.
     branch_hash: Mapped[str | None] = mapped_column(String(64))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     last_sync: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
