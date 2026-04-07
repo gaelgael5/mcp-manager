@@ -27,16 +27,6 @@ interface SkillSourceDetail {
   created_at: string;
 }
 
-interface Skill {
-  id: string;
-  name: string;
-  description: string | null;
-  target_type: string;
-  install_command: string | null;
-  weekly_installs: number;
-  has_summary: boolean;
-}
-
 const targetColors: Record<string, string> = {
   claude: "purple",
   copilot: "blue",
@@ -54,12 +44,6 @@ export function SkillSourceDetailPage() {
   const { data: source } = useQuery({
     queryKey: ["skill-source", id],
     queryFn: () => apiFetch<SkillSourceDetail>(`/skill-sources/${id}`),
-    enabled: !!id,
-  });
-
-  const { data: skills } = useQuery({
-    queryKey: ["skills", `source_id=${id}`],
-    queryFn: () => apiFetch<Skill[]>(`/skills?source_id=${id}`),
     enabled: !!id,
   });
 
@@ -154,30 +138,12 @@ export function SkillSourceDetailPage() {
         </div>
       </Card>
 
-      {/* Skills list */}
-      <Card title={`Skills (${skills?.length || 0})`}>
-        <div className="space-y-1">
-          {skills?.map((s) => (
-            <Link
-              key={s.id}
-              to={`/skills-catalog/${s.id}`}
-              className="flex items-center justify-between rounded border border-gray-100 bg-gray-50 px-3 py-2 hover:bg-blue-50 transition-colors"
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-sm font-medium truncate">{s.name}</span>
-                {s.has_summary && <Badge color="green">summarized</Badge>}
-              </div>
-              <div className="flex items-center gap-2 text-xs text-gray-400 shrink-0">
-                {s.weekly_installs > 0 && <span>{s.weekly_installs.toLocaleString()} installs</span>}
-                {s.install_command && <Badge color="blue">installable</Badge>}
-              </div>
-            </Link>
-          ))}
-          {(!skills || skills.length === 0) && (
-            <p className="text-sm text-gray-500">No skills yet. Run a sync first.</p>
-          )}
-        </div>
-      </Card>
+      {/* Install command */}
+      {source.skills_path && (
+        <Card title="Installation">
+          <pre className="text-sm font-mono bg-gray-50 border rounded p-3 overflow-x-auto">{source.skills_path}</pre>
+        </Card>
+      )}
     </div>
   );
 }
