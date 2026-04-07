@@ -144,7 +144,7 @@ async def generate_skill_summary(
     from mcp_manager.summarizer.ollama_client import ollama_generate
     from mcp_manager.indexer.embedder import embed_text
     from mcp_manager.db.models import McpEmbedding
-    from mcp_manager.connectors.skill_scanner import scan_skill_source
+    from mcp_manager.connectors.github_readme import fetch_github_readme
     from sqlalchemy import delete
 
     result = await db.execute(select(Skill).where(Skill.id == skill_id))
@@ -152,22 +152,24 @@ async def generate_skill_summary(
     if not skill:
         raise HTTPException(status_code=404, detail="Skill not found")
 
-    # Get the source to re-fetch the raw content
+    # Get the source for repo_url
     src_result = await db.execute(select(SkillSource).where(SkillSource.id == skill.skill_source_id))
     source = src_result.scalar_one_or_none()
-    if not source:
-        raise HTTPException(status_code=400, detail="Skill source not found")
 
-    # Re-scan to get raw content for this skill
-    raw_skills = await scan_skill_source(source.url, source.skills_path, source.type)
+    # Try to fetch content: from skill source_url (GitHub tree link) or repo README
     raw_content = None
-    for raw in raw_skills:
-        if raw["name"] == skill.name:
-            raw_content = raw.get("raw_content", "")
-            break
 
+    # If the skill has a GitHub source_url (from sync), try to fetch SKILL.md there
+    if skill.source_url and "github.com" in skill.source_url:
+        raw_content = await fetch_github_readme(skill.source_url)
+
+    # Fallback: try repo README
+    if not raw_content and source and source.repo_url:
+        raw_content = await fetch_github_readme(source.repo_url)
+
+    # Fallback: use skill description/name
     if not raw_content:
-        raise HTTPException(status_code=404, detail="Could not fetch skill content")
+        raw_content = skill.description or skill.name
 
     from mcp_manager.summarizer.cleaner import clean_markdown
     cleaned = clean_markdown(raw_content)
