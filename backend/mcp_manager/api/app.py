@@ -7,6 +7,24 @@ from mcp_manager.api.rate_limit import RateLimitMiddleware
 
 def create_app() -> FastAPI:
     app = FastAPI(title="MCP Manager", version="0.1.0")
+
+    @app.on_event("startup")
+    async def reset_interrupted_enrichments():
+        from mcp_manager.db.session import SessionLocal
+        from mcp_manager.db.models import SkillSource
+        from sqlalchemy import update
+        import logging
+        _logger = logging.getLogger("startup")
+        async with SessionLocal() as db:
+            result = await db.execute(
+                update(SkillSource)
+                .where(SkillSource.enrichment_status == "enriching")
+                .values(enrichment_status="pending")
+            )
+            await db.commit()
+            if result.rowcount > 0:
+                _logger.info("startup: reset %d interrupted enrichments to pending", result.rowcount)
+
     app.add_middleware(RateLimitMiddleware)
     app.add_middleware(
         CORSMiddleware, allow_origins=settings.cors_origins,
