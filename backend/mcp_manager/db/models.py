@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, String, Table, Text, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR, UUID
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -37,6 +37,8 @@ class McpService(Base):
     needs_reindex: Mapped[bool] = mapped_column(Boolean, default=False)
     index_attempts: Mapped[int] = mapped_column(default=0)
     is_deprecated: Mapped[bool] = mapped_column(Boolean, default=False)
+    stars: Mapped[int | None] = mapped_column(nullable=True)
+    canonical_id: Mapped[str | None] = mapped_column(String(500), index=True)
     search_vector = Column(TSVECTOR)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
@@ -147,8 +149,20 @@ class McpParameter(Base):
     service: Mapped["McpService"] = relationship(back_populates="parameters")
 
 
+skill_source_skills = Table(
+    "skill_source_skills",
+    Base.metadata,
+    Column("skill_source_id", UUID(as_uuid=True), ForeignKey("skill_sources.id", ondelete="CASCADE"), primary_key=True),
+    Column("skill_id", UUID(as_uuid=True), ForeignKey("skills.id", ondelete="CASCADE"), primary_key=True),
+)
+
+
 class SkillSource(Base):
     __tablename__ = "skill_sources"
+    __table_args__ = (
+        Index("ix_skill_sources_repo_url", "repo_url",
+              postgresql_where=text("repo_url IS NOT NULL")),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
@@ -157,7 +171,7 @@ class SkillSource(Base):
     url: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
     repo_url: Mapped[str | None] = mapped_column(Text)  # GitHub repo URL
     skills_path: Mapped[str] = mapped_column(String(255), default="")  # directory in the repo (empty = root)
-    type: Mapped[str] = mapped_column(String(20), nullable=False)  # claude, copilot, gemini, cursor
+    type: Mapped[str] = mapped_column(String(200), nullable=False)  # pipe-separated: opencode|codex|gemini-cli|github-copilot|amp|claude|cursor
     description: Mapped[str | None] = mapped_column(Text)
     summary_en: Mapped[str | None] = mapped_column(Text)
     summary_fr: Mapped[str | None] = mapped_column(Text)
@@ -166,11 +180,15 @@ class SkillSource(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     last_sync: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     last_sync_count: Mapped[int] = mapped_column(default=0)
+    stars: Mapped[int | None] = mapped_column(nullable=True)
+    enrichment_status: Mapped[str] = mapped_column(
+        String(20), default="pending", server_default="pending"
+    )  # pending, enriching, done, failed
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
 
-    skills: Mapped[list["Skill"]] = relationship(back_populates="source", cascade="all, delete-orphan")
+    skills: Mapped[list["Skill"]] = relationship(secondary=skill_source_skills, back_populates="sources")
 
 
 class Skill(Base):
@@ -179,20 +197,18 @@ class Skill(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    skill_source_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("skill_sources.id", ondelete="CASCADE"), nullable=False
-    )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     summary_en: Mapped[str | None] = mapped_column(Text)
     summary_fr: Mapped[str | None] = mapped_column(Text)
-    target_type: Mapped[str] = mapped_column(String(20), nullable=False)  # claude, copilot, cursor, gemini
+    target_type: Mapped[str] = mapped_column(String(200), nullable=False)  # pipe-separated: opencode|codex|gemini-cli|github-copilot|amp|claude|cursor
     licence: Mapped[str | None] = mapped_column(String(50))
     licence_url: Mapped[str | None] = mapped_column(Text)
     source_url: Mapped[str | None] = mapped_column(Text)
     category: Mapped[str | None] = mapped_column(String(100))
     install_command: Mapped[str | None] = mapped_column(Text)
     weekly_installs: Mapped[int] = mapped_column(default=0)
+    canonical_id: Mapped[str | None] = mapped_column(String(500), index=True)
     needs_summary: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
@@ -201,7 +217,7 @@ class Skill(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
-    source: Mapped["SkillSource"] = relationship(back_populates="skills")
+    sources: Mapped[list["SkillSource"]] = relationship(secondary=skill_source_skills, back_populates="skills")
 
 
 class McpInstance(Base):

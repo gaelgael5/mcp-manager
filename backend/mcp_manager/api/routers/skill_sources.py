@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from mcp_manager.api.deps import get_db
 from mcp_manager.api.routers.auth import require_admin
-from mcp_manager.db.models import SkillSource, Skill
+from mcp_manager.db.models import SkillSource, Skill, skill_source_skills
 
 router = APIRouter(tags=["skills"])
 
@@ -114,7 +114,9 @@ async def list_skills(
 ):
     query = select(Skill)
     if source_id:
-        query = query.where(Skill.skill_source_id == source_id)
+        query = query.join(skill_source_skills, skill_source_skills.c.skill_id == Skill.id).where(
+            skill_source_skills.c.skill_source_id == source_id
+        )
     if target_type:
         query = query.where(Skill.target_type == target_type)
     query = query.order_by(Skill.name)
@@ -152,8 +154,13 @@ async def generate_skill_summary(
     if not skill:
         raise HTTPException(status_code=404, detail="Skill not found")
 
-    # Get the source for repo_url
-    src_result = await db.execute(select(SkillSource).where(SkillSource.id == skill.skill_source_id))
+    # Get the source for repo_url (via junction table)
+    src_result = await db.execute(
+        select(SkillSource)
+        .join(skill_source_skills, skill_source_skills.c.skill_source_id == SkillSource.id)
+        .where(skill_source_skills.c.skill_id == skill.id)
+        .limit(1)
+    )
     source = src_result.scalar_one_or_none()
 
     # Try to fetch content: from skill source_url (GitHub tree link) or repo README
@@ -185,18 +192,20 @@ async def generate_skill_summary(
     with open(os.path.join(prompts_dir, "skill_summary_en.md"), encoding="utf-8") as f:
         prompt_en = f.read().replace("{content}", cleaned)
     skill.summary_en = await ollama_generate(prompt_en)
+    if not skill.summary_en:
+        gen_logger.warning("EN summary empty, retrying...")
+        skill.summary_en = await ollama_generate(prompt_en)
+    skill.summary_en = skill.summary_en or None
     gen_logger.info("Skill %s EN summary: %d chars", skill.name, len(skill.summary_en or ""))
 
     # FR
     with open(os.path.join(prompts_dir, "skill_summary_fr.md"), encoding="utf-8") as f:
         prompt_fr = f.read().replace("{content}", cleaned)
     skill.summary_fr = await ollama_generate(prompt_fr)
-    gen_logger.info("Skill %s FR summary: %d chars", skill.name, len(skill.summary_fr or ""))
-
-    # Retry FR if empty
     if not skill.summary_fr:
         gen_logger.warning("FR summary empty, retrying...")
         skill.summary_fr = await ollama_generate(prompt_fr)
+    skill.summary_fr = skill.summary_fr or None
 
     # Embedding
     await db.execute(delete(McpEmbedding).where(
@@ -285,11 +294,17 @@ async def generate_source_summary(
     with open(os.path.join(prompts_dir, "source_summary_en.md"), encoding="utf-8") as f:
         prompt_en = f.read().replace("{content}", context)
     source.summary_en = await ollama_generate(prompt_en)
+    if not source.summary_en:
+        source.summary_en = await ollama_generate(prompt_en)
+    source.summary_en = source.summary_en or None  # never store empty string
 
     # FR
     with open(os.path.join(prompts_dir, "source_summary_fr.md"), encoding="utf-8") as f:
         prompt_fr = f.read().replace("{content}", context)
     source.summary_fr = await ollama_generate(prompt_fr)
+    if not source.summary_fr:
+        source.summary_fr = await ollama_generate(prompt_fr)
+    source.summary_fr = source.summary_fr or None  # never store empty string
 
     # Index in RAG
     await db.execute(delete(McpEmbedding).where(
@@ -348,6 +363,22 @@ async def sync_skill_source(
         source.repo_status = scan_result["status"]
         raw_skills = scan_result["skills"]
 
+        # Fetch GitHub stars
+        import httpx
+        from mcp_manager.config import settings as _settings
+        try:
+            parts = source.repo_url.rstrip("/").split("/")
+            owner, repo = parts[-2], parts[-1]
+            headers = {"Accept": "application/vnd.github.v3+json"}
+            if _settings.github_token:
+                headers["Authorization"] = f"token {_settings.github_token}"
+            async with httpx.AsyncClient(timeout=10.0) as gh:
+                resp = await gh.get(f"https://api.github.com/repos/{owner}/{repo}", headers=headers)
+                if resp.status_code == 200:
+                    source.stars = resp.json().get("stargazers_count")
+        except Exception:
+            pass  # stars update is best-effort
+
         if not raw_skills:
             source.last_sync = datetime.now(timezone.utc)
             source.last_sync_count = 0
@@ -364,13 +395,16 @@ async def sync_skill_source(
         raw_skills = await scan_skill_source(source.url, source.skills_path, source.type)
         source.branch_hash = new_hash
 
-    # Upsert skills
+    # Upsert skills via junction table
     added = 0
     updated = 0
     for raw in raw_skills:
+        # Find existing skill linked to this source by name
         existing = await db.execute(
-            select(Skill).where(
-                Skill.skill_source_id == source_id,
+            select(Skill)
+            .join(skill_source_skills, skill_source_skills.c.skill_id == Skill.id)
+            .where(
+                skill_source_skills.c.skill_source_id == source_id,
                 Skill.name == raw["name"],
             )
         )
@@ -383,8 +417,7 @@ async def sync_skill_source(
             skill.needs_summary = True
             updated += 1
         else:
-            db.add(Skill(
-                skill_source_id=source_id,
+            new_skill = Skill(
                 name=raw["name"],
                 description=raw["description"],
                 target_type=source.type,
@@ -393,7 +426,14 @@ async def sync_skill_source(
                 source_url=raw.get("source_url"),
                 category=raw.get("category"),
                 needs_summary=True,
-            ))
+            )
+            db.add(new_skill)
+            await db.flush()  # get new_skill.id
+            await db.execute(
+                skill_source_skills.insert().values(
+                    skill_source_id=source_id, skill_id=new_skill.id
+                )
+            )
             added += 1
 
     source.repo_status = "ok"
@@ -419,7 +459,9 @@ async def _generate_skill_summaries(db: AsyncSession, source_id, raw_skills: lis
     content_map = {r["name"]: r.get("raw_content", "") for r in raw_skills}
 
     result = await db.execute(
-        select(Skill).where(Skill.skill_source_id == source_id, Skill.needs_summary == True)
+        select(Skill)
+        .join(skill_source_skills, skill_source_skills.c.skill_id == Skill.id)
+        .where(skill_source_skills.c.skill_source_id == source_id, Skill.needs_summary == True)
     )
     skills = result.scalars().all()
 
@@ -495,28 +537,34 @@ async def sync_all_skill_sources(
 
         for raw in raw_skills:
             existing = await db.execute(
-                select(Skill).where(
-                    Skill.skill_source_id == source.id,
+                select(Skill)
+                .join(skill_source_skills, skill_source_skills.c.skill_id == Skill.id)
+                .where(
+                    skill_source_skills.c.skill_source_id == source.id,
                     Skill.name == raw["name"],
                 )
             )
             skill = existing.scalar_one_or_none()
             if skill:
                 skill.description = raw["description"]
-                skill.content = raw["content"]
-                skill.licence = raw["licence"]
-                skill.source_url = raw["source_url"]
+                skill.licence = raw.get("licence")
+                skill.source_url = raw.get("source_url")
                 total_updated += 1
             else:
-                db.add(Skill(
-                    skill_source_id=source.id,
+                new_skill = Skill(
                     name=raw["name"],
                     description=raw["description"],
-                    content=raw["content"],
                     target_type=source.type,
-                    licence=raw["licence"],
-                    source_url=raw["source_url"],
-                ))
+                    licence=raw.get("licence"),
+                    source_url=raw.get("source_url"),
+                )
+                db.add(new_skill)
+                await db.flush()
+                await db.execute(
+                    skill_source_skills.insert().values(
+                        skill_source_id=source.id, skill_id=new_skill.id
+                    )
+                )
                 total_added += 1
 
         source.branch_hash = new_hash
@@ -542,6 +590,8 @@ def _serialize_source(s: SkillSource) -> dict:
         "repo_status": s.repo_status,
         "branch_hash": s.branch_hash,
         "is_active": s.is_active,
+        "stars": s.stars,
+        "enrichment_status": s.enrichment_status,
         "last_sync": s.last_sync.isoformat() if s.last_sync else None,
         "last_sync_count": s.last_sync_count,
         "created_at": s.created_at.isoformat() if s.created_at else None,
@@ -551,7 +601,6 @@ def _serialize_source(s: SkillSource) -> dict:
 def _serialize_skill(s: Skill) -> dict:
     return {
         "id": str(s.id),
-        "skill_source_id": str(s.skill_source_id),
         "name": s.name,
         "description": s.description,
         "summary_en": s.summary_en,
