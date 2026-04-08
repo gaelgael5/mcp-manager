@@ -1,4 +1,4 @@
-import { useSyncStatus, useTriggerSync, useTriggerIndex, useTriggerScrapeSkills } from "../api/sync";
+import { useSyncStatus, useTriggerSync, useTriggerIndex, useTriggerScrapeSkills, useEnrichSkills, useStopEnrichSkills } from "../api/sync";
 import { useCurrentUser } from "../api/auth";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -10,6 +10,8 @@ export function SyncPage() {
   const triggerSync = useTriggerSync();
   const triggerIndex = useTriggerIndex();
   const scrapeSkills = useTriggerScrapeSkills();
+  const enrichSkills = useEnrichSkills();
+  const stopEnrich = useStopEnrichSkills();
 
   if (!user?.is_admin) {
     return <p className="text-gray-500">Admin access required.</p>;
@@ -52,25 +54,44 @@ export function SyncPage() {
         )}
       </Card>
 
-      <Card title="Scrape Skills.sh">
+      <Card title="Skills.sh Enrichment">
         <p className="text-sm text-gray-500 mb-3">
-          Crawl skills.sh catalog, create Skill Sources + Skills with install commands and summaries.
+          Enrichit les Skill Sources : repo URL, summaries EN/FR, sync des skills depuis GitHub.
         </p>
         <div className="flex gap-3">
-          <Button onClick={() => scrapeSkills.mutate({ limit: 10, skipSummaries: true })} loading={scrapeSkills.isPending || (status as any)?.scraping} disabled={(status as any)?.scraping}>
-            Test (10, no summary)
+          <Button onClick={() => scrapeSkills.mutate({ limit: 10, skipSummaries: true })} loading={scrapeSkills.isPending || (status as any)?.scraping} disabled={(status as any)?.scraping || (status as any)?.enriching}>
+            Scrape (10 test)
           </Button>
-          <Button variant="secondary" onClick={() => scrapeSkills.mutate({ skipSummaries: true })} loading={scrapeSkills.isPending || (status as any)?.scraping} disabled={(status as any)?.scraping}>
-            All (no summary)
+          <Button variant="secondary" onClick={() => scrapeSkills.mutate({})} loading={scrapeSkills.isPending || (status as any)?.scraping} disabled={(status as any)?.scraping || (status as any)?.enriching}>
+            Scrape All
           </Button>
-          <Button variant="secondary" onClick={() => scrapeSkills.mutate({})} loading={scrapeSkills.isPending || (status as any)?.scraping} disabled={(status as any)?.scraping}>
-            All + Summaries
-          </Button>
+          {(status as any)?.enriching ? (
+            <Button variant="danger" onClick={() => stopEnrich.mutate()} loading={stopEnrich.isPending}>
+              Stop Enrich
+            </Button>
+          ) : (
+            <Button onClick={() => enrichSkills.mutate()} loading={enrichSkills.isPending} disabled={(status as any)?.scraping}>
+              Enrich Skills
+            </Button>
+          )}
         </div>
+        {(status as any)?.enriching && (status as any)?.enrich_progress && (
+          <div className="mt-3 text-sm text-blue-600">
+            <p>Enrichissement : {(status as any).enrich_progress.done}/{(status as any).enrich_progress.total}</p>
+            <p className="text-xs text-gray-500">
+              Repos: {(status as any).enrich_progress.repos_filled} |
+              Summaries: {(status as any).enrich_progress.summaries} |
+              Syncs: {(status as any).enrich_progress.syncs} |
+              Failed: {(status as any).enrich_progress.failed}
+            </p>
+          </div>
+        )}
         {(status as any)?.scraping && <p className="text-sm text-blue-600 mt-2">Scraping in progress...</p>}
-        {(status as any)?.last_scrape && (
+        {(status as any)?.last_enrich && (
           <div className="mt-3 text-xs text-gray-500">
-            Last scrape: {(status as any).last_scrape.time}
+            Last enrich: {(status as any).last_enrich.done} done, {(status as any).last_enrich.failed} failed,
+            {" "}{(status as any).last_enrich.repos_filled} repos, {(status as any).last_enrich.summaries} summaries,
+            {" "}{(status as any).last_enrich.syncs} syncs — {(status as any).last_enrich.time}
           </div>
         )}
       </Card>

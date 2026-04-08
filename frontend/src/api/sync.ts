@@ -43,3 +43,21 @@ export function useTriggerScrapeSkills() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
   });
 }
+
+export function useEnrichSkills() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      apiFetch<{ status: string }>("/services/enrich-skills", { method: "POST" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
+  });
+}
+
+export function useStopEnrichSkills() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      apiFetch<{ status: string }>("/services/enrich-skills/stop", { method: "POST" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
+  });
+}
