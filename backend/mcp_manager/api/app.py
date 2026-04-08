@@ -9,13 +9,17 @@ def create_app() -> FastAPI:
     app = FastAPI(title="MCP Manager", version="0.1.0")
 
     @app.on_event("startup")
-    async def reset_interrupted_enrichments():
-        from mcp_manager.db.session import SessionLocal
-        from mcp_manager.db.models import SkillSource
-        from sqlalchemy import update
+    async def resume_interrupted_processes():
+        import asyncio
         import logging
+        from sqlalchemy import update, select, func, or_
+        from mcp_manager.db.session import SessionLocal
+        from mcp_manager.db.models import SkillSource, McpService, Skill
+        from mcp_manager.api.routers.sync import _sync_status, _run_enrich_skills_bg, _run_index_bg, _run_index_skills_bg
         _logger = logging.getLogger("startup")
+
         async with SessionLocal() as db:
+            # 1. Reset enriching -> pending
             result = await db.execute(
                 update(SkillSource)
                 .where(SkillSource.enrichment_status == "enriching")
@@ -24,6 +28,53 @@ def create_app() -> FastAPI:
             await db.commit()
             if result.rowcount > 0:
                 _logger.info("startup: reset %d interrupted enrichments to pending", result.rowcount)
+
+            # 2. Count pending enrichments
+            count_result = await db.execute(
+                select(func.count()).select_from(SkillSource).where(
+                    or_(
+                        SkillSource.enrichment_status == "pending",
+                        SkillSource.enrichment_status.is_(None),
+                    )
+                )
+            )
+            pending_enrich = count_result.scalar() or 0
+
+            # 3. Count services needing reindex
+            count_result = await db.execute(
+                select(func.count()).select_from(McpService).where(
+                    McpService.needs_reindex == True
+                )
+            )
+            pending_index = count_result.scalar() or 0
+
+        # Auto-launch enrich pipeline
+        if pending_enrich > 0:
+            _logger.info("startup: %d pending enrichments, auto-launching enrich pipeline", pending_enrich)
+            _sync_status["enriching"] = True
+            _sync_status["enrich_cancel"] = False
+            asyncio.create_task(_run_enrich_skills_bg())
+
+        # Auto-launch index pipeline
+        if pending_index > 0:
+            _logger.info("startup: %d services need reindex, auto-launching index pipeline", pending_index)
+            _sync_status["indexing"] = True
+            asyncio.create_task(_run_index_bg(pending_index))
+
+        # 4. Count skills needing summary
+        async with SessionLocal() as db:
+            count_result = await db.execute(
+                select(func.count()).select_from(Skill).where(
+                    Skill.needs_summary == True
+                )
+            )
+            pending_skills = count_result.scalar() or 0
+
+        if pending_skills > 0:
+            _logger.info("startup: %d skills need summary, auto-launching index-skills pipeline", pending_skills)
+            _sync_status["indexing_skills"] = True
+            _sync_status["index_skills_cancel"] = False
+            asyncio.create_task(_run_index_skills_bg())
 
     app.add_middleware(RateLimitMiddleware)
     app.add_middleware(

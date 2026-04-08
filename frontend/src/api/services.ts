@@ -46,7 +46,7 @@ export function useSearchServices(filters: SearchFilters) {
   const qs = params.toString();
   return useQuery({
     queryKey: ["search", qs],
-    queryFn: () => apiFetch<PaginatedResponse<McpService & { similarity?: number }>>(`/search?${qs}`),
+    queryFn: () => apiFetch<PaginatedResponse<McpService & { similarity?: number }>>(`/search_mcp?${qs}`),
     enabled: !!filters.q,
   });
 }

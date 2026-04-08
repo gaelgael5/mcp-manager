@@ -1,5 +1,6 @@
 """Settings API — edit LLM providers config (admin only)."""
 import hashlib
+import json
 import os
 import re
 import subprocess
@@ -188,6 +189,64 @@ async def update_env_keys(
         os.environ[key] = val
 
     return {"status": "saved"}
+
+
+# --- Auth files (e.g. Codex auth.json) ---
+
+_AUTH_FILES = {
+    "codex": {"path": "/root/.codex/auth.json", "label": "Codex auth.json"},
+}
+
+
+@router.get("/settings/auth-files")
+async def list_auth_files(request: Request, admin: dict = Depends(require_admin)):
+    """List available auth files and whether they exist on disk."""
+    result = []
+    for key, info in _AUTH_FILES.items():
+        path = info["path"]
+        content = ""
+        if os.path.isfile(path):
+            with open(path, encoding="utf-8") as f:
+                content = f.read()
+        result.append({
+            "key": key,
+            "label": info["label"],
+            "path": path,
+            "exists": os.path.isfile(path),
+            "content": content,
+        })
+    return result
+
+
+class AuthFileUpdate(BaseModel):
+    key: str
+    content: str
+
+
+@router.put("/settings/auth-files")
+async def update_auth_file(
+    body: AuthFileUpdate,
+    request: Request,
+    admin: dict = Depends(require_admin),
+):
+    """Save auth file content to disk."""
+    if body.key not in _AUTH_FILES:
+        return {"status": "error", "message": f"Unknown auth file: {body.key}"}
+
+    info = _AUTH_FILES[body.key]
+    path = info["path"]
+
+    # Validate JSON
+    try:
+        json.loads(body.content)
+    except json.JSONDecodeError as e:
+        return {"status": "error", "message": f"Invalid JSON: {e}"}
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(body.content)
+
+    return {"status": "saved", "path": path}
 
 
 @router.get("/settings/docker-run-cmd/{image_name}")

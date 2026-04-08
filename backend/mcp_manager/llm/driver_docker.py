@@ -22,6 +22,14 @@ def _resolve_env_var(value: str) -> str:
     return os.environ.get(inner, "")
 
 
+_IMAGE_ENV_KEY = {
+    "claude-code": "ANTHROPIC_API_KEY",
+    "openai": "OPENAI_API_KEY",
+    "mistral": "MISTRAL_API_KEY",
+    "codex": None,  # Auth via mounted auth.json, no API key env var
+}
+
+
 class DockerDriver:
     def __init__(self, provider_id: int, args: dict, image: str = "claude"):
         self.provider_id = provider_id
@@ -29,6 +37,7 @@ class DockerDriver:
         self.container_name = f"mcp-llm-worker-{provider_id}"
         self.api_key = _resolve_env_var(args.get("API_KEY", ""))
         self.workspace = _resolve_env_var(args.get("WORKSPACE_PATH", "./workspace"))
+        self.codex_auth_path = _resolve_env_var(args.get("CODEX_AUTH_PATH", "/root/.codex/auth.json"))
         self._process = None
         self._rate_limit = 1.0  # seconds between calls
         self._last_call = 0.0
@@ -46,21 +55,31 @@ class DockerDriver:
             capture_output=True,
         )
 
+        # Build docker run command based on image type
+        cmd = [
+            "docker", "run",
+            "--name", self.container_name,
+            "--rm",
+            "-i",
+            "--network", "host",
+            "-e", "AGENT_ROLE=indexer",
+            "-e", "AGENT_MAX_TURNS=5",
+            "-v", f"{os.path.abspath(self.workspace)}:/workspace",
+            "-w", "/workspace",
+        ]
+
+        # Inject API key env var (image-specific) or auth volume
+        env_key = _IMAGE_ENV_KEY.get(self.image, "ANTHROPIC_API_KEY")
+        if env_key and self.api_key:
+            cmd.extend(["-e", f"{env_key}={self.api_key}"])
+        if self.image == "codex":
+            cmd.extend(["-v", f"{self.codex_auth_path}:/home/agent/.codex/auth.json:ro"])
+
+        cmd.append(f"mcp-manager-{self.image}")
+
         # Start container in background with stdin open
         self._process = subprocess.Popen(
-            [
-                "docker", "run",
-                "--name", self.container_name,
-                "--rm",
-                "-i",
-                "--network", "host",
-                "-e", f"ANTHROPIC_API_KEY={self.api_key}",
-                "-e", "AGENT_ROLE=indexer",
-                "-e", "AGENT_MAX_TURNS=5",
-                "-v", f"{os.path.abspath(self.workspace)}:/workspace",
-                "-w", "/workspace",
-                f"mcp-manager-{self.image}",
-            ],
+            cmd,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

@@ -34,6 +34,7 @@ async def _run_sync(source: str | None = None) -> dict[str, int]:
     from mcp_manager.db.session import SessionLocal
     from mcp_manager.db.models import McpService
     from mcp_manager.connectors.registry import get_all_connectors, get_connector
+    from mcp_manager.enrichment.canonical import compute_canonical_id
 
     import mcp_manager.connectors  # noqa: F401 — registers all connectors
 
@@ -56,6 +57,13 @@ async def _run_sync(source: str | None = None) -> dict[str, int]:
                 )
                 existing = result.scalar_one_or_none()
                 pkg_info = _build_package_info(raw)
+                cid = compute_canonical_id(
+                    source_url=raw.source_url,
+                    package_identifier=raw.package_identifier,
+                    registry_type=raw.registry_type,
+                    source_type=raw.source_type,
+                    name=raw.name,
+                )
 
                 if not existing:
                     db.add(McpService(
@@ -65,6 +73,7 @@ async def _run_sync(source: str | None = None) -> dict[str, int]:
                         transport=raw.transport, category=raw.category,
                         tags=raw.tags, is_deprecated=raw.is_deprecated,
                         package_info=pkg_info,
+                        canonical_id=cid,
                     ))
                     stats["new"] += 1
                 elif existing.doc_hash != raw.doc_hash or existing.branch_hash != raw.branch_hash:
@@ -74,11 +83,13 @@ async def _run_sync(source: str | None = None) -> dict[str, int]:
                     existing.transport = raw.transport
                     existing.category = raw.category
                     existing.tags = raw.tags
+                    existing.canonical_id = cid
                     if pkg_info:
                         existing.package_info = pkg_info
                     stats["updated"] += 1
                 elif not existing.package_info and pkg_info:
                     existing.package_info = pkg_info
+                    existing.canonical_id = cid
                     stats["updated"] += 1
                 else:
                     stats["unchanged"] += 1
@@ -259,12 +270,15 @@ async def _run_enrich(pass_name: str | None = None) -> None:
     from mcp_manager.enrichment.url_resolver import run_url_resolve
     from mcp_manager.enrichment.dedup import run_dedup
     from mcp_manager.enrichment.categorizer import run_categorize
-    from mcp_manager.enrichment.repo_checker import run_repo_check
+    from mcp_manager.enrichment.repo_checker import run_repo_check, run_stars_update
+    from mcp_manager.enrichment.canonical import run_canonical_backfill
 
     passes = {
         "url-resolve": ("URL Resolve", run_url_resolve),
+        "canonical": ("Canonical ID", run_canonical_backfill),
         "dedup": ("Deduplication", run_dedup),
         "repo-check": ("Repo Check", run_repo_check),
+        "stars": ("Stars Update", run_stars_update),
         "categorize": ("Auto-categorize", run_categorize),
     }
 

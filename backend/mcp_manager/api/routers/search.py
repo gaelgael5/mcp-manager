@@ -8,15 +8,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from mcp_manager.api.deps import get_db
 from mcp_manager.db.models import (
     McpService, McpSummary, McpInstallation, McpParameter,
-    InstallTarget, McpEmbedding,
+    InstallTarget, McpEmbedding, SkillSource, Skill, skill_source_skills,
 )
 
 router = APIRouter(tags=["search"])
 
 
-@router.get("/search")
-async def search_services(
+@router.get("/search_mcp")
+async def search_mcp(
     q: str | None = Query(None, description="Full-text search in name and summaries"),
+    canonical_id: str | None = Query(None, description="Exact match on canonical_id (e.g. github:owner/repo)"),
     semantic: bool = Query(False, description="Enable semantic search via embeddings (requires q)"),
     transport: str | None = Query(None, description="Filter by transport: stdio, sse, streamable-http"),
     category: str | None = Query(None, description="Filter by category"),
@@ -45,6 +46,14 @@ async def search_services(
             repo_status=repo_status, has_summaries=has_summaries, targets=targets,
             updated_since=since_dt, page=page, per_page=per_page, db=db,
         )
+
+    # Exact lookup by canonical_id
+    if canonical_id:
+        query = select(McpService).where(McpService.canonical_id == canonical_id)
+        result = await db.execute(query)
+        services = result.scalars().all()
+        items = await _build_response_items(db, services, targets)
+        return {"items": items, "total": len(items), "page": 1, "per_page": len(items) or per_page}
 
     # Standard text search — tsvector rank OR ILIKE fallback
     query = select(McpService)
@@ -252,8 +261,168 @@ async def _build_response_items(
             "transport": svc.transport,
             "category": svc.category,
             "repo_status": svc.repo_status,
+            "stars": svc.stars,
+            "canonical_id": svc.canonical_id,
             "parameters": params_map.get(svc.id, []),
             "recipes": installs_map.get(svc.id, {}),
         })
 
     return items
+
+
+@router.get("/search_skill_sources")
+async def search_skill_sources(
+    q: str | None = Query(None, description="Search in name, description, and summaries"),
+    type: str | None = Query(None, description="Filter by type: claude, copilot, gemini, cursor"),
+    repo_status: str | None = Query(None, description="Filter by repo status: ok, repo_404, no_skills_dir"),
+    has_summary: bool | None = Query(None, description="Filter by summary availability"),
+    page: int = Query(1, ge=1, le=1000),
+    per_page: int = Query(20, ge=1, le=50),
+    db: AsyncSession = Depends(get_db),
+):
+    """Search skill sources with text filters and pagination."""
+    query = select(SkillSource).where(SkillSource.is_active == True)
+
+    if q:
+        pattern = f"%{q}%"
+        query = query.where(
+            SkillSource.name.ilike(pattern)
+            | SkillSource.description.ilike(pattern)
+            | SkillSource.summary_en.ilike(pattern)
+            | SkillSource.repo_url.ilike(pattern)
+        )
+    if type:
+        query = query.where(SkillSource.type == type)
+    if repo_status:
+        query = query.where(SkillSource.repo_status == repo_status)
+    if has_summary is not None:
+        if has_summary:
+            query = query.where(SkillSource.summary_en.isnot(None))
+        else:
+            query = query.where(SkillSource.summary_en.is_(None))
+
+    count_query = select(func.count()).select_from(query.subquery())
+    total = (await db.execute(count_query)).scalar() or 0
+
+    query = query.order_by(SkillSource.stars.desc().nullslast(), SkillSource.name)
+    query = query.offset((page - 1) * per_page).limit(per_page)
+
+    result = await db.execute(query)
+    sources = result.scalars().all()
+
+    # Count skills per source
+    source_ids = [s.id for s in sources]
+    skills_count_map: dict[uuid.UUID, int] = {}
+    if source_ids:
+        count_result = await db.execute(
+            select(
+                skill_source_skills.c.skill_source_id,
+                func.count(skill_source_skills.c.skill_id),
+            )
+            .where(skill_source_skills.c.skill_source_id.in_(source_ids))
+            .group_by(skill_source_skills.c.skill_source_id)
+        )
+        skills_count_map = {row[0]: row[1] for row in count_result}
+
+    items = []
+    for s in sources:
+        items.append({
+            "id": str(s.id),
+            "name": s.name,
+            "url": s.url,
+            "repo_url": s.repo_url,
+            "type": s.type,
+            "description": s.description,
+            "summary_en": s.summary_en,
+            "has_summary": bool(s.summary_en),
+            "repo_status": s.repo_status,
+            "stars": s.stars,
+            "skills_count": skills_count_map.get(s.id, 0),
+            "last_sync": s.last_sync.isoformat() if s.last_sync else None,
+        })
+
+    return {"items": items, "total": total, "page": page, "per_page": per_page}
+
+
+@router.get("/search_skills")
+async def search_skills(
+    q: str | None = Query(None, description="Search in name, description, and summaries"),
+    canonical_id: str | None = Query(None, description="Exact match on canonical_id (e.g. github:owner/repo:skill-name)"),
+    target_type: str | None = Query(None, description="Filter by target type: claude, copilot, gemini, cursor"),
+    category: str | None = Query(None, description="Filter by category"),
+    has_summary: bool | None = Query(None, description="Filter by summary availability"),
+    source_id: uuid.UUID | None = Query(None, description="Filter by skill source ID"),
+    page: int = Query(1, ge=1, le=1000),
+    per_page: int = Query(20, ge=1, le=50),
+    db: AsyncSession = Depends(get_db),
+):
+    """Search skills with text filters and pagination."""
+    # Exact lookup by canonical_id
+    if canonical_id:
+        result = await db.execute(select(Skill).where(Skill.canonical_id == canonical_id))
+        skills = result.scalars().all()
+        items = []
+        for s in skills:
+            items.append({
+                "id": str(s.id), "name": s.name, "description": s.description,
+                "summary_en": s.summary_en, "target_type": s.target_type,
+                "has_summary": bool(s.summary_en), "category": s.category,
+                "licence": s.licence, "source_url": s.source_url,
+                "canonical_id": s.canonical_id,
+                "install_command": s.install_command,
+                "weekly_installs": s.weekly_installs,
+                "created_at": s.created_at.isoformat() if s.created_at else None,
+            })
+        return {"items": items, "total": len(items), "page": 1, "per_page": len(items) or per_page}
+
+    query = select(Skill)
+
+    if q:
+        pattern = f"%{q}%"
+        query = query.where(
+            Skill.name.ilike(pattern)
+            | Skill.description.ilike(pattern)
+            | Skill.summary_en.ilike(pattern)
+        )
+    if target_type:
+        query = query.where(Skill.target_type == target_type)
+    if category:
+        query = query.where(Skill.category == category)
+    if has_summary is not None:
+        if has_summary:
+            query = query.where(Skill.summary_en.isnot(None))
+        else:
+            query = query.where(Skill.summary_en.is_(None))
+    if source_id:
+        query = query.join(skill_source_skills, skill_source_skills.c.skill_id == Skill.id).where(
+            skill_source_skills.c.skill_source_id == source_id
+        )
+
+    count_query = select(func.count()).select_from(query.subquery())
+    total = (await db.execute(count_query)).scalar() or 0
+
+    query = query.order_by(Skill.weekly_installs.desc(), Skill.name)
+    query = query.offset((page - 1) * per_page).limit(per_page)
+
+    result = await db.execute(query)
+    skills = result.scalars().all()
+
+    items = []
+    for s in skills:
+        items.append({
+            "id": str(s.id),
+            "name": s.name,
+            "description": s.description,
+            "summary_en": s.summary_en,
+            "target_type": s.target_type,
+            "has_summary": bool(s.summary_en),
+            "category": s.category,
+            "licence": s.licence,
+            "source_url": s.source_url,
+            "canonical_id": s.canonical_id,
+            "install_command": s.install_command,
+            "weekly_installs": s.weekly_installs,
+            "created_at": s.created_at.isoformat() if s.created_at else None,
+        })
+
+    return {"items": items, "total": total, "page": page, "per_page": per_page}

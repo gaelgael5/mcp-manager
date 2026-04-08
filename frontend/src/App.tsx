@@ -14,6 +14,7 @@ import { SkillsPage } from "./pages/SkillsPage";
 import { SkillsCatalogPage } from "./pages/SkillsCatalogPage";
 import { SkillDetailPage } from "./pages/SkillDetailPage";
 import { SkillSourceDetailPage } from "./pages/SkillSourceDetailPage";
+import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +24,8 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route element={<MainLayout />}>
-            <Route path="/" element={<DashboardPage />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/services" element={<ServicesPage />} />
             <Route path="/services/:id" element={<ServiceDetailPage />} />
             <Route path="/targets" element={<TargetsPage />} />

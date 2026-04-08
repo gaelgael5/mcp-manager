@@ -645,15 +645,30 @@ async def _enrich_summaries(source: SkillSource, db: AsyncSession) -> bool:
             source.summary_fr = await ollama_generate(prompt_fr)
         source.summary_fr = source.summary_fr or None
 
+    # Index in RAG
+    if source.summary_en:
+        from mcp_manager.indexer.embedder import embed_text
+        from mcp_manager.db.models import McpEmbedding
+        from sqlalchemy import delete
+        await db.execute(delete(McpEmbedding).where(
+            McpEmbedding.chunk_type == "source_summary",
+            McpEmbedding.content.like(f"source:{source.id}%"),
+        ))
+        vec = await embed_text(source.summary_en)
+        if vec:
+            db.add(McpEmbedding(
+                chunk_type="source_summary",
+                chunk_index=0,
+                content=f"source:{source.id} {source.summary_en}",
+                embedding=vec,
+            ))
+
     return bool(source.summary_en or source.summary_fr)
 
 
 async def _enrich_sync_skills(source: SkillSource, db: AsyncSession) -> int:
-    """Sync skills from GitHub repo if not yet synced. Returns count of skills added."""
+    """Sync skills from GitHub repo. Returns count of skills added."""
     from datetime import datetime, timezone
-
-    if source.last_sync:
-        return 0
 
     if not source.repo_url:
         source.repo_url = _derive_repo_url(source.url)
@@ -718,6 +733,93 @@ async def _enrich_sync_skills(source: SkillSource, db: AsyncSession) -> int:
     source.last_sync = datetime.now(timezone.utc)
     source.last_sync_count = len(raw_skills)
     return added
+
+
+async def _enrich_one_skill(skill: Skill, db: AsyncSession) -> bool:
+    """Enrich a single skill: generate summaries if missing or if source branch changed.
+    Returns True if the skill was updated."""
+    import os
+    from mcp_manager.summarizer.ollama_client import ollama_generate
+    from mcp_manager.summarizer.cleaner import clean_markdown
+    from mcp_manager.connectors.github_readme import fetch_github_readme
+    from mcp_manager.connectors.skill_scanner import get_repo_branch_hash
+    from mcp_manager.indexer.embedder import embed_text
+    from mcp_manager.db.models import McpEmbedding
+    from sqlalchemy import delete
+
+    # Get the parent source for repo_url and branch_hash
+    src_result = await db.execute(
+        select(SkillSource)
+        .join(skill_source_skills, skill_source_skills.c.skill_source_id == SkillSource.id)
+        .where(skill_source_skills.c.skill_id == skill.id)
+        .limit(1)
+    )
+    source = src_result.scalar_one_or_none()
+
+    needs_regen = False
+
+    # Check if summaries are missing
+    if not skill.summary_en or not skill.summary_fr:
+        needs_regen = True
+
+    # Check if source branch has changed
+    if not needs_regen and source and source.repo_url:
+        new_hash = await get_repo_branch_hash(source.repo_url)
+        if new_hash and new_hash != source.branch_hash:
+            source.branch_hash = new_hash
+            needs_regen = True
+
+    if not needs_regen:
+        return False
+
+    # Fetch content for summary generation
+    raw_content = None
+    if skill.source_url and "github.com" in skill.source_url:
+        raw_content = await fetch_github_readme(skill.source_url)
+    if not raw_content and source and source.repo_url:
+        raw_content = await fetch_github_readme(source.repo_url)
+    if not raw_content:
+        raw_content = skill.description or skill.name
+
+    cleaned = clean_markdown(raw_content)
+    if len(cleaned) > 8000:
+        cleaned = cleaned[:8000]
+
+    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "prompts")
+
+    # EN
+    with open(os.path.join(prompts_dir, "skill_summary_en.md"), encoding="utf-8") as f:
+        prompt_en = f.read().replace("{content}", cleaned)
+    skill.summary_en = await ollama_generate(prompt_en)
+    if not skill.summary_en:
+        skill.summary_en = await ollama_generate(prompt_en)
+    skill.summary_en = skill.summary_en or None
+
+    # FR
+    with open(os.path.join(prompts_dir, "skill_summary_fr.md"), encoding="utf-8") as f:
+        prompt_fr = f.read().replace("{content}", cleaned)
+    skill.summary_fr = await ollama_generate(prompt_fr)
+    if not skill.summary_fr:
+        skill.summary_fr = await ollama_generate(prompt_fr)
+    skill.summary_fr = skill.summary_fr or None
+
+    # Embedding RAG
+    if skill.summary_en:
+        await db.execute(delete(McpEmbedding).where(
+            McpEmbedding.skill_id == skill.id,
+            McpEmbedding.chunk_type == "skill_summary",
+        ))
+        vec = await embed_text(skill.summary_en)
+        if vec:
+            db.add(McpEmbedding(
+                skill_id=skill.id,
+                chunk_type="skill_summary",
+                chunk_index=0,
+                content=skill.summary_en,
+                embedding=vec,
+            ))
+
+    return True
 
 
 def _serialize_source(s: SkillSource) -> dict:

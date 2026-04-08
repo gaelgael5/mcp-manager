@@ -1,0 +1,57 @@
+<h2>Landing Page — Visual Direction</h2>
+<p class="subtitle">Which style feels right for MCP Manager?</p>
+
+<div class="cards">
+  <div class="card" data-choice="dark-dev" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0d1117;padding:24px;border-radius:8px 8px 0 0;">
+      <div style="font-family:monospace;color:#58a6ff;font-size:13px;margin-bottom:8px;">$ docker compose up -d</div>
+      <div style="background:#161b22;border-radius:8px;padding:16px;border:1px solid #30363d;">
+        <div style="color:#f0f6fc;font-size:18px;font-weight:700;margin-bottom:6px;">MCP Manager</div>
+        <div style="color:#8b949e;font-size:12px;margin-bottom:12px;">Unified registry of 18,000+ MCP servers</div>
+        <div style="display:flex;gap:8px;">
+          <span style="background:#238636;color:#fff;padding:4px 12px;border-radius:6px;font-size:11px;">Get Started</span>
+          <span style="background:transparent;color:#58a6ff;padding:4px 12px;border-radius:6px;font-size:11px;border:1px solid #30363d;">GitHub ★</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Dark Developer</h3>
+      <p>GitHub-inspired dark theme. Terminal vibes, code-first. Feels native to developers who live in dark mode.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="clean-modern" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:24px;border-radius:8px 8px 0 0;">
+      <div style="background:white;border-radius:12px;padding:16px;box-shadow:0 4px 24px rgba(0,0,0,0.15);">
+        <div style="color:#1a1a2e;font-size:18px;font-weight:700;margin-bottom:6px;">MCP Manager</div>
+        <div style="color:#666;font-size:12px;margin-bottom:12px;">Your unified MCP server registry</div>
+        <div style="display:flex;gap:8px;">
+          <span style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:4px 12px;border-radius:6px;font-size:11px;">Install Now</span>
+          <span style="color:#667eea;padding:4px 12px;border-radius:6px;font-size:11px;border:1px solid #ddd;">View on GitHub</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Clean Modern</h3>
+      <p>Light, gradient-driven, SaaS-style. Professional and approachable. Stands out from typical dev tool pages.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="minimal-docs" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#fafafa;padding:24px;border-radius:8px 8px 0 0;border-bottom:1px solid #e5e7eb;">
+      <div style="padding:16px;">
+        <div style="color:#111;font-size:18px;font-weight:700;margin-bottom:6px;">MCP Manager</div>
+        <div style="color:#6b7280;font-size:12px;margin-bottom:12px;">Aggregate 5 sources into one searchable registry. Self-hosted.</div>
+        <div style="background:#111;color:#0f0;font-family:monospace;font-size:11px;padding:8px 12px;border-radius:4px;margin-bottom:8px;">
+          git clone https://github.com/gaelgael5/mcp-manager<br>
+          docker compose up -d
+        </div>
+        <div style="color:#3b82f6;font-size:11px;text-decoration:underline;">Read the docs →</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Minimal Docs</h3>
+      <p>Stripe/Tailwind-inspired. Content-first, no noise. The code speaks for itself. Clean and trustworthy.</p>
+    </div>
+  </div>
+</div>

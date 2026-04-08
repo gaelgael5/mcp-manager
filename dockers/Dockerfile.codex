@@ -1,0 +1,46 @@
+# ============================================================
+# Agent Worker Image — OpenAI Codex CLI
+# Communication : stdin (Task JSON) / stdout (Events JSON)
+# Config        : volumes montes + variables d'environnement
+# ============================================================
+
+FROM node:20-slim
+
+# --- Dependances systeme ---
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    jq \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# --- Utilisateur non-root ---
+RUN useradd -m -u 1001 -s /bin/bash agent
+
+# --- Codex CLI ---
+RUN npm install -g @openai/codex
+
+# --- Workspace ---
+WORKDIR /workspace
+RUN chown agent:agent /workspace
+
+# --- Repertoire de config Codex ---
+# Le auth.json est monte ici au runtime
+RUN mkdir -p /home/agent/.codex && \
+    chown -R agent:agent /home/agent/.codex
+
+# --- Entrypoint ---
+COPY --chown=agent:agent entrypoint.codex.sh /usr/local/bin/entrypoint.codex.sh
+RUN chmod +x /usr/local/bin/entrypoint.codex.sh
+
+USER agent
+
+# Variables d'environnement runtime
+# Auth via volume monte : ~/.codex/auth.json (OAuth ChatGPT Plus)
+# OU via variable d'environnement : OPENAI_API_KEY (cle sk-...)
+ENV OPENAI_API_KEY=""
+ENV AGENT_ROLE="worker"
+ENV AGENT_MAX_TURNS="10"
+ENV CODEX_HOME=/home/agent/.codex
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.codex.sh"]

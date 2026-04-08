@@ -4,16 +4,6 @@ import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { SyncStatusBar } from "../components/domain/SyncStatusBar";
 
-function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
-  return (
-    <div className="text-center">
-      <p className="text-3xl font-bold">{value}</p>
-      <p className="text-xs text-gray-500 mt-1">{label}</p>
-      {sub && <p className="text-xs text-gray-400">{sub}</p>}
-    </div>
-  );
-}
-
 function ProgressBar({ value, max, label, color = "blue" }: { value: number; max: number; label: string; color?: string }) {
   const pct = max > 0 ? Math.round((value / max) * 100) : 0;
   const colors: Record<string, string> = {
@@ -35,6 +25,11 @@ function ProgressBar({ value, max, label, color = "blue" }: { value: number; max
   );
 }
 
+function Throughput({ value }: { value?: number }) {
+  if (!value) return null;
+  return <span className="text-xs text-yellow-600 font-normal">{value}/h</span>;
+}
+
 export function DashboardPage() {
   const { data: stats } = useStats();
   const { data: syncStatus } = useSyncStatus();
@@ -48,17 +43,18 @@ export function DashboardPage() {
         <SyncStatusBar status={syncStatus} />
       </div>
 
-      {/* Headline stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card><StatCard label="Total Services" value={total.toLocaleString()} /></Card>
-        <Card><StatCard label="Repos OK" value={(stats?.by_repo_status?.ok ?? 0).toLocaleString()} sub={`${((stats?.by_repo_status?.["404"] ?? 0)).toLocaleString()} en 404`} /></Card>
-        <Card><StatCard label="With Summaries" value={(idx?.with_summaries ?? 0).toLocaleString()} /></Card>
-        <Card><StatCard label="Needs Reindex" value={(idx?.needs_reindex ?? 0).toLocaleString()} /></Card>
-      </div>
-
       {/* Indexation progress */}
-      <Card title="MCP Services Indexation Progress">
+      <Card title={
+        <span className="flex items-center gap-2">
+          MCP Services Indexation Progress
+          {((syncStatus as any)?.running || (syncStatus as any)?.indexing) && (<>
+            <span className="text-yellow-500 animate-pulse">⚡</span>
+            <Throughput value={(syncStatus as any)?.indexing_throughput} />
+          </>)}
+        </span>
+      }>
         <div className="space-y-3">
+          <ProgressBar value={total - (idx?.needs_reindex ?? 0)} max={total} label="Traitement global" color="green" />
           <ProgressBar value={idx?.with_summaries ?? 0} max={total} label="Summaries" color="blue" />
           <ProgressBar value={idx?.with_embeddings ?? 0} max={total} label="Embeddings" color="purple" />
           <ProgressBar value={idx?.with_installations ?? 0} max={total} label="Installations" color="green" />
@@ -70,40 +66,47 @@ export function DashboardPage() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* By source */}
-        <Card title="By Source">
-          {stats?.by_source ? (
-            <div className="space-y-2">
-              {Object.entries(stats.by_source)
-                .sort(([, a], [, b]) => b - a)
-                .map(([k, v]) => (
-                  <div key={k} className="flex items-center justify-between">
-                    <Badge color="purple">{k}</Badge>
-                    <span className="text-sm font-medium">{v.toLocaleString()}</span>
-                  </div>
-                ))}
-            </div>
-          ) : <p className="text-gray-400">-</p>}
-        </Card>
+      {/* Skill Sources Progress */}
+      <Card title={
+        <span className="flex items-center gap-2">
+          Skill Sources Enrichment Progress
+          {(syncStatus as any)?.enriching && (<>
+            <span className="text-yellow-500 animate-pulse">⚡</span>
+            <Throughput value={(syncStatus as any)?.enriching_throughput} />
+          </>)}
+        </span>
+      }>
+        <div className="space-y-3">
+          <ProgressBar value={((stats as any)?.skill_sources?.by_enrichment?.done ?? 0)} max={(stats as any)?.skill_sources?.total ?? 0} label="Traitement global" color="green" />
+          <ProgressBar value={(stats as any)?.skill_sources?.with_repo ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label="Repo URL" color="blue" />
+          <ProgressBar value={(stats as any)?.skill_sources?.with_summary_en ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label="Summary EN" color="purple" />
+          <ProgressBar value={(stats as any)?.skill_sources?.with_summary_fr ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label="Summary FR" color="purple" />
+          <ProgressBar value={(stats as any)?.skill_sources?.synced ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label="Synced" color="green" />
+          <ProgressBar value={(stats as any)?.skill_sources?.with_rag ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label="RAG Indexed" color="yellow" />
+          <div className="flex gap-4 text-xs text-gray-400 pt-1">
+            {(stats as any)?.skill_sources?.by_enrichment && Object.entries((stats as any).skill_sources.by_enrichment).map(([k, v]) => (
+              <span key={k}>{k}: {(v as number).toLocaleString()}</span>
+            ))}
+          </div>
+        </div>
+      </Card>
 
-        {/* Top categories */}
-        <Card title="Top Categories">
-          {stats?.by_category ? (
-            <div className="space-y-1">
-              {Object.entries(stats.by_category)
-                .sort(([, a], [, b]) => b - a)
-                .slice(0, 15)
-                .map(([k, v]) => (
-                  <div key={k} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">{k}</span>
-                    <span className="font-medium">{v.toLocaleString()}</span>
-                  </div>
-                ))}
-            </div>
-          ) : <p className="text-gray-400">-</p>}
-        </Card>
-      </div>
+      {/* Skills Progress */}
+      <Card title={
+        <span className="flex items-center gap-2">
+          Skills Indexation Progress
+          {(syncStatus as any)?.indexing_skills && (<>
+            <span className="text-yellow-500 animate-pulse">⚡</span>
+            <Throughput value={(syncStatus as any)?.indexing_skills_throughput} />
+          </>)}
+        </span>
+      }>
+        <div className="space-y-3">
+          <ProgressBar value={((stats as any)?.skills?.total ?? 0) - ((stats as any)?.skills?.needs_summary ?? 0)} max={(stats as any)?.skills?.total ?? 0} label="Traitement global" color="green" />
+          <ProgressBar value={(stats as any)?.skills?.with_summary ?? 0} max={(stats as any)?.skills?.total ?? 0} label="With Summary" color="blue" />
+          <ProgressBar value={(stats as any)?.skills?.with_rag ?? 0} max={(stats as any)?.skills?.total ?? 0} label="RAG Indexed" color="purple" />
+        </div>
+      </Card>
 
       {/* Repo status */}
       <Card title="Repository Status">

@@ -17,6 +17,7 @@ interface SkillSource {
   has_summary: boolean;
   branch_hash: string | null;
   is_active: boolean;
+  stars: number | null;
   last_sync: string | null;
   last_sync_count: number;
   created_at: string;
@@ -65,6 +66,10 @@ export function SkillsPage() {
 
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("");
+  const [filterSummary, setFilterSummary] = useState<"" | "yes" | "no">("");
+  const [filterSynced, setFilterSynced] = useState<"" | "yes" | "no">("");
+  const [filterStars, setFilterStars] = useState<"" | "yes">("");
+  const [sortBy, setSortBy] = useState<"stars" | "name" | "recent">("stars");
   const [page, setPage] = useState(1);
   const [newName, setNewName] = useState("");
   const [newUrl, setNewUrl] = useState("");
@@ -73,13 +78,21 @@ export function SkillsPage() {
 
   const filteredSources = useMemo(() => {
     if (!sources) return [];
-    return sources.filter((s) => {
+    const filtered = sources.filter((s) => {
       const q = search.toLowerCase();
       const matchSearch = !q || s.name.toLowerCase().includes(q) || s.url.toLowerCase().includes(q);
       const matchType = !filterType || s.type === filterType;
-      return matchSearch && matchType;
+      const matchSummary = !filterSummary || (filterSummary === "yes" ? s.has_summary : !s.has_summary);
+      const matchSynced = !filterSynced || (filterSynced === "yes" ? !!s.last_sync : !s.last_sync);
+      const matchStars = !filterStars || s.stars != null;
+      return matchSearch && matchType && matchSummary && matchSynced && matchStars;
     });
-  }, [sources, search, filterType]);
+    return filtered.sort((a, b) => {
+      if (sortBy === "stars") return (b.stars ?? -1) - (a.stars ?? -1);
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [sources, search, filterType, filterSummary, filterSynced, filterStars, sortBy]);
 
   // Reset page when filters change
   const totalPages = Math.max(1, Math.ceil(filteredSources.length / PAGE_SIZE));
@@ -99,16 +112,30 @@ export function SkillsPage() {
 
       {/* Sources */}
       <Card title="Skill Sources">
-        <div className="flex gap-2 mb-3">
-          <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search sources..." />
-          <select value={filterType} onChange={(e) => { setFilterType(e.target.value); setPage(1); }} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
-            <option value="">All types</option>
-            <option value="claude">claude</option>
-            <option value="copilot">copilot</option>
-            <option value="cursor">cursor</option>
-            <option value="gemini">gemini</option>
-          </select>
-          <span className="text-xs text-gray-400 self-center whitespace-nowrap">{filteredSources.length}/{sources?.length || 0}</span>
+        <div className="space-y-2 mb-3">
+          <div className="flex gap-2">
+            <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search sources..." />
+            <select value={filterType} onChange={(e) => { setFilterType(e.target.value); setPage(1); }} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
+              <option value="">All types</option>
+              <option value="claude">claude</option>
+              <option value="copilot">copilot</option>
+              <option value="cursor">cursor</option>
+              <option value="gemini">gemini</option>
+            </select>
+            <select value={sortBy} onChange={(e) => { setSortBy(e.target.value as "stars" | "name" | "recent"); setPage(1); }} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
+              <option value="stars">&#9733; Stars</option>
+              <option value="name">A-Z</option>
+              <option value="recent">Recent</option>
+            </select>
+            <span className="text-xs text-gray-400 self-center whitespace-nowrap">{filteredSources.length}/{sources?.length || 0}</span>
+          </div>
+          <div className="flex gap-1.5 flex-wrap">
+            <button onClick={() => { setFilterSummary(v => v === "yes" ? "" : "yes"); setPage(1); }} className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${filterSummary === "yes" ? "bg-purple-100 border-purple-300 text-purple-700" : "border-gray-300 text-gray-500 hover:bg-gray-100"}`}>summarized</button>
+            <button onClick={() => { setFilterSummary(v => v === "no" ? "" : "no"); setPage(1); }} className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${filterSummary === "no" ? "bg-yellow-100 border-yellow-300 text-yellow-700" : "border-gray-300 text-gray-500 hover:bg-gray-100"}`}>no summary</button>
+            <button onClick={() => { setFilterSynced(v => v === "yes" ? "" : "yes"); setPage(1); }} className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${filterSynced === "yes" ? "bg-green-100 border-green-300 text-green-700" : "border-gray-300 text-gray-500 hover:bg-gray-100"}`}>synced</button>
+            <button onClick={() => { setFilterSynced(v => v === "no" ? "" : "no"); setPage(1); }} className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${filterSynced === "no" ? "bg-red-100 border-red-300 text-red-700" : "border-gray-300 text-gray-500 hover:bg-gray-100"}`}>never synced</button>
+            <button onClick={() => { setFilterStars(v => v === "yes" ? "" : "yes"); setPage(1); }} className={`px-2 py-0.5 text-xs rounded-full border transition-colors ${filterStars === "yes" ? "bg-yellow-100 border-yellow-300 text-yellow-700" : "border-gray-300 text-gray-500 hover:bg-gray-100"}`}>&#9733; has stars</button>
+          </div>
         </div>
         <div className="space-y-1">
           {pagedSources.map((s) => (
@@ -122,6 +149,7 @@ export function SkillsPage() {
                   <span className="font-medium text-sm truncate">{s.name}</span>
                   <Badge color={targetColors[s.type] || "gray"}>{s.type}</Badge>
                   <Badge color={s.is_active ? "green" : "red"}>{s.is_active ? "active" : "inactive"}</Badge>
+                  {s.stars != null && <Badge color="yellow">&#9733; {s.stars.toLocaleString()}</Badge>}
                   {s.has_summary && <Badge color="purple">summarized</Badge>}
                 </div>
                 <div className="text-xs text-gray-400 truncate">{s.url}</div>

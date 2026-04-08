@@ -141,16 +141,22 @@ async def main():
         skipped = 0
         for s in SOURCES:
             result = await db.execute(
-                select(SkillSource).where(SkillSource.url == s["url"])
+                select(SkillSource).where(
+                    (SkillSource.repo_url == s["url"]) | (SkillSource.url == s["url"])
+                )
             )
             existing = result.scalar_one_or_none()
 
             if existing:
+                # Backfill repo_url si manquant
+                if not existing.repo_url:
+                    existing.repo_url = s["url"]
                 skipped += 1
             else:
                 db.add(SkillSource(
                     name=s["name"],
                     url=s["url"],
+                    repo_url=s["url"],
                     skills_path=s["skills_path"],
                     type=s["type"],
                 ))

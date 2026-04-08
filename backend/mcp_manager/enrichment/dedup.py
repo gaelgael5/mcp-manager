@@ -81,7 +81,7 @@ def score_service(svc: McpService, repo_ok: bool) -> int:
 
 
 async def run_dedup() -> dict[str, int]:
-    """Cross-source deduplication. Groups by normalized source_url, keeps the best entry."""
+    """Cross-source deduplication. Groups by canonical_id (fallback: normalized source_url), keeps the best entry."""
     stats = {"merged": 0, "checked": 0, "groups": 0, "repo_404": 0}
 
     async with SessionLocal() as db:
@@ -89,21 +89,30 @@ async def run_dedup() -> dict[str, int]:
         all_services = result.scalars().all()
         logger.info("Dedup: %d services with source_url", len(all_services))
 
-        # Group by normalized source_url
+        # Group by canonical_id (preferred) or normalized source_url (fallback for raw:)
         groups: dict[str, list[McpService]] = defaultdict(list)
         for svc in all_services:
-            url = normalize_url(svc.source_url)
-            if url:
-                groups[url].append(svc)
+            if svc.canonical_id and not svc.canonical_id.startswith("raw:"):
+                groups[svc.canonical_id].append(svc)
+            else:
+                url = normalize_url(svc.source_url)
+                if url:
+                    groups[url].append(svc)
 
         # Only process groups with duplicates
-        dup_groups = {url: svcs for url, svcs in groups.items() if len(svcs) > 1}
+        dup_groups = {key: svcs for key, svcs in groups.items() if len(svcs) > 1}
         logger.info("Dedup: %d duplicate groups to process", len(dup_groups))
         stats["groups"] = len(dup_groups)
 
-        # Batch check repo accessibility
+        # Collect unique source_urls from duplicate groups for repo accessibility check
+        urls_to_check: set[str] = set()
+        for svcs in dup_groups.values():
+            for svc in svcs:
+                url = normalize_url(svc.source_url)
+                if url and "github.com" in url:
+                    urls_to_check.add(url)
+
         semaphore = asyncio.Semaphore(CONCURRENCY)
-        urls_to_check = list(dup_groups.keys())
         repo_status: dict[str, bool] = {}
 
         async with httpx.AsyncClient(timeout=10.0) as client:
@@ -120,8 +129,10 @@ async def run_dedup() -> dict[str, int]:
             await asyncio.gather(*[check_one(u) for u in urls_to_check])
 
         # Merge each group
-        for url, svcs in dup_groups.items():
-            repo_ok = repo_status.get(url, False)
+        for key, svcs in dup_groups.items():
+            # Check repo status using the first service's source_url
+            first_url = normalize_url(svcs[0].source_url)
+            repo_ok = repo_status.get(first_url, False)
 
             # Score each service
             scored = [(score_service(svc, repo_ok), svc) for svc in svcs]
@@ -150,8 +161,10 @@ async def run_dedup() -> dict[str, int]:
                 origins.add(loser.source_type)
             survivor.source_origins = list(origins)
 
-            # Update repo_status on survivor
+            # Update repo_status and canonical_id on survivor
             survivor.repo_status = "ok" if repo_ok else "404"
+            if key.startswith(("github:", "npm:", "pypi:")):
+                survivor.canonical_id = key
 
             # Delete losers
             for loser in losers:

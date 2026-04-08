@@ -11,7 +11,7 @@ Stack : FastAPI + PostgreSQL (pgvector) + React/TypeScript + Docker Compose, sur
 
 ```bash
 # Deploy sur LXC 113 (192.168.10.99)
-tar --exclude='.git' --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='dist' --exclude='.env' --exclude='.playwright-mcp' -czf /tmp/mcp-manager.tar.gz .
+tar --exclude='.git' --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='dist' --exclude='.env' --exclude='.playwright-mcp' --exclude='backend/config' -czf /tmp/mcp-manager.tar.gz .
 scp -i ~/.ssh/id_shellia /tmp/mcp-manager.tar.gz root@192.168.10.99:/tmp/
 ssh -i ~/.ssh/id_shellia root@192.168.10.99 "cd /root/mcp-manager && tar xzf /tmp/mcp-manager.tar.gz && rm /tmp/mcp-manager.tar.gz && docker compose up -d --build mcp-backend mcp-frontend"
 

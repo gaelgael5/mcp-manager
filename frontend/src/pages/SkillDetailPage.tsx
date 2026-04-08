@@ -11,7 +11,6 @@ import { Tabs } from "../components/ui/Tabs";
 
 interface SkillDetail {
   id: string;
-  skill_source_id: string;
   name: string;
   description: string | null;
   summary_en: string | null;

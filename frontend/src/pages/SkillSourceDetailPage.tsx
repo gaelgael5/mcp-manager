@@ -23,6 +23,7 @@ interface SkillSourceDetail {
   branch_hash: string | null;
   is_active: boolean;
   last_sync: string | null;
+  stars: number | null;
   last_sync_count: number;
   created_at: string;
 }
@@ -65,14 +66,14 @@ export function SkillSourceDetailPage() {
 
   const generateSummary = useMutation({
     mutationFn: () => apiFetch<{ status: string }>(`/skill-sources/${id}/generate-summary`, { method: "POST" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["skill-source", id] }),
+    onSuccess: () => qc.refetchQueries({ queryKey: ["skill-source", id] }),
   });
 
   const syncSource = useMutation({
-    mutationFn: () => apiFetch<{ status: string }>(`/skill-sources/${id}/sync`, { method: "POST" }),
+    mutationFn: () => apiFetch<{ status: string; added: number; updated: number }>(`/skill-sources/${id}/sync`, { method: "POST" }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["skill-source", id] });
-      qc.invalidateQueries({ queryKey: ["skills", `source_id=${id}`] });
+      qc.refetchQueries({ queryKey: ["skill-source", id] });
+      qc.refetchQueries({ queryKey: ["skills", `source_id=${id}`] });
     },
   });
 
@@ -91,6 +92,7 @@ export function SkillSourceDetailPage() {
         <div className="mt-2 flex flex-wrap gap-2">
           <Badge color={targetColors[source.type] || "gray"}>{source.type}</Badge>
           <Badge color={source.is_active ? "green" : "red"}>{source.is_active ? "active" : "inactive"}</Badge>
+          {source.stars != null && <Badge color="yellow">&#9733; {source.stars.toLocaleString()}</Badge>}
           <Badge color="blue">{source.last_sync_count} skills</Badge>
         </div>
         <a href={source.url} target="_blank" rel="noopener noreferrer" className="mt-2 block text-sm text-blue-600 hover:underline">
@@ -106,13 +108,6 @@ export function SkillSourceDetailPage() {
           {source.branch_hash && ` — ${source.branch_hash.slice(0, 8)}`}
         </div>
       </div>
-
-      {/* Description */}
-      {source.description && (
-        <Card title="Description">
-          <p className="text-sm text-gray-700 leading-relaxed">{source.description}</p>
-        </Card>
-      )}
 
       {/* Summary */}
       <Card title="Summary">
@@ -144,9 +139,6 @@ export function SkillSourceDetailPage() {
               >
                 {source.has_summary ? "Regenerate Summary" : "Generate Summary"}
               </Button>
-              <Button size="sm" variant="secondary" onClick={() => syncSource.mutate()} loading={syncSource.isPending}>
-                Sync
-              </Button>
               {generateSummary.isSuccess && <span className="text-sm text-green-600">Summary generated</span>}
               {generateSummary.isError && <span className="text-sm text-red-600">Failed</span>}
             </div>
@@ -154,35 +146,45 @@ export function SkillSourceDetailPage() {
         </div>
       </Card>
 
-      {/* Install command */}
-      {source.skills_path && (
-        <Card title="Installation">
-          <pre className="text-sm font-mono bg-gray-50 border rounded p-3 overflow-x-auto">{source.skills_path}</pre>
-        </Card>
-      )}
-
       {/* Skills list */}
-      {skills && skills.length > 0 && (
-        <Card title={`Skills (${skills.length})`}>
-          <div className="space-y-1">
-            {skills.map((s) => (
-              <Link
-                key={s.id}
-                to={`/skills-catalog/${s.id}`}
-                className="flex items-center justify-between rounded border border-gray-100 bg-gray-50 px-3 py-2 hover:bg-blue-50 transition-colors"
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-sm font-medium truncate">{s.name}</span>
-                  {s.has_summary && <Badge color="green">summarized</Badge>}
-                </div>
-                <div className="flex items-center gap-2 text-xs text-gray-400 shrink-0">
-                  {s.description && <span className="truncate max-w-xs">{s.description}</span>}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </Card>
-      )}
+      <Card title={`Skills${skills?.length ? ` (${skills.length})` : ""}`}>
+        <div className="space-y-3">
+          {isAdmin && (
+            <div className="flex items-center gap-3">
+              <Button size="sm" variant="secondary" onClick={() => syncSource.mutate()} loading={syncSource.isPending}>
+                Sync
+              </Button>
+              {syncSource.isSuccess && syncSource.data && (
+                <span className="text-sm text-green-600">
+                  Sync terminé : {syncSource.data.added} ajoutés, {syncSource.data.updated} mis à jour
+                </span>
+              )}
+              {syncSource.isError && <span className="text-sm text-red-600">Échec du sync</span>}
+            </div>
+          )}
+          {skills && skills.length > 0 ? (
+            <div className="space-y-1">
+              {skills.map((s) => (
+                <Link
+                  key={s.id}
+                  to={`/skills-catalog/${s.id}`}
+                  className="flex items-center justify-between rounded border border-gray-100 bg-gray-50 px-3 py-2 hover:bg-blue-50 transition-colors"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-sm font-medium truncate">{s.name}</span>
+                    {s.has_summary && <Badge color="green">summarized</Badge>}
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-400 shrink-0">
+                    {s.description && <span className="truncate max-w-xs">{s.description}</span>}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">Aucun skill trouvé. Lancez un Sync pour scanner le dépôt.</p>
+          )}
+        </div>
+      </Card>
     </div>
   );
 }

@@ -117,6 +117,8 @@ def _serialize_service(s: McpService, summary_count: int = 0) -> dict:
         "source_type": s.source_type, "transport": s.transport,
         "category": s.category, "tags": s.tags or [],
         "repo_status": s.repo_status,
+        "stars": s.stars,
+        "canonical_id": s.canonical_id,
         "is_deprecated": s.is_deprecated,
         "has_summaries": summary_count > 0,
         "created_at": s.created_at.isoformat() if s.created_at else None,

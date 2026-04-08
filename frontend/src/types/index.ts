@@ -10,6 +10,8 @@ export interface McpService {
   category: string | null;
   tags: string[];
   repo_status: string | null;
+  stars: number | null;
+  canonical_id: string | null;
   is_deprecated: boolean;
   has_summaries: boolean;
   created_at: string;

@@ -2,7 +2,9 @@
 import hashlib
 import secrets
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+
+API_KEY_EXPIRY_DAYS = 180  # 6 mois
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
@@ -55,6 +57,7 @@ async def create_key(
         key_hash=key_hash,
         key_prefix=prefix,
         owner_email=admin.get("email", ""),
+        expires_at=datetime.now(timezone.utc) + timedelta(days=API_KEY_EXPIRY_DAYS),
     )
     db.add(key)
     await db.commit()

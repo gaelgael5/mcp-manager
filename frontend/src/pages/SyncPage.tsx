@@ -1,4 +1,4 @@
-import { useSyncStatus, useTriggerSync, useTriggerIndex, useTriggerScrapeSkills, useEnrichSkills, useStopEnrichSkills } from "../api/sync";
+import { useSyncStatus, useTriggerSync, useTriggerIndex, useTriggerScrapeSkills, useEnrichSkills, useStopEnrichSkills, useIndexSkills, useStopIndexSkills } from "../api/sync";
 import { useCurrentUser } from "../api/auth";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -12,6 +12,8 @@ export function SyncPage() {
   const scrapeSkills = useTriggerScrapeSkills();
   const enrichSkills = useEnrichSkills();
   const stopEnrich = useStopEnrichSkills();
+  const indexSkills = useIndexSkills();
+  const stopIndexSkills = useStopIndexSkills();
 
   if (!user?.is_admin) {
     return <p className="text-gray-500">Admin access required.</p>;
@@ -96,9 +98,42 @@ export function SyncPage() {
         )}
       </Card>
 
-      <Card title="Index (Summary + Embeddings + Params + Recipes)">
+      <Card title="Index Skills (Summary + RAG)">
         <p className="text-sm text-gray-500 mb-3">
-          Starts LLM providers, indexes services with needs_reindex=true, then stops providers.
+          Genere les summaries EN/FR et indexe le RAG pour les skills avec needs_summary=true.
+        </p>
+        <div className="flex gap-3">
+          {(status as any)?.indexing_skills ? (
+            <Button variant="danger" onClick={() => stopIndexSkills.mutate()} loading={stopIndexSkills.isPending}>
+              Stop Index Skills
+            </Button>
+          ) : (
+            <Button onClick={() => indexSkills.mutate()} loading={indexSkills.isPending}>
+              Index Skills
+            </Button>
+          )}
+        </div>
+        {(status as any)?.indexing_skills && (status as any)?.index_skills_progress && (
+          <div className="mt-3 text-sm text-blue-600">
+            <p>Index Skills : {(status as any).index_skills_progress.done}/{(status as any).index_skills_progress.total}</p>
+            <p className="text-xs text-gray-500">
+              Summaries: {(status as any).index_skills_progress.summaries} |
+              Unchanged: {(status as any).index_skills_progress.unchanged} |
+              Failed: {(status as any).index_skills_progress.failed}
+            </p>
+          </div>
+        )}
+        {(status as any)?.last_index_skills && (
+          <div className="mt-3 text-xs text-gray-500">
+            Last: {(status as any).last_index_skills.done} done, {(status as any).last_index_skills.summaries} summaries,
+            {" "}{(status as any).last_index_skills.failed} failed — {(status as any).last_index_skills.time}
+          </div>
+        )}
+      </Card>
+
+      <Card title="Index MCP (Summary + Embeddings + Params + Recipes)">
+        <p className="text-sm text-gray-500 mb-3">
+          Starts LLM providers, indexes MCP services with needs_reindex=true, then stops providers.
         </p>
         <div className="flex gap-3">
           <Button onClick={() => triggerIndex.mutate(100)} loading={triggerIndex.isPending || indexing} disabled={indexing}>

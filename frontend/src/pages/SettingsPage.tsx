@@ -346,6 +346,78 @@ function EnvKeysBlock() {
   );
 }
 
+interface AuthFile {
+  key: string;
+  label: string;
+  path: string;
+  exists: boolean;
+  content: string;
+}
+
+function AuthFilesBlock() {
+  const { data: authFiles } = useQuery({
+    queryKey: ["settings", "auth-files"],
+    queryFn: () => apiFetch<AuthFile[]>("/settings/auth-files"),
+  });
+  const [localContent, setLocalContent] = useState<Record<string, string>>({});
+  const [initialized, setInitialized] = useState(false);
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    if (authFiles && !initialized) {
+      const kv: Record<string, string> = {};
+      authFiles.forEach((f) => { kv[f.key] = f.content; });
+      setLocalContent(kv);
+      setInitialized(true);
+    }
+  }, [authFiles, initialized]);
+
+  const save = useMutation({
+    mutationFn: (args: { key: string; content: string }) =>
+      apiFetch<{ status: string; message?: string }>("/settings/auth-files", {
+        method: "PUT",
+        body: JSON.stringify(args),
+      }),
+    onSuccess: (data) => {
+      if (data.status === "error") {
+        alert(data.message);
+      }
+      qc.invalidateQueries({ queryKey: ["settings", "auth-files"] });
+    },
+  });
+
+  if (!authFiles || authFiles.length === 0) return null;
+
+  return (
+    <Card title="Auth Files">
+      <div className="space-y-4">
+        {authFiles.map((f) => (
+          <div key={f.key}>
+            <div className="flex items-center gap-2 mb-1">
+              <label className="text-xs font-mono text-gray-600">{f.label}</label>
+              <Badge color={f.exists ? "green" : "red"}>{f.exists ? f.path : "missing"}</Badge>
+            </div>
+            <textarea
+              value={localContent[f.key] || ""}
+              onChange={(e) => setLocalContent({ ...localContent, [f.key]: e.target.value })}
+              className="w-full rounded border border-gray-300 px-2 py-1 text-xs font-mono h-32"
+              placeholder={`Paste ${f.label} content here...`}
+            />
+            <Button
+              size="sm"
+              className="mt-1"
+              onClick={() => save.mutate({ key: f.key, content: localContent[f.key] || "" })}
+              loading={save.isPending}
+            >
+              {save.isSuccess && save.variables?.key === f.key ? "Saved!" : `Save ${f.label}`}
+            </Button>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 function DockerRunPreview({ imageName, providerId }: { imageName: string | undefined; providerId: number }) {
   const { data } = useDockerRunCmd(imageName, providerId);
   if (!imageName || !data?.cmd) return null;
@@ -432,6 +504,8 @@ export function SettingsPage() {
       </Card>
 
       <EnvKeysBlock />
+
+      <AuthFilesBlock />
 
       <div className="space-y-3">
         <h2 className="text-lg font-medium">LLM Providers</h2>

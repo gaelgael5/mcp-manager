@@ -1,0 +1,83 @@
+<h2>Landing Page — Layout</h2>
+<p class="subtitle">Minimal docs style — how should the page flow?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Single scroll — Hero → Install → GitHub</h3>
+      <p>One page, three sections verticales. Hero avec tagline + 2 lignes de terminal. Section "Installation" avec les 3 steps (clone, configure, up). Footer avec lien GitHub + badge stars. Sobre, rapide à lire.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Single scroll — Hero → 3 highlights → Install → GitHub</h3>
+      <p>Comme A mais avec une petite section entre hero et install : 3 icônes/chiffres clés (18k+ servers, 5 sources, semantic search). Ajoute de la crédibilité sans alourdir.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:32px;">
+  <h3>Preview — Option B</h3>
+  <div class="mockup">
+    <div class="mockup-header">mcp.yoops.org</div>
+    <div class="mockup-body" style="background:#fafafa;padding:0;">
+      <!-- HERO -->
+      <div style="padding:48px 32px;text-align:center;border-bottom:1px solid #e5e7eb;">
+        <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">Open Source</div>
+        <div style="font-size:24px;font-weight:800;color:#111;margin-bottom:8px;">MCP Manager</div>
+        <div style="font-size:13px;color:#6b7280;margin-bottom:20px;">A unified registry of 18,000+ MCP servers.<br>Aggregate, search, and install from 5 sources.</div>
+        <div style="background:#111;color:#0f0;font-family:monospace;font-size:11px;padding:10px 16px;border-radius:6px;display:inline-block;text-align:left;">
+          git clone https://github.com/gaelgael5/mcp-manager<br>
+          docker compose up -d
+        </div>
+        <div style="margin-top:16px;display:flex;gap:12px;justify-content:center;">
+          <span style="color:#111;font-size:12px;font-weight:600;border:1px solid #d1d5db;padding:6px 16px;border-radius:6px;">★ GitHub</span>
+          <span style="color:#fff;background:#111;font-size:12px;font-weight:600;padding:6px 16px;border-radius:6px;">Get Started ↓</span>
+        </div>
+      </div>
+
+      <!-- HIGHLIGHTS -->
+      <div style="display:flex;gap:0;border-bottom:1px solid #e5e7eb;">
+        <div style="flex:1;padding:24px;text-align:center;border-right:1px solid #e5e7eb;">
+          <div style="font-size:22px;font-weight:800;color:#111;">18k+</div>
+          <div style="font-size:11px;color:#6b7280;">MCP Servers</div>
+        </div>
+        <div style="flex:1;padding:24px;text-align:center;border-right:1px solid #e5e7eb;">
+          <div style="font-size:22px;font-weight:800;color:#111;">5</div>
+          <div style="font-size:11px;color:#6b7280;">Sources</div>
+        </div>
+        <div style="flex:1;padding:24px;text-align:center;">
+          <div style="font-size:22px;font-weight:800;color:#111;">RAG</div>
+          <div style="font-size:11px;color:#6b7280;">Semantic Search</div>
+        </div>
+      </div>
+
+      <!-- INSTALL -->
+      <div style="padding:32px;border-bottom:1px solid #e5e7eb;">
+        <div style="font-size:16px;font-weight:700;color:#111;margin-bottom:16px;">Installation</div>
+        <div style="display:flex;gap:16px;">
+          <div style="flex:1;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px;">
+            <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;">Step 1 — Clone</div>
+            <div style="font-family:monospace;font-size:10px;color:#111;">git clone ...</div>
+          </div>
+          <div style="flex:1;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px;">
+            <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;">Step 2 — Configure</div>
+            <div style="font-family:monospace;font-size:10px;color:#111;">cp .env.example .env</div>
+          </div>
+          <div style="flex:1;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:12px;">
+            <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-bottom:4px;">Step 3 — Run</div>
+            <div style="font-family:monospace;font-size:10px;color:#111;">docker compose up -d</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div style="padding:24px;text-align:center;">
+        <div style="font-size:12px;color:#6b7280;">Built with FastAPI + PostgreSQL + React</div>
+        <div style="font-size:11px;color:#3b82f6;margin-top:4px;">github.com/gaelgael5/mcp-manager</div>
+      </div>
+    </div>
+  </div>
+</div>

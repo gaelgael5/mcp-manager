@@ -23,9 +23,21 @@ import mcp_manager.connectors  # noqa: F401
 logger = logging.getLogger(__name__)
 
 
-async def run_index(limit: int = 100) -> dict[str, int]:
+async def run_index(limit: int = 100, progress_callback=None) -> dict[str, int]:
     """Process up to `limit` services that need reindexing."""
     stats = {"processed": 0, "skipped_no_doc": 0, "summaries": 0, "embeddings": 0, "params": 0, "recipes": 0}
+
+    # Count total to index
+    async with SessionLocal() as db:
+        from sqlalchemy import func
+        total_result = await db.execute(
+            select(func.count()).select_from(McpService).where(McpService.needs_reindex == True)
+        )
+        total = min(total_result.scalar() or 0, limit)
+    stats["total"] = total
+
+    if progress_callback:
+        progress_callback(stats)
 
     batch_size = 10
     processed = 0
@@ -35,10 +47,7 @@ async def run_index(limit: int = 100) -> dict[str, int]:
             result = await db.execute(
                 select(McpService)
                 .where(McpService.needs_reindex == True)
-                .where(McpService.source_url != "")
-                .where(McpService.repo_status == "ok")
-                .where(McpService.index_attempts < 2)
-                .order_by(McpService.index_attempts.asc(), McpService.updated_at.desc())
+                .order_by(McpService.updated_at.desc())
                 .limit(min(batch_size, limit - processed))
             )
             services = result.scalars().all()
@@ -52,11 +61,14 @@ async def run_index(limit: int = 100) -> dict[str, int]:
                 except Exception:
                     logger.exception("Failed to index %s", service.name)
 
-                service.index_attempts = (service.index_attempts or 0) + 1
-                if indexed:
-                    service.needs_reindex = False
+                service.needs_reindex = False
+                if not indexed:
+                    service.repo_status = "index_failed"
                 processed += 1
                 stats["processed"] += 1
+
+                if progress_callback:
+                    progress_callback(stats)
 
             await db.commit()
 

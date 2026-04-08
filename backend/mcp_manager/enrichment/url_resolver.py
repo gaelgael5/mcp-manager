@@ -74,6 +74,16 @@ async def run_url_resolve() -> dict[str, int]:
                     service.source_url = candidate
                     if not service.doc_url:
                         service.doc_url = candidate
+                    # Recompute canonical_id now that we have a source_url
+                    from mcp_manager.enrichment.canonical import compute_canonical_id
+                    pkg = service.package_info or {}
+                    service.canonical_id = compute_canonical_id(
+                        source_url=candidate,
+                        package_identifier=pkg.get("package_identifier"),
+                        registry_type=pkg.get("registry_type"),
+                        source_type=service.source_type,
+                        name=service.name,
+                    )
                     stats["resolved"] += 1
                     logger.debug("Resolved: %s -> %s", service.name, candidate)
                 else:

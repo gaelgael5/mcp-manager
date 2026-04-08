@@ -61,3 +61,21 @@ export function useStopEnrichSkills() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
   });
 }
+
+export function useIndexSkills() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      apiFetch<{ status: string }>("/services/index-skills", { method: "POST" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
+  });
+}
+
+export function useStopIndexSkills() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      apiFetch<{ status: string }>("/services/index-skills/stop", { method: "POST" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
+  });
+}

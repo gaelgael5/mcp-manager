@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf 
     && curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-27.5.1.tgz \
     | tar xz --strip-components=1 -C /usr/local/bin docker/docker
 COPY pyproject.toml .
+COPY alembic.ini .
 COPY mcp_manager/ ./mcp_manager/
 COPY prompts/ ./prompts/
 COPY scripts/ ./scripts/

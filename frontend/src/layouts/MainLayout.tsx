@@ -3,7 +3,8 @@ import { Outlet, NavLink, useSearchParams } from "react-router-dom";
 import { useCurrentUser, setToken, clearToken } from "../api/auth";
 
 const publicLinks = [
-  { to: "/", label: "Dashboard" },
+  { to: "/", label: "Home" },
+  { to: "/dashboard", label: "Dashboard" },
   { to: "/services", label: "MCP Services" },
   { to: "/skills-catalog", label: "Skills" },
   { to: "/targets", label: "Targets" },
