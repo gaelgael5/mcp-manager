@@ -575,6 +575,151 @@ async def sync_all_skill_sources(
     return {"status": "done", "added": total_added, "updated": total_updated}
 
 
+async def _enrich_repo_url(source: SkillSource) -> bool:
+    """Fill repo_url by scraping skills.sh page. Returns True if updated."""
+    import re
+    import httpx
+
+    if source.repo_url:
+        return False
+    if not source.url or "skills.sh" not in source.url:
+        derived = _derive_repo_url(source.url)
+        if derived:
+            source.repo_url = derived
+            return True
+        return False
+
+    try:
+        async with httpx.AsyncClient(timeout=20.0, headers={"User-Agent": "MCPManager/1.0"}, follow_redirects=True) as client:
+            resp = await client.get(source.url)
+            if resp.status_code == 200:
+                text = re.sub(r"<[^>]+>", " ", resp.text)
+                m = re.search(r"npx\s+skills\s+add\s+(https?://[^\s\"'<]+)", text)
+                if m:
+                    source.repo_url = m.group(1)
+                    return True
+    except Exception:
+        pass
+    return False
+
+
+async def _enrich_summaries(source: SkillSource, db: AsyncSession) -> bool:
+    """Generate EN/FR summaries if missing. Returns True if generated."""
+    import os
+    from mcp_manager.summarizer.ollama_client import ollama_generate
+    from mcp_manager.summarizer.cleaner import clean_markdown
+    from mcp_manager.connectors.github_readme import fetch_github_readme
+
+    if source.summary_en and source.summary_fr:
+        return False
+
+    if not source.repo_url:
+        source.repo_url = _derive_repo_url(source.url)
+
+    context = ""
+    if source.repo_url:
+        readme = await fetch_github_readme(source.repo_url)
+        if readme:
+            context = clean_markdown(readme)
+            if len(context) > 6000:
+                context = context[:6000]
+
+    if not context:
+        context = f"Skill source: {source.name}\nURL: {source.url}\nType: {source.type}"
+
+    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "prompts")
+
+    if not source.summary_en:
+        with open(os.path.join(prompts_dir, "source_summary_en.md"), encoding="utf-8") as f:
+            prompt_en = f.read().replace("{content}", context)
+        source.summary_en = await ollama_generate(prompt_en)
+        if not source.summary_en:
+            source.summary_en = await ollama_generate(prompt_en)
+        source.summary_en = source.summary_en or None
+
+    if not source.summary_fr:
+        with open(os.path.join(prompts_dir, "source_summary_fr.md"), encoding="utf-8") as f:
+            prompt_fr = f.read().replace("{content}", context)
+        source.summary_fr = await ollama_generate(prompt_fr)
+        if not source.summary_fr:
+            source.summary_fr = await ollama_generate(prompt_fr)
+        source.summary_fr = source.summary_fr or None
+
+    return bool(source.summary_en or source.summary_fr)
+
+
+async def _enrich_sync_skills(source: SkillSource, db: AsyncSession) -> int:
+    """Sync skills from GitHub repo if not yet synced. Returns count of skills added."""
+    from datetime import datetime, timezone
+
+    if source.last_sync:
+        return 0
+
+    if not source.repo_url:
+        source.repo_url = _derive_repo_url(source.url)
+
+    if not source.repo_url:
+        return 0
+
+    from mcp_manager.connectors.skillssh_scanner import scan_repo_skills
+    scan_result = await scan_repo_skills(source.repo_url)
+    source.repo_status = scan_result["status"]
+    raw_skills = scan_result["skills"]
+
+    import httpx
+    from mcp_manager.config import settings as _settings
+    try:
+        parts = source.repo_url.rstrip("/").split("/")
+        owner, repo = parts[-2], parts[-1]
+        headers = {"Accept": "application/vnd.github.v3+json"}
+        if _settings.github_token:
+            headers["Authorization"] = f"token {_settings.github_token}"
+        async with httpx.AsyncClient(timeout=10.0) as gh:
+            resp = await gh.get(f"https://api.github.com/repos/{owner}/{repo}", headers=headers)
+            if resp.status_code == 200:
+                source.stars = resp.json().get("stargazers_count")
+    except Exception:
+        pass
+
+    added = 0
+    for raw in raw_skills:
+        existing = await db.execute(
+            select(Skill)
+            .join(skill_source_skills, skill_source_skills.c.skill_id == Skill.id)
+            .where(
+                skill_source_skills.c.skill_source_id == source.id,
+                Skill.name == raw["name"],
+            )
+        )
+        skill = existing.scalar_one_or_none()
+        if skill:
+            skill.description = raw["description"]
+            skill.source_url = raw.get("source_url")
+            skill.needs_summary = True
+        else:
+            new_skill = Skill(
+                name=raw["name"],
+                description=raw["description"],
+                target_type=source.type,
+                source_url=raw.get("source_url"),
+                licence=raw.get("licence"),
+                category=raw.get("category"),
+                needs_summary=True,
+            )
+            db.add(new_skill)
+            await db.flush()
+            await db.execute(
+                skill_source_skills.insert().values(
+                    skill_source_id=source.id, skill_id=new_skill.id
+                )
+            )
+            added += 1
+
+    source.last_sync = datetime.now(timezone.utc)
+    source.last_sync_count = len(raw_skills)
+    return added
+
+
 def _serialize_source(s: SkillSource) -> dict:
     return {
         "id": str(s.id),
