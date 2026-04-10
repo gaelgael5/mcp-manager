@@ -34,3 +34,13 @@ def get_provider(provider_id: int) -> dict | None:
         if p.get("id") == provider_id:
             return p
     return None
+
+
+def get_setting(key: str, default=None):
+    return load_config().get(key, default)
+
+
+def set_setting(key: str, value):
+    config = load_config()
+    config[key] = value
+    save_config(config)

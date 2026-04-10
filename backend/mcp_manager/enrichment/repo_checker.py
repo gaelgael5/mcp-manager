@@ -5,6 +5,7 @@ import logging
 import httpx
 
 from mcp_manager.config import settings
+from mcp_manager.connectors.github_pool import get_github_headers
 from mcp_manager.db.session import SessionLocal
 from mcp_manager.db.models import McpService, SkillSource
 from sqlalchemy import select
@@ -24,9 +25,7 @@ async def check_repo(client: httpx.AsyncClient, url: str) -> tuple[bool, int | N
     if not url or "github.com" not in url:
         return False, None
     api_url = url.replace("https://github.com/", "https://api.github.com/repos/")
-    headers = {"Accept": "application/vnd.github.v3+json"}
-    if settings.github_token:
-        headers["Authorization"] = f"token {settings.github_token}"
+    headers = get_github_headers()
     try:
         resp = await client.get(api_url, headers=headers)
         remaining = int(resp.headers.get("x-ratelimit-remaining", "100"))

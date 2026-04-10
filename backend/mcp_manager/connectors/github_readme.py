@@ -3,7 +3,7 @@ import logging
 
 import httpx
 
-from mcp_manager.config import settings
+from mcp_manager.connectors.github_pool import get_github_headers_async
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +18,7 @@ async def fetch_github_readme(source_url: str) -> str | None:
     # Normalize: remove trailing slash, /tree/xxx suffixes
     base = source_url.rstrip("/")
 
-    headers = {}
-    if settings.github_token:
-        headers["Authorization"] = f"token {settings.github_token}"
+    headers = await get_github_headers_async()
 
     # If URL contains /tree/{branch}/{path}, try that exact path first
     if "/tree/" in base:

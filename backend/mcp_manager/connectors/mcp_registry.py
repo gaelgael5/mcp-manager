@@ -7,6 +7,7 @@ import httpx
 from mcp_manager.connectors.base import AbstractConnector, RawMcpService
 from mcp_manager.connectors.registry import register_connector
 from mcp_manager.config import settings
+from mcp_manager.connectors.github_pool import get_github_headers
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +20,7 @@ class McpRegistryConnector(AbstractConnector):
         return "mcp_registry"
 
     def _github_headers(self) -> dict[str, str]:
-        headers: dict[str, str] = {}
-        if settings.github_token:
-            headers["Authorization"] = f"token {settings.github_token}"
-        return headers
+        return get_github_headers()
 
     async def fetch_services(self) -> list[RawMcpService]:
         services: list[RawMcpService] = []

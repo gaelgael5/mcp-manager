@@ -29,18 +29,28 @@ _IMAGE_ENV_KEY = {
     "codex": None,  # Auth via mounted auth.json, no API key env var
 }
 
+_IMAGE_MODEL_ENV = {
+    "claude-code": "CLAUDE_MODEL",
+    "openai": "OPENAI_MODEL",
+    "mistral": "MISTRAL_MODEL",
+    "codex": "CODEX_MODEL",
+}
+
 
 class DockerDriver:
-    def __init__(self, provider_id: int, args: dict, image: str = "claude"):
+    def __init__(self, provider_id: int, args: dict, image: str = "claude", batch_id: str = ""):
         self.provider_id = provider_id
         self.image = image
-        self.container_name = f"mcp-llm-worker-{provider_id}"
+        self._args = args
+        suffix = f"-{batch_id}" if batch_id else ""
+        self.container_name = f"mcp-llm-worker-{provider_id}{suffix}"
         self.api_key = _resolve_env_var(args.get("API_KEY", ""))
         self.workspace = _resolve_env_var(args.get("WORKSPACE_PATH", "./workspace"))
         self.codex_auth_path = _resolve_env_var(args.get("CODEX_AUTH_PATH", "/root/.codex/auth.json"))
         self._process = None
         self._rate_limit = 1.0  # seconds between calls
         self._last_call = 0.0
+        self.request_count = 0
 
     def set_rate_limit(self, rps: float):
         self._rate_limit = 1.0 / rps if rps > 0 else 1.0
@@ -75,7 +85,26 @@ class DockerDriver:
         if self.image == "codex":
             cmd.extend(["-v", f"{self.codex_auth_path}:/home/agent/.codex/auth.json:ro"])
 
-        cmd.append(f"mcp-manager-{self.image}")
+        # Inject extra args as env vars (MODEL, AGENT_MAX_TOKENS, etc.)
+        _skip_keys = {"API_KEY", "WORKSPACE_PATH", "CODEX_AUTH_PATH"}
+        for key, val in self._args.items():
+            if key in _skip_keys:
+                continue
+            resolved = _resolve_env_var(str(val))
+            if key == "MODEL":
+                model_env = _IMAGE_MODEL_ENV.get(self.image, "MODEL")
+                cmd.extend(["-e", f"{model_env}={resolved}"])
+            else:
+                cmd.extend(["-e", f"{key}={resolved}"])
+
+        # Find the built image: agent-{image}:{hash} or fallback to mcp-manager-{image}
+        import subprocess as _sp
+        result = _sp.run(
+            ["docker", "images", f"agent-{self.image}", "--format", "{{.Repository}}:{{.Tag}}"],
+            capture_output=True, text=True,
+        )
+        built_image = result.stdout.strip().split("\n")[0] if result.stdout.strip() else ""
+        cmd.append(built_image if built_image else f"agent-{self.image}")
 
         # Start container in background with stdin open
         self._process = subprocess.Popen(
@@ -99,6 +128,7 @@ class DockerDriver:
 
     async def generate(self, prompt: str) -> str:
         """Send a task to the container via docker exec and get result."""
+        self.request_count += 1
         # Rate limit
         now = time.monotonic()
         wait = self._rate_limit - (now - self._last_call)

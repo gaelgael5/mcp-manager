@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     admin_email: str = ""
     jwt_secret: str = "mcp-manager-jwt-secret-change-me"
 
-    model_config = {"env_prefix": "", "env_file": ".env"}
+    model_config = {"env_prefix": "", "env_file": ".env", "extra": "ignore"}
 
 
 settings = Settings()

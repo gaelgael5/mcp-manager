@@ -14,10 +14,11 @@ DRIVER_TYPES = {
 
 
 class LLMManager:
-    def __init__(self):
+    def __init__(self, batch_id: str = ""):
         self.drivers: list = []
         self._current = 0
         self._config = {}
+        self._batch_id = batch_id
 
     def load(self):
         """Load config and instantiate drivers."""
@@ -36,7 +37,7 @@ class LLMManager:
                 self.drivers.append(driver)
             elif ptype == "docker":
                 image = provider.get("image", "claude")
-                driver = DockerDriver(pid, args, image)
+                driver = DockerDriver(pid, args, image, batch_id=self._batch_id)
                 driver.set_rate_limit(rate_limit)
                 self.drivers.append(driver)
             else:
@@ -72,6 +73,16 @@ class LLMManager:
             if isinstance(d, OllamaDriver):
                 return d
         return self.get_driver()
+
+    def get_driver_stats(self) -> list[dict]:
+        """Return request counts per driver."""
+        stats = []
+        for d in self.drivers:
+            if isinstance(d, OllamaDriver):
+                stats.append({"type": "ollama", "name": "ollama", "requests": d.request_count})
+            elif isinstance(d, DockerDriver):
+                stats.append({"type": "docker", "name": d.image, "container": d.container_name, "requests": d.request_count})
+        return stats
 
     @property
     def worker_count(self) -> int:

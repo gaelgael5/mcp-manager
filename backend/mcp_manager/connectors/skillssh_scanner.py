@@ -12,6 +12,7 @@ import httpx
 import yaml
 
 from mcp_manager.config import settings
+from mcp_manager.connectors.github_pool import get_github_headers
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +33,7 @@ async def scan_repo_skills(repo_url: str) -> dict:
     owner = parts[-2]
     repo = parts[-1]
 
-    headers = {"Accept": "application/vnd.github.v3+json"}
-    if settings.github_token:
-        headers["Authorization"] = f"token {settings.github_token}"
+    headers = get_github_headers()
 
     skills = []
 

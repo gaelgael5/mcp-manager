@@ -12,6 +12,7 @@
     network_mode: host
     environment:
       - ANTHROPIC_API_KEY={API_KEY}
+      - CLAUDE_MODEL={MODEL}
     volumes:
       - ${WORKSPACE_PATH}:/app
     working_dir: /app
@@ -24,6 +25,7 @@ docker run -it --rm \
   --name agent-{id provider}-claude-code \
   --network host \
   -e ANTHROPIC_API_KEY={API_KEY} \
+  -e CLAUDE_MODEL={MODEL} \
   -v {WORKSPACE_PATH}:/app \
   -w /app \
   agent-claude-code
@@ -32,5 +34,6 @@ docker run -it --rm \
 
 <default>
 	API_KEY =	${ANTHROPIC_API_KEY}
+	MODEL =	${CLAUDE_MODEL:-claude-haiku-4-5}
 	WORKSPACE_PATH = ${WORKSPACE_PATH:-./workspace}
 </default>

@@ -6,6 +6,7 @@ import httpx
 import yaml
 
 from mcp_manager.config import settings
+from mcp_manager.connectors.github_pool import get_github_headers
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +33,7 @@ async def scan_skill_source(url: str, skills_path: str, source_type: str) -> lis
     owner = parts[-2]
     repo = parts[-1]
 
-    headers = {"Accept": "application/vnd.github.v3+json"}
-    if settings.github_token:
-        headers["Authorization"] = f"token {settings.github_token}"
+    headers = get_github_headers()
 
     skills = []
 
@@ -151,9 +150,7 @@ async def get_repo_branch_hash(url: str) -> str | None:
     owner = parts[-2]
     repo = parts[-1]
 
-    headers = {"Accept": "application/vnd.github.v3+json"}
-    if settings.github_token:
-        headers["Authorization"] = f"token {settings.github_token}"
+    headers = get_github_headers()
 
     async with httpx.AsyncClient(timeout=15.0) as client:
         resp = await client.get(

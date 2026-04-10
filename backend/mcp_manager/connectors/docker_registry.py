@@ -7,6 +7,7 @@ import yaml
 from mcp_manager.connectors.base import AbstractConnector, RawMcpService
 from mcp_manager.connectors.registry import register_connector
 from mcp_manager.config import settings
+from mcp_manager.connectors.github_pool import get_github_headers
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +23,7 @@ class DockerRegistryConnector(AbstractConnector):
         return "docker_registry"
 
     def _github_headers(self) -> dict[str, str]:
-        headers = {"Accept": "application/vnd.github.v3+json"}
-        if settings.github_token:
-            headers["Authorization"] = f"token {settings.github_token}"
+        headers = get_github_headers()
         return headers
 
     async def fetch_services(self) -> list[RawMcpService]:

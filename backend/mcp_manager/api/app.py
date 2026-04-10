@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv("/app/.env", override=True)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from mcp_manager.config import settings
@@ -17,6 +20,10 @@ def create_app() -> FastAPI:
         from mcp_manager.db.models import SkillSource, McpService, Skill
         from mcp_manager.api.routers.sync import _sync_status, _run_enrich_skills_bg, _run_index_bg, _run_index_skills_bg
         _logger = logging.getLogger("startup")
+
+        # Load API token pool at startup
+        from mcp_manager.connectors.token_pool import load_tokens
+        await load_tokens()
 
         async with SessionLocal() as db:
             # 1. Reset enriching -> pending

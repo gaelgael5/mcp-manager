@@ -17,10 +17,16 @@ emit_event() {
 
 emit_event "progress" "\"Agent $AGENT_ROLE demarre — tache $TASK_ID\""
 
+MODEL_FLAG=""
+if [ -n "${CODEX_MODEL:-}" ]; then
+    MODEL_FLAG="--model $CODEX_MODEL"
+fi
+
 EXIT_CODE=0
 RESULT=$(timeout "$TIMEOUT" codex \
     --quiet \
     --full-auto \
+    $MODEL_FLAG \
     "$INSTRUCTION" \
     2>/dev/null) || EXIT_CODE=$?
 

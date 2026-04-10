@@ -17,9 +17,15 @@ emit_event() {
 
 emit_event "progress" "\"Agent $AGENT_ROLE démarré — tâche $TASK_ID\""
 
+MODEL_FLAG=""
+if [ -n "${CLAUDE_MODEL:-}" ]; then
+    MODEL_FLAG="--model $CLAUDE_MODEL"
+fi
+
 EXIT_CODE=0
 RESULT=$(timeout "$TIMEOUT" claude \
     -p "$INSTRUCTION" \
+    $MODEL_FLAG \
     --output-format stream-json \
     --allowedTools "$AGENT_ALLOWED_TOOLS" \
     --max-turns "$AGENT_MAX_TURNS" \

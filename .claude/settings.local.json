@@ -119,7 +119,11 @@
       "WebFetch(domain:mcp.yoops.org)",
       "Bash(tar --exclude='.git' --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='dist' --exclude='.env' --exclude='.playwright-mcp' --exclude='backend/config' -czf /tmp/mcp-manager.tar.gz .)",
       "Bash(find:*)",
-      "Bash(python3 -c ':*)"
+      "Bash(python3 -c ':*)",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "Bash(python3 -m json.tool)",
+      "Bash(sqlite3 /e/srcs/mcp_manager/data/mcp_manager.db \".tables\")"
     ]
   }
 }

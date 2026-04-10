@@ -6,6 +6,7 @@ import httpx
 from sqlalchemy import select, delete
 
 from mcp_manager.config import settings
+from mcp_manager.connectors.github_pool import get_github_headers
 from mcp_manager.db.session import SessionLocal
 from mcp_manager.db.models import McpService
 
@@ -50,9 +51,7 @@ async def check_repo_accessible(client: httpx.AsyncClient, url: str) -> bool:
     if not url or "github.com" not in url:
         return False
     api_url = url.replace("https://github.com/", "https://api.github.com/repos/")
-    headers = {"Accept": "application/vnd.github.v3+json"}
-    if settings.github_token:
-        headers["Authorization"] = f"token {settings.github_token}"
+    headers = get_github_headers()
     try:
         resp = await client.get(api_url, headers=headers)
         return resp.status_code == 200

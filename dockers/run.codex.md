@@ -10,6 +10,8 @@
     stdin_open: true
     tty: true
     network_mode: host
+    environment:
+      - CODEX_MODEL={MODEL}
     volumes:
       - ${WORKSPACE_PATH}:/app
       - ${CODEX_AUTH_PATH}:/home/agent/.codex/auth.json:ro
@@ -22,6 +24,7 @@
 docker run -it --rm \
   --name agent-{id provider}-codex \
   --network host \
+  -e CODEX_MODEL={MODEL} \
   -v {WORKSPACE_PATH}:/app \
   -v {CODEX_AUTH_PATH}:/home/agent/.codex/auth.json:ro \
   -w /app \
@@ -31,5 +34,6 @@ docker run -it --rm \
 
 <default>
 	CODEX_AUTH_PATH = ${CODEX_AUTH_PATH:-/root/.codex/auth.json}
+	MODEL =	${CODEX_MODEL:-gpt-4.1}
 	WORKSPACE_PATH = ${WORKSPACE_PATH:-./workspace}
 </default>
