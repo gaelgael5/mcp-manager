@@ -215,13 +215,25 @@ SEARCH_OPENAPI_SPEC = {
                     "is_secret": {"type": "boolean", "description": "True for tokens, keys, passwords"},
                 },
             },
+            "Translation": {
+                "type": "object",
+                "description": "A summary translated into one culture",
+                "properties": {
+                    "culture": {"type": "string", "enum": ["en", "fr"]},
+                    "summary": {"type": "string"},
+                },
+            },
             "SkillResult": {
                 "type": "object",
                 "properties": {
                     "id": {"type": "string", "format": "uuid"},
                     "name": {"type": "string"},
                     "description": {"type": "string", "nullable": True},
-                    "summary_en": {"type": "string", "nullable": True, "description": "English summary"},
+                    "translations": {
+                        "type": "array",
+                        "items": {"$ref": "#/components/schemas/Translation"},
+                        "description": "Summaries per culture",
+                    },
                     "target_type": {"type": "string", "enum": ["claude", "copilot", "gemini", "cursor"]},
                     "has_summary": {"type": "boolean"},
                     "category": {"type": "string", "nullable": True},
@@ -242,7 +254,11 @@ SEARCH_OPENAPI_SPEC = {
                     "repo_url": {"type": "string", "nullable": True, "description": "GitHub repository URL"},
                     "type": {"type": "string", "enum": ["claude", "copilot", "gemini", "cursor"]},
                     "description": {"type": "string", "nullable": True},
-                    "summary_en": {"type": "string", "nullable": True, "description": "English summary"},
+                    "translations": {
+                        "type": "array",
+                        "items": {"$ref": "#/components/schemas/Translation"},
+                        "description": "Summaries per culture",
+                    },
                     "has_summary": {"type": "boolean"},
                     "repo_status": {"type": "string", "nullable": True},
                     "stars": {"type": "integer", "nullable": True, "description": "GitHub stars"},

@@ -8,13 +8,13 @@ import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Tabs } from "../components/ui/Tabs";
+import type { SkillTranslation } from "../types";
 
 interface SkillDetail {
   id: string;
   name: string;
   description: string | null;
-  summary_en: string | null;
-  summary_fr: string | null;
+  translations: SkillTranslation[];
   target_type: string;
   licence: string | null;
   licence_url: string | null;
@@ -62,6 +62,9 @@ export function SkillDetailPage() {
   if (!skill) return <p className="text-gray-500">Loading...</p>;
 
   const licence = licenceInfo[skill.licence || ""] || null;
+  const byCulture = Object.fromEntries((skill.translations ?? []).map((t) => [t.culture, t]));
+  const summaryEn = byCulture["en"]?.summary ?? null;
+  const summaryFr = byCulture["fr"]?.summary ?? null;
 
   return (
     <div className="space-y-6">
@@ -83,19 +86,19 @@ export function SkillDetailPage() {
       {/* Summary */}
       <Card title="Summary">
         <div className="space-y-3">
-          {(skill.summary_en || skill.summary_fr) ? (
+          {(summaryEn || summaryFr) ? (
             <>
               <Tabs
                 tabs={[
-                  ...(skill.summary_en ? [{ key: "en", label: "EN" }] : []),
-                  ...(skill.summary_fr ? [{ key: "fr", label: "FR" }] : []),
+                  ...(summaryEn ? [{ key: "en", label: "EN" }] : []),
+                  ...(summaryFr ? [{ key: "fr", label: "FR" }] : []),
                 ]}
                 active={contentTab}
                 onChange={setContentTab}
               />
               {!collapsed && (
                 <div className="prose prose-sm prose-gray max-w-none">
-                  <Markdown>{contentTab === "fr" ? skill.summary_fr || "" : skill.summary_en || ""}</Markdown>
+                  <Markdown>{contentTab === "fr" ? summaryFr || "" : summaryEn || ""}</Markdown>
                 </div>
               )}
             </>

@@ -2,7 +2,7 @@
 
 ## Projet
 
-Referentiel unifie de serveurs MCP (Model Context Protocol) agregeant 5 sources (18k+ services).
+Referentiel unifie de serveurs MCP (Model Context Protocol) agregeant 5 sources (30k+ services).
 Stack : FastAPI + PostgreSQL (pgvector) + React/TypeScript + Docker Compose, sur Proxmox LXC 113 (Ubuntu 24).
 
 **Standard de qualite** : code propre et bien fait, jamais la rapidite au detriment de la rigueur. Pas de raccourcis. Chaque tache est faite correctement ou pas du tout.
@@ -13,7 +13,7 @@ Stack : FastAPI + PostgreSQL (pgvector) + React/TypeScript + Docker Compose, sur
 # Deploy sur LXC 113 (192.168.10.99)
 tar --exclude='.git' --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='dist' --exclude='.env' --exclude='.playwright-mcp' --exclude='backend/config' -czf /tmp/mcp-manager.tar.gz .
 scp -i ~/.ssh/id_shellia /tmp/mcp-manager.tar.gz root@192.168.10.99:/tmp/
-ssh -i ~/.ssh/id_shellia root@192.168.10.99 "cd /root/mcp-manager && tar xzf /tmp/mcp-manager.tar.gz && rm /tmp/mcp-manager.tar.gz && docker compose up -d --build mcp-backend mcp-frontend"
+ssh -i ~/.ssh/id_shellia root@192.168.10.99 "cd /root/mcp-manager && tar xzf /tmp/mcp-manager.tar.gz && rm /tmp/mcp-manager.tar.gz && docker compose up -d --build mcp-backend mcp-frontend && docker image prune -f && docker builder prune -f --filter until=24h"
 
 # Docker Compose
 docker compose up -d                            # Lancer la stack (postgres + backend + frontend)
@@ -63,7 +63,8 @@ backend/
       glama.py              # glama.ai API (14k+ servers)
       pulsemcp.py           # pulsemcp.com scraping (900+ servers)
     db/
-      models.py             # SQLAlchemy: McpService, McpSummary, InstallTarget, McpInstallation, McpParameter, McpEmbedding
+      models.py             # SQLAlchemy: McpService, McpSummary, SkillSource, SkillSourceTranslation, Skill, SkillTranslation, Language, InstallTarget, McpInstallation, McpParameter, McpEmbedding
+    prompts.py              # Helper central : load_prompt, write_prompt, get_active_language_codes
       session.py            # Engine + SessionLocal
     enrichment/             # Passes d'enrichissement
       url_resolver.py       # Passe 1: resolve source_url depuis noms reverse-DNS
@@ -82,9 +83,15 @@ backend/
       engine.py             # Moteur de regles (modes des targets -> recettes)
     config.py               # Pydantic Settings
     cli.py                  # Typer CLI (sync, enrich, index, export)
-  prompts/                  # Prompts externalises
-    summarize_en.md
-    summarize_fr.md
+  prompts/                  # Prompts externalises, organises par langue
+    en/
+      summarize.md
+      skill_summary.md
+      source_summary.md
+    fr/
+      summarize.md
+      skill_summary.md
+      source_summary.md
   scripts/
     seed_targets.py         # Peuplement des 34 targets
     init.sql                # Schema initial PostgreSQL
@@ -103,7 +110,12 @@ frontend/
 ## Schema PostgreSQL
 
 - **mcp_services** — referentiel principal (name, source_url, transport, category, repo_status, needs_reindex, package_info)
-- **mcp_summaries** — syntheses IA par culture (en/fr)
+- **languages** — langues supportees (code PK, name natif, is_active, display_order). Les pipelines de trad iterent sur les langues avec is_active=true. FK depuis mcp_summaries / skill_sources_translations / skills_translations
+- **mcp_summaries** — syntheses IA par culture, unique(mcp_service_id, culture), FK culture → languages.code
+- **skill_sources** — sources de skills (skills.sh, GitHub repos)
+- **skill_sources_translations** — traductions des skill_sources par culture, unique(skill_source_id, culture), FK culture → languages.code
+- **skills** — skills individuels (target_type, licence, install_command)
+- **skills_translations** — traductions des skills par culture, unique(skill_id, culture), FK culture → languages.code
 - **mcp_parameters** — parametres requis (env vars, secrets)
 - **mcp_installations** — recettes d'installation par target
 - **install_targets** — 34 cibles avec modes JSONB (runtime, action_type, template)
@@ -114,7 +126,8 @@ frontend/
 - **Python 3.11+**, async/await (FastAPI + SQLAlchemy async)
 - **React 18 + TypeScript strict**, Vite, Tailwind CSS, TanStack Query
 - **Connecteurs** : ajouter un connecteur = creer un fichier dans connectors/ + l'importer dans __init__.py
-- **Prompts** : externalises dans backend/prompts/*.md, pas de prompt hardcode
+- **Prompts** : externalises dans `backend/prompts/<lang>/<kind>.md`, editables via `/settings/prompts` depuis l'app. Le dossier `backend/prompts` est monte en bind-mount dans le container pour persistance cross-rebuild. Passage par `mcp_manager.prompts` (helper central `load_prompt`, `get_active_language_codes`)
+- **Cultures** : table `languages` en DB, is_active pilote la generation. Ne jamais utiliser de constante `CULTURES = {"en","fr"}` en dur
 - **Targets** : modes configurables via JSONB, pas de logique hardcodee dans engine.py
 - **Deploy** : tar + scp vers LXC 113 (192.168.10.99), SSH via ~/.ssh/id_shellia
 - **Commits** : en francais, format conventionnel

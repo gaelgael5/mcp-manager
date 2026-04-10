@@ -8,7 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from mcp_manager.api.deps import get_db
 from mcp_manager.db.models import (
     McpService, McpSummary, McpInstallation, McpParameter,
-    InstallTarget, McpEmbedding, SkillSource, Skill, skill_source_skills,
+    InstallTarget, McpEmbedding, SkillSource, Skill,
+    SkillSourceTranslation, SkillTranslation, skill_source_skills,
 )
 
 router = APIRouter(tags=["search"])
@@ -285,10 +286,17 @@ async def search_skill_sources(
 
     if q:
         pattern = f"%{q}%"
+        translation_match = (
+            select(SkillSourceTranslation.skill_source_id)
+            .where(
+                SkillSourceTranslation.skill_source_id == SkillSource.id,
+                SkillSourceTranslation.summary.ilike(pattern),
+            )
+        )
         query = query.where(
             SkillSource.name.ilike(pattern)
             | SkillSource.description.ilike(pattern)
-            | SkillSource.summary_en.ilike(pattern)
+            | exists(translation_match)
             | SkillSource.repo_url.ilike(pattern)
         )
     if type:
@@ -296,10 +304,17 @@ async def search_skill_sources(
     if repo_status:
         query = query.where(SkillSource.repo_status == repo_status)
     if has_summary is not None:
+        has_en = (
+            select(SkillSourceTranslation.skill_source_id)
+            .where(
+                SkillSourceTranslation.skill_source_id == SkillSource.id,
+                SkillSourceTranslation.culture == "en",
+            )
+        )
         if has_summary:
-            query = query.where(SkillSource.summary_en.isnot(None))
+            query = query.where(exists(has_en))
         else:
-            query = query.where(SkillSource.summary_en.is_(None))
+            query = query.where(~exists(has_en))
 
     count_query = select(func.count()).select_from(query.subquery())
     total = (await db.execute(count_query)).scalar() or 0
@@ -326,6 +341,11 @@ async def search_skill_sources(
 
     items = []
     for s in sources:
+        translations = [
+            {"culture": t.culture, "summary": t.summary}
+            for t in sorted(s.translations, key=lambda t: t.culture)
+        ]
+        has_en = any(t["culture"] == "en" for t in translations)
         items.append({
             "id": str(s.id),
             "name": s.name,
@@ -333,8 +353,8 @@ async def search_skill_sources(
             "repo_url": s.repo_url,
             "type": s.type,
             "description": s.description,
-            "summary_en": s.summary_en,
-            "has_summary": bool(s.summary_en),
+            "translations": translations,
+            "has_summary": has_en,
             "repo_status": s.repo_status,
             "stars": s.stars,
             "skills_count": skills_count_map.get(s.id, 0),
@@ -357,42 +377,66 @@ async def search_skills(
     db: AsyncSession = Depends(get_db),
 ):
     """Search skills with text filters and pagination."""
+    def _serialize_skill_item(s: Skill) -> dict:
+        translations = [
+            {"culture": t.culture, "summary": t.summary}
+            for t in sorted(s.translations, key=lambda t: t.culture)
+        ]
+        return {
+            "id": str(s.id),
+            "name": s.name,
+            "description": s.description,
+            "translations": translations,
+            "target_type": s.target_type,
+            "has_summary": any(t["culture"] == "en" for t in translations),
+            "category": s.category,
+            "licence": s.licence,
+            "source_url": s.source_url,
+            "canonical_id": s.canonical_id,
+            "install_command": s.install_command,
+            "weekly_installs": s.weekly_installs,
+            "created_at": s.created_at.isoformat() if s.created_at else None,
+        }
+
     # Exact lookup by canonical_id
     if canonical_id:
         result = await db.execute(select(Skill).where(Skill.canonical_id == canonical_id))
         skills = result.scalars().all()
-        items = []
-        for s in skills:
-            items.append({
-                "id": str(s.id), "name": s.name, "description": s.description,
-                "summary_en": s.summary_en, "target_type": s.target_type,
-                "has_summary": bool(s.summary_en), "category": s.category,
-                "licence": s.licence, "source_url": s.source_url,
-                "canonical_id": s.canonical_id,
-                "install_command": s.install_command,
-                "weekly_installs": s.weekly_installs,
-                "created_at": s.created_at.isoformat() if s.created_at else None,
-            })
+        items = [_serialize_skill_item(s) for s in skills]
         return {"items": items, "total": len(items), "page": 1, "per_page": len(items) or per_page}
 
     query = select(Skill)
 
     if q:
         pattern = f"%{q}%"
+        translation_match = (
+            select(SkillTranslation.skill_id)
+            .where(
+                SkillTranslation.skill_id == Skill.id,
+                SkillTranslation.summary.ilike(pattern),
+            )
+        )
         query = query.where(
             Skill.name.ilike(pattern)
             | Skill.description.ilike(pattern)
-            | Skill.summary_en.ilike(pattern)
+            | exists(translation_match)
         )
     if target_type:
         query = query.where(Skill.target_type == target_type)
     if category:
         query = query.where(Skill.category == category)
     if has_summary is not None:
+        has_en = (
+            select(SkillTranslation.skill_id)
+            .where(
+                SkillTranslation.skill_id == Skill.id,
+                SkillTranslation.culture == "en",
+            )
+        )
         if has_summary:
-            query = query.where(Skill.summary_en.isnot(None))
+            query = query.where(exists(has_en))
         else:
-            query = query.where(Skill.summary_en.is_(None))
+            query = query.where(~exists(has_en))
     if source_id:
         query = query.join(skill_source_skills, skill_source_skills.c.skill_id == Skill.id).where(
             skill_source_skills.c.skill_source_id == source_id
@@ -407,22 +451,6 @@ async def search_skills(
     result = await db.execute(query)
     skills = result.scalars().all()
 
-    items = []
-    for s in skills:
-        items.append({
-            "id": str(s.id),
-            "name": s.name,
-            "description": s.description,
-            "summary_en": s.summary_en,
-            "target_type": s.target_type,
-            "has_summary": bool(s.summary_en),
-            "category": s.category,
-            "licence": s.licence,
-            "source_url": s.source_url,
-            "canonical_id": s.canonical_id,
-            "install_command": s.install_command,
-            "weekly_installs": s.weekly_installs,
-            "created_at": s.created_at.isoformat() if s.created_at else None,
-        })
+    items = [_serialize_skill_item(s) for s in skills]
 
     return {"items": items, "total": total, "page": page, "per_page": per_page}

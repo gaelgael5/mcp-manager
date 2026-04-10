@@ -10,12 +10,30 @@ logger = logging.getLogger(__name__)
 
 _sync_status = {"running": False, "last_run": None, "last_stats": None}
 
+# Active LLM managers per batch (for exposing driver stats)
+_batch_managers: dict = {}
+
+
+def _register_batch_manager(batch_id: str, manager):
+    """Register a batch manager and set it as the context-local LLM manager."""
+    from mcp_manager.summarizer.ollama_client import set_llm_manager
+    _batch_managers[batch_id] = manager
+    set_llm_manager(manager)
+
+
+def _unregister_batch_manager(batch_id: str):
+    """Unregister a batch manager and clear the context-local LLM manager."""
+    from mcp_manager.summarizer.ollama_client import set_llm_manager
+    _batch_managers.pop(batch_id, None)
+    set_llm_manager(None)
+
 # Ring buffers for throughput: deque of (monotonic_time, done_count)
 # One per operation type, max ~12 entries (5min / 30s interval + margin)
 _throughput_history: dict[str, deque] = {
     "indexing": deque(maxlen=15),
     "enriching": deque(maxlen=15),
     "indexing_skills": deque(maxlen=15),
+    "rag_indexing": deque(maxlen=15),
 }
 _SNAPSHOT_INTERVAL = 30  # seconds between snapshots
 _last_snapshot: dict[str, float] = {}
@@ -73,9 +91,88 @@ async def trigger_index(
         return {"status": "already_running"}
     from datetime import datetime, timezone
     _sync_status["indexing"] = True
+    _sync_status["index_cancel"] = False
     _sync_status["indexing_started_at"] = datetime.now(timezone.utc).isoformat()
     background_tasks.add_task(_run_index_bg, limit)
     return {"status": "started", "limit": limit}
+
+
+@router.post("/services/index/stop")
+async def stop_index():
+    if not _sync_status.get("indexing"):
+        return {"status": "not_running"}
+    _sync_status["index_cancel"] = True
+    return {"status": "stopping"}
+
+
+@router.post("/services/agents/{batch_id}/start")
+async def start_agents(batch_id: str, provider_id: int = Query(None)):
+    """Start Docker agent containers for a batch. If provider_id given, start only that one."""
+    from mcp_manager.llm.manager import LLMManager
+    from mcp_manager.llm.driver_docker import DockerDriver
+    import subprocess
+
+    if batch_id not in _batch_managers:
+        manager = LLMManager(batch_id=batch_id)
+        manager.load()
+        _register_batch_manager(batch_id, manager)
+    else:
+        manager = _batch_managers[batch_id]
+
+    if provider_id is not None:
+        for d in manager.drivers:
+            if isinstance(d, DockerDriver) and d.provider_id == provider_id:
+                d.start()
+                return {"status": "started", "container": d.container_name}
+        return {"status": "not_found"}
+
+    manager.start_all()
+    return {"status": "started", "drivers": len(manager.drivers)}
+
+
+@router.post("/services/agents/{batch_id}/stop")
+async def stop_agents(batch_id: str, provider_id: int = Query(None)):
+    """Stop Docker agent containers for a batch. If provider_id given, stop only that one."""
+    from mcp_manager.llm.driver_docker import DockerDriver
+    import subprocess
+
+    manager = _batch_managers.get(batch_id)
+    if not manager:
+        return {"status": "not_running"}
+
+    if provider_id is not None:
+        for d in manager.drivers:
+            if isinstance(d, DockerDriver) and d.provider_id == provider_id:
+                d.stop()
+                return {"status": "stopped", "container": d.container_name}
+        return {"status": "not_found"}
+
+    manager.stop_all()
+    _unregister_batch_manager(batch_id)
+    return {"status": "stopped"}
+
+
+@router.post("/services/rag-index")
+async def trigger_rag_index(
+    background_tasks: BackgroundTasks,
+    scope: str = Query("all"),  # "all", "mcp", "sources", "skills"
+):
+    if _sync_status.get("rag_indexing"):
+        return {"status": "already_running"}
+    from datetime import datetime, timezone
+    _sync_status["rag_indexing"] = True
+    _sync_status["rag_cancel"] = False
+    _sync_status["rag_started_at"] = datetime.now(timezone.utc).isoformat()
+    background_tasks.add_task(_run_rag_index_bg, scope)
+    return {"status": "started", "scope": scope}
+
+
+@router.post("/services/rag-index/stop")
+async def stop_rag_index():
+    if not _sync_status.get("rag_indexing"):
+        return {"status": "not_running"}
+    _sync_status["rag_cancel"] = True
+    return {"status": "stopping"}
 
 
 @router.post("/services/scrape-skills")
@@ -139,11 +236,86 @@ async def stop_index_skills():
 async def sync_status():
     result = dict(_sync_status)
     # Add computed throughput (items/hour over last 5min)
-    for op in ("indexing", "enriching", "indexing_skills"):
+    for op in ("indexing", "enriching", "indexing_skills", "rag_indexing"):
         tp = _compute_throughput(op)
         if tp is not None:
             result[f"{op}_throughput"] = tp
+    # Add Docker agent container status per batch
+    result["docker_agents"] = _get_docker_agents_status()
+    # Add driver stats per active batch
+    result["driver_stats"] = {
+        batch_id: mgr.get_driver_stats()
+        for batch_id, mgr in _batch_managers.items()
+    }
     return result
+
+
+def _get_docker_agents_status() -> dict:
+    """Check which Docker agent containers are running for each batch."""
+    import subprocess
+    from mcp_manager.llm.config import load_config
+
+    config = load_config()
+    docker_providers = [p for p in config.get("llm", []) if p.get("type") == "docker"]
+
+    if not docker_providers:
+        return {"providers": [], "batches": {}}
+
+    # List all running mcp-llm-worker containers
+    try:
+        result = subprocess.run(
+            ["docker", "ps", "--filter", "name=mcp-llm-worker", "--format", "{{.Names}} {{.Status}}"],
+            capture_output=True, text=True, timeout=5,
+        )
+        running = {}
+        for line in result.stdout.strip().split("\n"):
+            if line:
+                parts = line.split(" ", 1)
+                running[parts[0]] = parts[1] if len(parts) > 1 else "running"
+    except Exception:
+        running = {}
+
+    # Check which images exist
+    providers_info = []
+    for p in docker_providers:
+        image = p.get("image", "")
+        pid = p.get("id", 0)
+        # Check if image exists
+        try:
+            img_result = subprocess.run(
+                ["docker", "images", f"agent-{image}", "--format", "{{.Repository}}:{{.Tag}}"],
+                capture_output=True, text=True, timeout=5,
+            )
+            image_exists = bool(img_result.stdout.strip())
+            image_ref = img_result.stdout.strip().split("\n")[0] if image_exists else None
+        except Exception:
+            image_exists = False
+            image_ref = None
+
+        providers_info.append({
+            "id": pid,
+            "image": image,
+            "image_exists": image_exists,
+            "image_ref": image_ref,
+        })
+
+    # Check running containers per batch
+    batch_ids = ["enrich", "skills", "scrape", "mcp"]
+    batches = {}
+    for batch_id in batch_ids:
+        containers = []
+        for p in docker_providers:
+            name = f"mcp-llm-worker-{p['id']}-{batch_id}"
+            containers.append({
+                "provider_id": p["id"],
+                "image": p.get("image", ""),
+                "container": name,
+                "running": name in running,
+                "status": running.get(name, "stopped"),
+            })
+        batches[batch_id] = containers
+
+    return {"providers": providers_info, "batches": batches}
 
 async def _run_sync_bg(source: str | None):
     from datetime import datetime, timezone
@@ -200,7 +372,9 @@ async def _run_sync_bg(source: str | None):
                         existing.category = raw.category
                         existing.tags = raw.tags
                         existing.canonical_id = cid
-                        existing.needs_reindex = True
+                        # Only re-index if not already successfully indexed
+                        if existing.repo_status != "ok":
+                            existing.needs_reindex = True
                         stats["updated"] += 1
                     else:
                         stats["unchanged"] += 1
@@ -225,6 +399,13 @@ async def _run_sync_bg(source: str | None):
 
 async def _run_scrape_skills_bg(limit: int | None, skip_summaries: bool):
     from datetime import datetime, timezone
+    from mcp_manager.llm.manager import LLMManager
+
+    manager = LLMManager(batch_id="scrape")
+    manager.load()
+    manager.start_all()
+    _register_batch_manager("scrape", manager)
+
     try:
         from scripts.scrape_skills_sh import scrape_skills_sh
         await scrape_skills_sh(limit=limit, skip_summaries=skip_summaries)
@@ -235,10 +416,13 @@ async def _run_scrape_skills_bg(limit: int | None, skip_summaries: bool):
     except Exception:
         logger.exception("Scrape skills failed")
     finally:
+        manager.stop_all()
+        _unregister_batch_manager("scrape")
         _sync_status["scraping"] = False
 
 
 async def _run_enrich_skills_bg():
+    import asyncio
     import logging
     from datetime import datetime, timezone
     if not _sync_status.get("enriching_started_at"):
@@ -248,14 +432,21 @@ async def _run_enrich_skills_bg():
     from mcp_manager.api.routers.skill_sources import (
         _enrich_repo_url, _enrich_summaries, _enrich_sync_skills,
     )
+    from mcp_manager.llm.manager import LLMManager
     from sqlalchemy import select, or_
 
     enrich_logger = logging.getLogger("enrich-pipeline")
 
+    manager = LLMManager(batch_id="enrich")
+    manager.load()
+    manager.start_all()
+    _register_batch_manager("enrich", manager)
+
     try:
+        # Get source IDs to process
         async with SessionLocal() as db:
             result = await db.execute(
-                select(SkillSource).where(
+                select(SkillSource.id).where(
                     or_(
                         SkillSource.enrichment_status == "pending",
                         SkillSource.enrichment_status == "enriching",
@@ -263,54 +454,105 @@ async def _run_enrich_skills_bg():
                     )
                 ).order_by(SkillSource.created_at)
             )
-            sources = result.scalars().all()
-            total = len(sources)
-            enrich_logger.info("enrich-pipeline: %d sources to process", total)
+            source_ids = [row[0] for row in result.all()]
 
-            stats = {"total": total, "done": 0, "repos_filled": 0, "summaries": 0, "syncs": 0, "failed": 0}
-            _sync_status["enrich_progress"] = stats
+        total = len(source_ids)
+        enrich_logger.info("enrich-pipeline: %d sources to process with %d workers", total, len(manager.drivers))
 
-            for i, source in enumerate(sources):
+        stats = {"total": total, "done": 0, "repos_filled": 0, "summaries": 0, "syncs": 0, "failed": 0}
+        _sync_status["enrich_progress"] = stats
+
+        queue: asyncio.Queue = asyncio.Queue()
+        for sid in source_ids:
+            queue.put_nowait(sid)
+
+        num_workers = len(manager.drivers)
+
+        async def _worker(worker_id: int, driver):
+            # Each worker uses its own dedicated driver
+            from mcp_manager.summarizer.ollama_client import set_llm_manager
+            from mcp_manager.llm.manager import LLMManager
+
+            # Create a single-driver manager for this worker
+            worker_mgr = LLMManager.__new__(LLMManager)
+            worker_mgr.drivers = [driver]
+            worker_mgr._current = 0
+            worker_mgr._config = {}
+            worker_mgr._batch_id = f"enrich-w{worker_id}"
+            set_llm_manager(worker_mgr)
+
+            driver_name = getattr(driver, 'image', 'ollama')
+            enrich_logger.info("enrich worker %d started with driver %s", worker_id, driver_name)
+
+            while not queue.empty():
                 if _sync_status.get("enrich_cancel"):
-                    enrich_logger.info("enrich-pipeline: cancelled at %d/%d", i, total)
+                    break
+                try:
+                    sid = queue.get_nowait()
+                except asyncio.QueueEmpty:
                     break
 
-                source.enrichment_status = "enriching"
-                await db.commit()
+                async with SessionLocal() as wdb:
+                    result = await wdb.execute(select(SkillSource).where(SkillSource.id == sid))
+                    source = result.scalar_one_or_none()
+                    if not source:
+                        continue
 
-                try:
-                    if await _enrich_repo_url(source):
-                        stats["repos_filled"] += 1
-
-                    try:
-                        if await _enrich_summaries(source, db):
-                            stats["summaries"] += 1
-                    except Exception:
-                        enrich_logger.warning("enrich-pipeline: summary failed for %s", source.name)
+                    source.enrichment_status = "enriching"
+                    await wdb.commit()
 
                     try:
-                        added = await _enrich_sync_skills(source, db)
-                        if added > 0:
-                            stats["syncs"] += 1
+                        if await _enrich_repo_url(source):
+                            stats["repos_filled"] += 1
+
+                        if _sync_status.get("enrich_cancel"):
+                            source.enrichment_status = "pending"
+                            break
+
+                        try:
+                            if await _enrich_summaries(source, wdb):
+                                stats["summaries"] += 1
+                        except Exception:
+                            enrich_logger.warning("enrich-pipeline: summary failed for %s", source.name)
+                            await wdb.rollback()
+
+                        if _sync_status.get("enrich_cancel"):
+                            source.enrichment_status = "pending"
+                            break
+
+                        try:
+                            added = await _enrich_sync_skills(source, wdb)
+                            if added > 0:
+                                stats["syncs"] += 1
+                        except Exception:
+                            enrich_logger.warning("enrich-pipeline: sync failed for %s", source.name)
+                            await wdb.rollback()
+
+                        source.enrichment_status = "done"
+                        stats["done"] += 1
+
                     except Exception:
-                        enrich_logger.warning("enrich-pipeline: sync failed for %s", source.name)
+                        enrich_logger.exception("enrich-pipeline: failed for %s", source.name)
+                        await wdb.rollback()
+                        source.enrichment_status = "failed"
+                        stats["failed"] += 1
 
-                    source.enrichment_status = "done"
-                    stats["done"] += 1
+                    try:
+                        await wdb.commit()
+                    except Exception:
+                        enrich_logger.warning("enrich-pipeline: commit failed for %s", source.name)
+                        await wdb.rollback()
 
-                except Exception:
-                    enrich_logger.exception("enrich-pipeline: failed for %s", source.name)
-                    source.enrichment_status = "failed"
-                    stats["failed"] += 1
+                    _record_throughput("enriching", stats["done"])
+                    done = stats["done"] + stats["failed"]
+                    if done % 10 == 0:
+                        enrich_logger.info("enrich-pipeline: %d/%d done", done, total)
+                        _sync_status["enrich_progress"] = dict(stats)
 
-                await db.commit()
-                _record_throughput("enriching", stats["done"])
+        workers = [asyncio.create_task(_worker(i, manager.drivers[i])) for i in range(num_workers)]
+        await asyncio.gather(*workers)
 
-                if (i + 1) % 10 == 0:
-                    enrich_logger.info("enrich-pipeline: %d/%d done", i + 1, total)
-                    _sync_status["enrich_progress"] = dict(stats)
-
-            _sync_status["enrich_progress"] = dict(stats)
+        _sync_status["enrich_progress"] = dict(stats)
 
         _sync_status["last_enrich"] = {
             "time": datetime.now(timezone.utc).isoformat(),
@@ -321,143 +563,110 @@ async def _run_enrich_skills_bg():
             stats["done"], stats["failed"], stats["repos_filled"], stats["summaries"], stats["syncs"],
         )
 
-        # Full RAG reindex of all skill_sources with summaries
-        enrich_logger.info("enrich-pipeline: starting full RAG reindex of skill_sources")
-        try:
-            from mcp_manager.indexer.embedder import embed_text
-            from mcp_manager.db.models import McpEmbedding
-            from sqlalchemy import delete
-
-            async with SessionLocal() as db:
-                result = await db.execute(
-                    select(SkillSource).where(SkillSource.summary_en.isnot(None))
-                )
-                all_sources = result.scalars().all()
-                rag_count = 0
-
-                for source in all_sources:
-                    try:
-                        await db.execute(delete(McpEmbedding).where(
-                            McpEmbedding.chunk_type == "source_summary",
-                            McpEmbedding.content.like(f"source:{source.id}%"),
-                        ))
-                        vec = await embed_text(source.summary_en)
-                        if vec:
-                            db.add(McpEmbedding(
-                                chunk_type="source_summary",
-                                chunk_index=0,
-                                content=f"source:{source.id} {source.summary_en}",
-                                embedding=vec,
-                            ))
-                            rag_count += 1
-                    except Exception:
-                        pass
-
-                    if rag_count % 100 == 0 and rag_count > 0:
-                        await db.commit()
-                        enrich_logger.info("enrich-pipeline: RAG reindex %d/%d", rag_count, len(all_sources))
-
-                await db.commit()
-                enrich_logger.info("enrich-pipeline: RAG reindex complete — %d sources indexed", rag_count)
-        except Exception:
-            enrich_logger.exception("enrich-pipeline: RAG reindex failed")
-
     except Exception:
         enrich_logger.exception("enrich-pipeline failed")
     finally:
+        manager.stop_all()
+        _unregister_batch_manager("enrich")
         _sync_status["enriching"] = False
         _sync_status["enrich_cancel"] = False
 
 
 async def _run_index_skills_bg():
+    import asyncio
     import logging
     from datetime import datetime, timezone
     if not _sync_status.get("indexing_skills_started_at"):
         _sync_status["indexing_skills_started_at"] = datetime.now(timezone.utc).isoformat()
     from mcp_manager.db.session import SessionLocal
-    from mcp_manager.db.models import Skill, McpEmbedding
+    from mcp_manager.db.models import Skill
     from mcp_manager.api.routers.skill_sources import _enrich_one_skill
-    from mcp_manager.indexer.embedder import embed_text
-    from sqlalchemy import select, delete
+    from mcp_manager.llm.manager import LLMManager
+    from sqlalchemy import select
 
     skills_logger = logging.getLogger("index-skills")
 
+    manager = LLMManager(batch_id="skills")
+    manager.load()
+    manager.start_all()
+    _register_batch_manager("skills", manager)
+
     try:
+        # Get skill IDs to process
         async with SessionLocal() as db:
             result = await db.execute(
-                select(Skill).where(Skill.needs_summary == True).order_by(Skill.created_at)
+                select(Skill.id).where(Skill.needs_summary == True).order_by(Skill.created_at)
             )
-            skills = result.scalars().all()
-            total = len(skills)
-            skills_logger.info("index-skills: %d skills to process", total)
+            skill_ids = [row[0] for row in result.all()]
 
-            stats = {"total": total, "done": 0, "summaries": 0, "unchanged": 0, "failed": 0}
-            _sync_status["index_skills_progress"] = stats
+        total = len(skill_ids)
+        skills_logger.info("index-skills: %d skills to process with %d workers", total, len(manager.drivers))
 
-            for i, skill in enumerate(skills):
+        stats = {"total": total, "done": 0, "summaries": 0, "unchanged": 0, "failed": 0}
+        _sync_status["index_skills_progress"] = stats
+
+        queue: asyncio.Queue = asyncio.Queue()
+        for sid in skill_ids:
+            queue.put_nowait(sid)
+
+        num_workers = len(manager.drivers)
+
+        async def _worker(worker_id: int, driver):
+            from mcp_manager.summarizer.ollama_client import set_llm_manager
+            from mcp_manager.llm.manager import LLMManager
+
+            worker_mgr = LLMManager.__new__(LLMManager)
+            worker_mgr.drivers = [driver]
+            worker_mgr._current = 0
+            worker_mgr._config = {}
+            worker_mgr._batch_id = f"skills-w{worker_id}"
+            set_llm_manager(worker_mgr)
+
+            driver_name = getattr(driver, 'image', 'ollama')
+            skills_logger.info("skills worker %d started with driver %s", worker_id, driver_name)
+
+            while not queue.empty():
                 if _sync_status.get("index_skills_cancel"):
-                    skills_logger.info("index-skills: cancelled at %d/%d", i, total)
+                    break
+                try:
+                    sid = queue.get_nowait()
+                except asyncio.QueueEmpty:
                     break
 
-                try:
-                    updated = await _enrich_one_skill(skill, db)
-                    if updated:
-                        stats["summaries"] += 1
-                    else:
-                        stats["unchanged"] += 1
-                    skill.needs_summary = False
-                    stats["done"] += 1
-                except Exception:
-                    skills_logger.warning("index-skills: failed for %s", skill.name)
-                    skill.needs_summary = False
-                    stats["failed"] += 1
+                async with SessionLocal() as wdb:
+                    result = await wdb.execute(select(Skill).where(Skill.id == sid))
+                    skill = result.scalar_one_or_none()
+                    if not skill:
+                        continue
 
-                await db.commit()
-                _record_throughput("indexing_skills", stats["done"])
-
-                if (i + 1) % 10 == 0:
-                    skills_logger.info("index-skills: %d/%d done", i + 1, total)
-                    _sync_status["index_skills_progress"] = dict(stats)
-
-            _sync_status["index_skills_progress"] = dict(stats)
-
-        # Full RAG reindex of all skills with summaries
-        skills_logger.info("index-skills: starting full RAG reindex of skills")
-        try:
-            async with SessionLocal() as db:
-                result = await db.execute(
-                    select(Skill).where(Skill.summary_en.isnot(None))
-                )
-                all_skills = result.scalars().all()
-                rag_count = 0
-
-                for skill in all_skills:
                     try:
-                        await db.execute(delete(McpEmbedding).where(
-                            McpEmbedding.skill_id == skill.id,
-                            McpEmbedding.chunk_type == "skill_summary",
-                        ))
-                        vec = await embed_text(skill.summary_en)
-                        if vec:
-                            db.add(McpEmbedding(
-                                skill_id=skill.id,
-                                chunk_type="skill_summary",
-                                chunk_index=0,
-                                content=skill.summary_en,
-                                embedding=vec,
-                            ))
-                            rag_count += 1
+                        updated = await _enrich_one_skill(skill, wdb)
+                        if updated:
+                            stats["summaries"] += 1
+                        else:
+                            stats["unchanged"] += 1
+                        skill.needs_summary = False
+                        stats["done"] += 1
                     except Exception:
-                        pass
+                        skills_logger.warning("index-skills: failed for %s", skill.name)
+                        skill.needs_summary = False
+                        stats["failed"] += 1
 
-                    if rag_count % 100 == 0 and rag_count > 0:
-                        await db.commit()
-                        skills_logger.info("index-skills: RAG reindex %d/%d", rag_count, len(all_skills))
+                    try:
+                        await wdb.commit()
+                    except Exception:
+                        await wdb.rollback()
 
-                await db.commit()
-                skills_logger.info("index-skills: RAG reindex complete — %d skills indexed", rag_count)
-        except Exception:
-            skills_logger.exception("index-skills: RAG reindex failed")
+                    _record_throughput("indexing_skills", stats["done"])
+                    done = stats["done"] + stats["failed"]
+                    if done % 10 == 0:
+                        skills_logger.info("index-skills: %d/%d done", done, total)
+                        _sync_status["index_skills_progress"] = dict(stats)
+
+        workers = [asyncio.create_task(_worker(i, manager.drivers[i])) for i in range(num_workers)]
+        await asyncio.gather(*workers)
+
+        _sync_status["index_skills_progress"] = dict(stats)
 
         _sync_status["last_index_skills"] = {
             "time": datetime.now(timezone.utc).isoformat(),
@@ -470,6 +679,8 @@ async def _run_index_skills_bg():
     except Exception:
         skills_logger.exception("index-skills failed")
     finally:
+        manager.stop_all()
+        _unregister_batch_manager("skills")
         _sync_status["indexing_skills"] = False
         _sync_status["index_skills_cancel"] = False
 
@@ -479,26 +690,442 @@ async def _run_index_bg(limit: int):
     if not _sync_status.get("indexing_started_at"):
         _sync_status["indexing_started_at"] = datetime.now(timezone.utc).isoformat()
     try:
-        from mcp_manager.summarizer.ollama_client import get_llm_manager
+        from mcp_manager.llm.manager import LLMManager
         from mcp_manager.indexer.pipeline import run_index
 
-        manager = get_llm_manager()
+        manager = LLMManager(batch_id="mcp")
         manager.load()
         manager.start_all()
+        _register_batch_manager("mcp", manager)
 
         def _update_index_progress(stats):
             _sync_status["indexing_progress"] = dict(stats)
             _record_throughput("indexing", stats.get("processed", 0))
 
         try:
-            result = await run_index(limit=limit, progress_callback=_update_index_progress)
+            result = await run_index(
+                limit=limit,
+                progress_callback=_update_index_progress,
+                cancel_check=lambda: _sync_status.get("index_cancel", False),
+            )
             _sync_status["last_index"] = {
                 "stats": result,
                 "time": datetime.now(timezone.utc).isoformat(),
             }
         finally:
             manager.stop_all()
+            _unregister_batch_manager("mcp")
     except Exception:
         logger.exception("Index failed")
     finally:
         _sync_status["indexing"] = False
+        _sync_status["index_cancel"] = False
+
+
+async def _run_rag_index_bg(scope: str = "all"):
+    """RAG reindex: embed summaries into pgvector. Scope: all, mcp, sources, skills."""
+    import asyncio
+    from datetime import datetime, timezone
+    from mcp_manager.db.session import SessionLocal
+    from mcp_manager.db.models import (
+        McpService, McpSummary, McpEmbedding, SkillSource, Skill,
+        SkillSourceTranslation, SkillTranslation,
+    )
+    from mcp_manager.indexer.embedder import embed_text
+    from sqlalchemy import select, delete, func, or_
+
+    rag_logger = logging.getLogger("rag-index")
+
+    run_started = datetime.now(timezone.utc)
+    _sync_status["rag_started_at"] = run_started.isoformat()
+    _sync_status["rag_scope"] = scope
+
+    stats = {"total": 0, "done": 0, "mcp_summaries": 0, "mcp_chunks": 0, "sources": 0, "skills": 0, "failed": 0}
+    _sync_status["rag_progress"] = stats
+
+    do_mcp = scope in ("all", "mcp")
+    do_sources = scope in ("all", "sources")
+    do_skills = scope in ("all", "skills")
+
+    try:
+        # Filter: rag_indexed_at IS NULL OR rag_indexed_at < updated_at
+        # Note: RAG embedding is pinned to 'en' because mxbai-embed-large
+        # performs significantly better on English than on other languages.
+        mcp_filter = (McpSummary.culture == "en") & (
+            or_(McpSummary.rag_indexed_at.is_(None), McpSummary.rag_indexed_at < McpSummary.updated_at)
+        )
+        source_filter = (SkillSourceTranslation.culture == "en") & (
+            or_(
+                SkillSourceTranslation.rag_indexed_at.is_(None),
+                SkillSourceTranslation.rag_indexed_at < SkillSourceTranslation.updated_at,
+            )
+        )
+        skill_filter = (SkillTranslation.culture == "en") & (
+            or_(
+                SkillTranslation.rag_indexed_at.is_(None),
+                SkillTranslation.rag_indexed_at < SkillTranslation.updated_at,
+            )
+        )
+
+        # Count items to process
+        async with SessionLocal() as db:
+            mcp_count = (await db.execute(select(func.count()).select_from(McpSummary).where(mcp_filter))).scalar() or 0 if do_mcp else 0
+            source_count = (await db.execute(select(func.count()).select_from(SkillSourceTranslation).where(source_filter))).scalar() or 0 if do_sources else 0
+            skill_count = (await db.execute(select(func.count()).select_from(SkillTranslation).where(skill_filter))).scalar() or 0 if do_skills else 0
+
+        stats["total"] = mcp_count + source_count + skill_count
+        _sync_status["rag_progress"] = dict(stats)
+        rag_logger.info("rag-index [%s]: %d to index (mcp=%d, sources=%d, skills=%d)", scope, stats["total"], mcp_count, source_count, skill_count)
+
+        if stats["total"] == 0:
+            rag_logger.info("rag-index: nothing to index")
+            return
+
+        # Phase 1: MCP summaries
+        # Phase 1: MCP summaries
+        rag_logger.info("rag-index: phase 1 — %d MCP summaries", mcp_count)
+        async with SessionLocal() as db:
+            result = await db.execute(select(McpSummary).where(mcp_filter))
+            summaries = result.scalars().all() if do_mcp else []
+
+            for summary in summaries:
+                if _sync_status.get("rag_cancel"):
+                    rag_logger.info("rag-index: cancelled")
+                    break
+
+                try:
+                    await db.execute(delete(McpEmbedding).where(
+                        McpEmbedding.mcp_service_id == summary.mcp_service_id,
+                        McpEmbedding.chunk_type == "summary",
+                    ))
+                    vec = await embed_text(summary.summary)
+                    if vec:
+                        db.add(McpEmbedding(
+                            mcp_service_id=summary.mcp_service_id,
+                            chunk_type="summary",
+                            chunk_index=0,
+                            content=summary.summary,
+                            embedding=vec,
+                        ))
+                        summary.rag_indexed_at = datetime.now(timezone.utc)
+                        stats["mcp_summaries"] += 1
+                except Exception:
+                    stats["failed"] += 1
+
+                stats["done"] += 1
+                _record_throughput("rag_indexing", stats["done"])
+                await asyncio.sleep(0.05)
+
+                if stats["done"] % 50 == 0:
+                    await db.commit()
+                    _sync_status["rag_progress"] = dict(stats)
+                    rag_logger.info("rag-index: %d/%d done", stats["done"], stats["total"])
+
+            await db.commit()
+
+        if _sync_status.get("rag_cancel"):
+            return
+
+        # Phase 2: Skill source summaries
+        rag_logger.info("rag-index: phase 2 — %d skill sources", source_count)
+        async with SessionLocal() as db:
+            result = await db.execute(select(SkillSourceTranslation).where(source_filter))
+            translations = result.scalars().all() if do_sources else []
+
+            for translation in translations:
+                if _sync_status.get("rag_cancel"):
+                    break
+
+                try:
+                    await db.execute(delete(McpEmbedding).where(
+                        McpEmbedding.chunk_type == "source_summary",
+                        McpEmbedding.content.like(f"source:{translation.skill_source_id}%"),
+                    ))
+                    vec = await embed_text(translation.summary)
+                    if vec:
+                        db.add(McpEmbedding(
+                            chunk_type="source_summary",
+                            chunk_index=0,
+                            content=f"source:{translation.skill_source_id} {translation.summary}",
+                            embedding=vec,
+                        ))
+                        translation.rag_indexed_at = datetime.now(timezone.utc)
+                        stats["sources"] += 1
+                except Exception:
+                    stats["failed"] += 1
+
+                stats["done"] += 1
+                _record_throughput("rag_indexing", stats["done"])
+                await asyncio.sleep(0.05)
+
+                if stats["done"] % 50 == 0:
+                    await db.commit()
+                    _sync_status["rag_progress"] = dict(stats)
+
+            await db.commit()
+
+        if _sync_status.get("rag_cancel"):
+            return
+
+        # Phase 3: Skill summaries
+        rag_logger.info("rag-index: phase 3 — %d skills", skill_count)
+        async with SessionLocal() as db:
+            result = await db.execute(select(SkillTranslation).where(skill_filter))
+            translations = result.scalars().all() if do_skills else []
+
+            for translation in translations:
+                if _sync_status.get("rag_cancel"):
+                    break
+
+                try:
+                    await db.execute(delete(McpEmbedding).where(
+                        McpEmbedding.skill_id == translation.skill_id,
+                        McpEmbedding.chunk_type == "skill_summary",
+                    ))
+                    vec = await embed_text(translation.summary)
+                    if vec:
+                        db.add(McpEmbedding(
+                            skill_id=translation.skill_id,
+                            chunk_type="skill_summary",
+                            chunk_index=0,
+                            content=translation.summary,
+                            embedding=vec,
+                        ))
+                        translation.rag_indexed_at = datetime.now(timezone.utc)
+                        stats["skills"] += 1
+                except Exception:
+                    stats["failed"] += 1
+
+                stats["done"] += 1
+                _record_throughput("rag_indexing", stats["done"])
+                await asyncio.sleep(0.05)
+
+                if stats["done"] % 50 == 0:
+                    await db.commit()
+                    _sync_status["rag_progress"] = dict(stats)
+
+            await db.commit()
+
+        _sync_status["last_rag"] = {"time": datetime.now(timezone.utc).isoformat(), **stats}
+        rag_logger.info("rag-index: done — %d mcp, %d sources, %d skills, %d failed",
+                        stats["mcp_summaries"], stats["sources"], stats["skills"], stats["failed"])
+
+    except Exception:
+        rag_logger.exception("rag-index failed")
+    finally:
+        _sync_status["rag_indexing"] = False
+        _sync_status["rag_cancel"] = False
+
+
+# ──── Quality Eval endpoints ────
+
+
+@router.post("/quality/eval-heuristic/{scope}")
+async def trigger_eval_heuristic(
+    scope: str,
+    background_tasks: BackgroundTasks,
+):
+    """Launch heuristic quality eval. scope: mcp, skills, sources."""
+    key = f"eval_heuristic_{scope}"
+    if _sync_status.get(key):
+        return {"status": "already_running"}
+    _sync_status[key] = True
+    _sync_status[f"{key}_cancel"] = False
+    background_tasks.add_task(_run_eval_heuristic_bg, scope)
+    return {"status": "started"}
+
+
+@router.post("/quality/eval-heuristic/{scope}/stop")
+async def stop_eval_heuristic(scope: str):
+    key = f"eval_heuristic_{scope}"
+    if not _sync_status.get(key):
+        return {"status": "not_running"}
+    _sync_status[f"{key}_cancel"] = True
+    return {"status": "stopping"}
+
+
+@router.post("/quality/eval-llm/{scope}")
+async def trigger_eval_llm(
+    scope: str,
+    background_tasks: BackgroundTasks,
+):
+    """Launch LLM quality eval. scope: mcp, skills, sources."""
+    key = f"eval_llm_{scope}"
+    if _sync_status.get(key):
+        return {"status": "already_running"}
+    _sync_status[key] = True
+    _sync_status[f"{key}_cancel"] = False
+    background_tasks.add_task(_run_eval_llm_bg, scope)
+    return {"status": "started"}
+
+
+@router.post("/quality/eval-llm/{scope}/stop")
+async def stop_eval_llm(scope: str):
+    key = f"eval_llm_{scope}"
+    if not _sync_status.get(key):
+        return {"status": "not_running"}
+    _sync_status[f"{key}_cancel"] = True
+    return {"status": "stopping"}
+
+
+@router.get("/quality/eval-stats")
+async def get_eval_stats(db: AsyncSession = Depends(get_db)):
+    """Return P20 percentiles and counts for heuristic/llm quality."""
+    from sqlalchemy import text as sa_text
+
+    _PERCENTILE_TEMPLATE = (
+        "SELECT PERCENTILE_CONT(0.20) WITHIN GROUP (ORDER BY heuristic_quality) as p20_h, "
+        "PERCENTILE_CONT(0.20) WITHIN GROUP (ORDER BY llm_quality) as p20_l, "
+        "COUNT(*) FILTER (WHERE heuristic_quality IS NOT NULL) as h_count, "
+        "COUNT(*) FILTER (WHERE llm_quality IS NOT NULL) as l_count "
+        "FROM {table} WHERE culture='en'"
+    )
+
+    results = {}
+    for scope, query in [
+        ("mcp", _PERCENTILE_TEMPLATE.format(table="mcp_summaries")),
+        ("skills", _PERCENTILE_TEMPLATE.format(table="skills_translations")),
+        ("sources", _PERCENTILE_TEMPLATE.format(table="skill_sources_translations")),
+    ]:
+        row = (await db.execute(sa_text(query))).first()
+        results[scope] = {
+            "p20_heuristic": round(row[0]) if row[0] is not None else None,
+            "p20_llm": round(row[1]) if row[1] is not None else None,
+            "heuristic_count": row[2] or 0,
+            "llm_count": row[3] or 0,
+        }
+
+    # Include running status
+    for scope in ("mcp", "skills", "sources"):
+        results[scope]["heuristic_running"] = bool(_sync_status.get(f"eval_heuristic_{scope}"))
+        results[scope]["llm_running"] = bool(_sync_status.get(f"eval_llm_{scope}"))
+        results[scope]["heuristic_progress"] = _sync_status.get(f"eval_heuristic_{scope}_progress")
+        results[scope]["llm_progress"] = _sync_status.get(f"eval_llm_{scope}_progress")
+
+    return results
+
+
+async def _run_eval_heuristic_bg(scope: str):
+    """Background task: heuristic quality scoring."""
+    from mcp_manager.db.session import SessionLocal
+    from mcp_manager.db.models import McpSummary, SkillTranslation, SkillSourceTranslation
+    from mcp_manager.enrichment.quality_heuristic import score_mcp_summary, score_skill_summary
+    from sqlalchemy import select, func
+
+    eval_logger = logging.getLogger("eval-heuristic")
+    key = f"eval_heuristic_{scope}"
+
+    _SCOPE_MODEL = {
+        "mcp": McpSummary,
+        "skills": SkillTranslation,
+        "sources": SkillSourceTranslation,
+    }
+
+    try:
+        model = _SCOPE_MODEL.get(scope)
+        if model is None:
+            return
+
+        async with SessionLocal() as db:
+            # Quality scoring is pinned to 'en' — the heuristic and LLM scorers
+            # were trained/tuned on English summaries.
+            filter_clause = (model.culture == "en") & (model.heuristic_quality.is_(None))
+            total = (await db.execute(
+                select(func.count()).select_from(model).where(filter_clause)
+            )).scalar() or 0
+
+            result = await db.execute(select(model).where(filter_clause))
+            items = result.scalars().all()
+
+            eval_logger.info("eval-heuristic [%s]: %d items to score", scope, total)
+            stats = {"done": 0, "total": total}
+            _sync_status[f"{key}_progress"] = stats
+
+            scorer = score_mcp_summary if scope == "mcp" else score_skill_summary
+
+            for item in items:
+                if _sync_status.get(f"{key}_cancel"):
+                    break
+
+                item.heuristic_quality = scorer(item.summary)
+                stats["done"] += 1
+
+                if stats["done"] % 500 == 0:
+                    await db.commit()
+                    _sync_status[f"{key}_progress"] = dict(stats)
+                    eval_logger.info("eval-heuristic [%s]: %d/%d", scope, stats["done"], total)
+
+            await db.commit()
+            _sync_status[f"{key}_progress"] = dict(stats)
+            eval_logger.info("eval-heuristic [%s]: done — %d scored", scope, stats["done"])
+
+    except Exception:
+        eval_logger.exception("eval-heuristic [%s] failed", scope)
+    finally:
+        _sync_status[key] = False
+        _sync_status[f"{key}_cancel"] = False
+
+
+async def _run_eval_llm_bg(scope: str):
+    """Background task: LLM quality scoring."""
+    import asyncio
+    from mcp_manager.db.session import SessionLocal
+    from mcp_manager.db.models import McpSummary, SkillTranslation, SkillSourceTranslation
+    from mcp_manager.enrichment.quality_llm import llm_score_summary
+    from sqlalchemy import select, func
+
+    eval_logger = logging.getLogger("eval-llm")
+    key = f"eval_llm_{scope}"
+
+    _SCOPE_MODEL = {
+        "mcp": McpSummary,
+        "skills": SkillTranslation,
+        "sources": SkillSourceTranslation,
+    }
+
+    try:
+        model = _SCOPE_MODEL.get(scope)
+        if model is None:
+            return
+
+        async with SessionLocal() as db:
+            filter_clause = (model.culture == "en") & (model.llm_quality.is_(None))
+            total = (await db.execute(
+                select(func.count()).select_from(model).where(filter_clause)
+            )).scalar() or 0
+
+            result = await db.execute(select(model).where(filter_clause))
+            items = result.scalars().all()
+
+            eval_logger.info("eval-llm [%s]: %d items to score", scope, total)
+            stats = {"done": 0, "total": total, "failed": 0}
+            _sync_status[f"{key}_progress"] = stats
+
+            entity_type = "mcp" if scope == "mcp" else "skill"
+
+            for item in items:
+                if _sync_status.get(f"{key}_cancel"):
+                    break
+
+                score = await llm_score_summary(item.summary, entity_type)
+                if score is not None:
+                    item.llm_quality = score
+                else:
+                    stats["failed"] += 1
+
+                stats["done"] += 1
+
+                if stats["done"] % 50 == 0:
+                    await db.commit()
+                    _sync_status[f"{key}_progress"] = dict(stats)
+                    eval_logger.info("eval-llm [%s]: %d/%d (failed: %d)", scope, stats["done"], total, stats["failed"])
+
+            await db.commit()
+            _sync_status[f"{key}_progress"] = dict(stats)
+            eval_logger.info("eval-llm [%s]: done — %d scored, %d failed", scope, stats["done"], stats["failed"])
+
+    except Exception:
+        eval_logger.exception("eval-llm [%s] failed", scope)
+    finally:
+        _sync_status[key] = False
+        _sync_status[f"{key}_cancel"] = False

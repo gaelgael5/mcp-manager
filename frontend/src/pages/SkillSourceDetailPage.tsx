@@ -8,6 +8,7 @@ import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Tabs } from "../components/ui/Tabs";
+import type { SkillTranslation } from "../types";
 
 interface SkillSourceDetail {
   id: string;
@@ -17,8 +18,7 @@ interface SkillSourceDetail {
   type: string;
   repo_url: string | null;
   description: string | null;
-  summary_en: string | null;
-  summary_fr: string | null;
+  translations: SkillTranslation[];
   has_summary: boolean;
   branch_hash: string | null;
   is_active: boolean;
@@ -79,6 +79,10 @@ export function SkillSourceDetailPage() {
 
   if (!source) return <p className="text-gray-500">Loading...</p>;
 
+  const byCulture = Object.fromEntries((source.translations ?? []).map((t) => [t.culture, t]));
+  const summaryEn = byCulture["en"]?.summary ?? null;
+  const summaryFr = byCulture["fr"]?.summary ?? null;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -112,18 +116,18 @@ export function SkillSourceDetailPage() {
       {/* Summary */}
       <Card title="Summary">
         <div className="space-y-3">
-          {(source.summary_en || source.summary_fr) ? (
+          {(summaryEn || summaryFr) ? (
             <>
               <Tabs
                 tabs={[
-                  ...(source.summary_en ? [{ key: "en", label: "EN" }] : []),
-                  ...(source.summary_fr ? [{ key: "fr", label: "FR" }] : []),
+                  ...(summaryEn ? [{ key: "en", label: "EN" }] : []),
+                  ...(summaryFr ? [{ key: "fr", label: "FR" }] : []),
                 ]}
                 active={tab}
                 onChange={setTab}
               />
               <div className="prose prose-sm prose-gray max-w-none">
-                <Markdown>{tab === "fr" ? source.summary_fr || "" : source.summary_en || ""}</Markdown>
+                <Markdown>{tab === "fr" ? summaryFr || "" : summaryEn || ""}</Markdown>
               </div>
             </>
           ) : (

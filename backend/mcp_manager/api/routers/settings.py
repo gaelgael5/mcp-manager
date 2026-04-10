@@ -5,11 +5,28 @@ import os
 import re
 import subprocess
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from pydantic import BaseModel
+from sqlalchemy import delete as sa_delete, func, select
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from mcp_manager.api.deps import get_db
 from mcp_manager.api.routers.auth import require_admin
+from mcp_manager.db.models import (
+    Language,
+    McpSummary,
+    SkillSourceTranslation,
+    SkillTranslation,
+)
 from mcp_manager.llm.config import load_config, save_config
+from mcp_manager.prompts import (
+    PROMPT_KINDS,
+    PromptNotFound,
+    load_prompt,
+    prompt_path,
+    write_prompt,
+)
 
 router = APIRouter(tags=["settings"])
 
@@ -99,6 +116,15 @@ def _extract_env_vars_from_pattern(pattern: str) -> tuple[str, str] | None:
 async def get_env_keys(request: Request, admin: dict = Depends(require_admin)):
     """Get all environment variables referenced by providers and docker run files."""
     keys: dict[str, dict] = {}
+
+    # System keys (always shown)
+    for var_name in ("ANTHROPIC_API_KEY",):
+        keys[var_name] = {
+            "name": var_name,
+            "default": "",
+            "current": os.environ.get(var_name, ""),
+            "pattern": f"${{{var_name}}}",
+        }
 
     # Scan provider args
     config = load_config()
@@ -247,6 +273,82 @@ async def update_auth_file(
         f.write(body.content)
 
     return {"status": "saved", "path": path}
+
+
+# --- API Tokens (domain-based rate-limited pool) ---
+
+
+class ApiTokenCreate(BaseModel):
+    domain: str
+    token: str
+    rate_limit_per_min: int = 60
+
+
+@router.get("/settings/api-tokens")
+async def list_api_tokens(request: Request, admin: dict = Depends(require_admin)):
+    from mcp_manager.db.session import SessionLocal
+    from mcp_manager.db.models import ApiToken
+    from sqlalchemy import select
+
+    async with SessionLocal() as db:
+        result = await db.execute(select(ApiToken).order_by(ApiToken.domain, ApiToken.created_at))
+        tokens = result.scalars().all()
+
+    return [
+        {
+            "id": str(t.id),
+            "domain": t.domain,
+            "token_prefix": t.token[:8] + "..." if len(t.token) > 8 else t.token,
+            "rate_limit_per_min": t.rate_limit_per_min,
+            "created_at": t.created_at.isoformat() if t.created_at else None,
+        }
+        for t in tokens
+    ]
+
+
+@router.post("/settings/api-tokens")
+async def create_api_token(
+    body: ApiTokenCreate,
+    request: Request,
+    admin: dict = Depends(require_admin),
+):
+    from mcp_manager.db.session import SessionLocal
+    from mcp_manager.db.models import ApiToken
+
+    async with SessionLocal() as db:
+        t = ApiToken(domain=body.domain, token=body.token, rate_limit_per_min=body.rate_limit_per_min)
+        db.add(t)
+        await db.commit()
+
+    from mcp_manager.connectors.token_pool import invalidate_cache
+    invalidate_cache()
+    return {"status": "created", "id": str(t.id)}
+
+
+@router.delete("/settings/api-tokens/{token_id}")
+async def delete_api_token(
+    token_id: str,
+    request: Request,
+    admin: dict = Depends(require_admin),
+):
+    import uuid
+    from mcp_manager.db.session import SessionLocal
+    from mcp_manager.db.models import ApiToken
+    from sqlalchemy import delete
+
+    async with SessionLocal() as db:
+        await db.execute(delete(ApiToken).where(ApiToken.id == uuid.UUID(token_id)))
+        await db.commit()
+
+    from mcp_manager.connectors.token_pool import invalidate_cache
+    invalidate_cache()
+    return {"status": "deleted"}
+
+
+@router.get("/settings/api-tokens/stats")
+async def api_tokens_stats(request: Request, admin: dict = Depends(require_admin)):
+    from mcp_manager.connectors.token_pool import get_pool_stats
+    return get_pool_stats()
 
 
 @router.get("/settings/docker-run-cmd/{image_name}")
@@ -460,3 +562,173 @@ def _run_build(image_name: str, full_name: str, tag: str):
     except Exception:
         _build_state[image_name]["status"] = "error"
         logger.exception("Build %s crashed", image_ref)
+
+
+# ---------------------------------------------------------------------------
+# Languages
+# ---------------------------------------------------------------------------
+
+
+class LanguageIn(BaseModel):
+    code: str
+    name: str
+    is_active: bool = False
+    display_order: int = 100
+
+
+class LanguageUpdate(BaseModel):
+    name: str | None = None
+    is_active: bool | None = None
+    display_order: int | None = None
+
+
+def _language_to_dict(lang: Language) -> dict:
+    return {
+        "code": lang.code,
+        "name": lang.name,
+        "is_active": lang.is_active,
+        "display_order": lang.display_order,
+    }
+
+
+def _check_prompts_exist(code: str) -> None:
+    missing = [k for k in PROMPT_KINDS if not prompt_path(k, code).exists()]
+    if missing:
+        raise HTTPException(
+            status_code=400,
+            detail=f"missing prompts for {code}: {', '.join(missing)}",
+        )
+
+
+@router.get("/settings/languages")
+async def list_languages(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Language).order_by(Language.display_order))
+    return [_language_to_dict(l) for l in result.scalars().all()]
+
+
+@router.post("/settings/languages", status_code=201)
+async def create_language(
+    body: LanguageIn,
+    db: AsyncSession = Depends(get_db),
+    admin: dict = Depends(require_admin),
+):
+    if body.is_active:
+        _check_prompts_exist(body.code)
+    lang = Language(**body.model_dump())
+    db.add(lang)
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=409, detail="language code already exists")
+    await db.refresh(lang)
+    return _language_to_dict(lang)
+
+
+@router.patch("/settings/languages/{code}")
+async def update_language(
+    code: str,
+    body: LanguageUpdate,
+    db: AsyncSession = Depends(get_db),
+    admin: dict = Depends(require_admin),
+):
+    result = await db.execute(select(Language).where(Language.code == code))
+    lang = result.scalar_one_or_none()
+    if not lang:
+        raise HTTPException(status_code=404, detail="language not found")
+    if body.is_active is True and not lang.is_active:
+        _check_prompts_exist(code)
+    if body.name is not None:
+        lang.name = body.name
+    if body.is_active is not None:
+        lang.is_active = body.is_active
+    if body.display_order is not None:
+        lang.display_order = body.display_order
+    await db.commit()
+    await db.refresh(lang)
+    return _language_to_dict(lang)
+
+
+@router.delete("/settings/languages/{code}")
+async def delete_language(
+    code: str,
+    db: AsyncSession = Depends(get_db),
+    admin: dict = Depends(require_admin),
+):
+    for model in (McpSummary, SkillSourceTranslation, SkillTranslation):
+        n = (await db.execute(
+            select(func.count()).select_from(model).where(model.culture == code)
+        )).scalar() or 0
+        if n:
+            raise HTTPException(
+                status_code=409,
+                detail=f"{n} translation(s) exist for {code}; remove them first",
+            )
+    await db.execute(sa_delete(Language).where(Language.code == code))
+    await db.commit()
+    return {"status": "deleted"}
+
+
+# ---------------------------------------------------------------------------
+# Prompts
+# ---------------------------------------------------------------------------
+
+
+class PromptIn(BaseModel):
+    content: str
+
+
+@router.get("/settings/prompts")
+async def list_prompts(db: AsyncSession = Depends(get_db)):
+    """List (kind, language) combinations with their file status."""
+    result = await db.execute(select(Language).order_by(Language.display_order))
+    langs = result.scalars().all()
+    items = []
+    for lang in langs:
+        for kind in PROMPT_KINDS:
+            p = prompt_path(kind, lang.code)
+            items.append({
+                "kind": kind,
+                "language": lang.code,
+                "language_name": lang.name,
+                "is_active": lang.is_active,
+                "exists": p.exists(),
+                "size": p.stat().st_size if p.exists() else 0,
+            })
+    return items
+
+
+@router.get("/settings/prompts/{kind}/{language}")
+async def get_prompt(kind: str, language: str):
+    if kind not in PROMPT_KINDS:
+        raise HTTPException(status_code=400, detail=f"unknown kind: {kind}")
+    try:
+        content = load_prompt(kind, language)
+    except PromptNotFound:
+        raise HTTPException(
+            status_code=404, detail=f"prompt not found: {kind}/{language}"
+        )
+    return {"kind": kind, "language": language, "content": content}
+
+
+@router.put("/settings/prompts/{kind}/{language}")
+async def update_prompt(
+    kind: str,
+    language: str,
+    body: PromptIn,
+    admin: dict = Depends(require_admin),
+):
+    if kind not in PROMPT_KINDS:
+        raise HTTPException(status_code=400, detail=f"unknown kind: {kind}")
+    if "{content}" not in body.content:
+        raise HTTPException(
+            status_code=400,
+            detail="prompt template must contain the {content} placeholder",
+        )
+    write_prompt(kind, language, body.content)
+    return {
+        "status": "written",
+        "kind": kind,
+        "language": language,
+        "size": len(body.content),
+    }

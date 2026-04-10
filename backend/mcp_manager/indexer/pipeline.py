@@ -4,26 +4,25 @@ Processes services with needs_reindex=TRUE, one at a time.
 """
 import logging
 
-from sqlalchemy import select, delete
+from sqlalchemy import select
 
 from mcp_manager.db.session import SessionLocal
 from mcp_manager.db.models import (
     McpService, McpSummary, McpParameter, McpInstallation,
-    McpEmbedding, InstallTarget,
+    InstallTarget,
 )
 from mcp_manager.connectors.registry import get_connector
 from mcp_manager.connectors.base import RawMcpService
-from mcp_manager.summarizer.summarizer import generate_summary, CULTURES
+from mcp_manager.summarizer.summarizer import generate_summary
+from mcp_manager.prompts import get_active_language_codes
 from mcp_manager.summarizer.cleaner import clean_markdown
-from mcp_manager.indexer.chunker import chunk_text
-from mcp_manager.indexer.embedder import embed_text
 from mcp_manager.exporters.engine import generate_from_modes
 import mcp_manager.connectors  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
 
-async def run_index(limit: int = 100, progress_callback=None) -> dict[str, int]:
+async def run_index(limit: int = 100, progress_callback=None, cancel_check=None) -> dict[str, int]:
     """Process up to `limit` services that need reindexing."""
     stats = {"processed": 0, "skipped_no_doc": 0, "summaries": 0, "embeddings": 0, "params": 0, "recipes": 0}
 
@@ -55,6 +54,10 @@ async def run_index(limit: int = 100, progress_callback=None) -> dict[str, int]:
                 break
 
             for service in services:
+                if cancel_check and cancel_check():
+                    logger.info("Index cancelled at %d processed", processed)
+                    return stats
+
                 indexed = False
                 try:
                     indexed = await _index_one(db, service, stats)
@@ -101,8 +104,9 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
         stats["skipped_no_doc"] += 1
         return False
 
-    # 2. Generate summaries (en/fr)
-    for culture in CULTURES:
+    # 2. Generate summaries for each active language
+    cultures = await get_active_language_codes(db)
+    for culture in cultures:
         existing = await db.execute(
             select(McpSummary).where(
                 McpSummary.mcp_service_id == service.id,
@@ -122,13 +126,7 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
             ))
             stats["summaries"] += 1
 
-    # 3. Embed into pgvector
-    # Delete old embeddings
-    await db.execute(
-        delete(McpEmbedding).where(McpEmbedding.mcp_service_id == service.id)
-    )
-
-    # Embed summary (EN)
+    # 3. Get EN summary for search vector update (step 6)
     en_summary = await db.execute(
         select(McpSummary.summary).where(
             McpSummary.mcp_service_id == service.id,
@@ -136,31 +134,6 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
         )
     )
     en_summary_text = en_summary.scalar_one_or_none()
-    if en_summary_text:
-        vec = await embed_text(en_summary_text)
-        if vec:
-            db.add(McpEmbedding(
-                mcp_service_id=service.id,
-                chunk_type="summary",
-                chunk_index=0,
-                content=en_summary_text,
-                embedding=vec,
-            ))
-            stats["embeddings"] += 1
-
-    # Embed doc chunks
-    chunks = chunk_text(cleaned)
-    for i, chunk in enumerate(chunks[:10]):  # Max 10 chunks per service
-        vec = await embed_text(chunk)
-        if vec:
-            db.add(McpEmbedding(
-                mcp_service_id=service.id,
-                chunk_type="doc_chunk",
-                chunk_index=i,
-                content=chunk,
-                embedding=vec,
-            ))
-            stats["embeddings"] += 1
 
     # 4. Detect parameters (if none exist)
     existing_params = await db.execute(

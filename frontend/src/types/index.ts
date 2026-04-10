@@ -28,6 +28,17 @@ export interface McpSummary {
   updated_at: string;
 }
 
+export interface SkillTranslation {
+  culture: "en" | "fr";
+  summary: string;
+  source_hash?: string | null;
+  heuristic_quality?: number | null;
+  llm_quality?: number | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  rag_indexed_at?: string | null;
+}
+
 export interface InstallMode {
   runtime: string;
   action_type: string;

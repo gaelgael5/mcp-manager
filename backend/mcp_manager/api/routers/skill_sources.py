@@ -4,13 +4,55 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import func
 
 from mcp_manager.api.deps import get_db
 from mcp_manager.api.routers.auth import require_admin
-from mcp_manager.db.models import SkillSource, Skill, skill_source_skills
+from mcp_manager.db.models import (
+    Skill,
+    SkillSource,
+    SkillSourceTranslation,
+    SkillTranslation,
+    skill_source_skills,
+)
+from mcp_manager.prompts import (
+    PromptNotFound,
+    get_active_language_codes,
+    load_prompt,
+    render_prompt,
+)
 
 router = APIRouter(tags=["skills"])
+
+
+async def _upsert_source_translation(
+    db: AsyncSession, source_id: uuid.UUID, culture: str, summary: str
+) -> None:
+    stmt = (
+        pg_insert(SkillSourceTranslation)
+        .values(skill_source_id=source_id, culture=culture, summary=summary)
+        .on_conflict_do_update(
+            index_elements=["skill_source_id", "culture"],
+            set_={"summary": summary, "updated_at": func.now()},
+        )
+    )
+    await db.execute(stmt)
+
+
+async def _upsert_skill_translation(
+    db: AsyncSession, skill_id: uuid.UUID, culture: str, summary: str
+) -> None:
+    stmt = (
+        pg_insert(SkillTranslation)
+        .values(skill_id=skill_id, culture=culture, summary=summary)
+        .on_conflict_do_update(
+            index_elements=["skill_id", "culture"],
+            set_={"summary": summary, "updated_at": func.now()},
+        )
+    )
+    await db.execute(stmt)
 
 
 class SkillSourceCreate(BaseModel):
@@ -144,10 +186,7 @@ async def generate_skill_summary(
     """Generate summary for a single skill."""
     import os
     from mcp_manager.summarizer.ollama_client import ollama_generate
-    from mcp_manager.indexer.embedder import embed_text
-    from mcp_manager.db.models import McpEmbedding
     from mcp_manager.connectors.github_readme import fetch_github_readme
-    from sqlalchemy import delete
 
     result = await db.execute(select(Skill).where(Skill.id == skill_id))
     skill = result.scalar_one_or_none()
@@ -183,50 +222,34 @@ async def generate_skill_summary(
     if len(cleaned) > 8000:
         cleaned = cleaned[:8000]
 
-    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "prompts")
-
     import logging
     gen_logger = logging.getLogger(__name__)
 
-    # EN
-    with open(os.path.join(prompts_dir, "skill_summary_en.md"), encoding="utf-8") as f:
-        prompt_en = f.read().replace("{content}", cleaned)
-    skill.summary_en = await ollama_generate(prompt_en)
-    if not skill.summary_en:
-        gen_logger.warning("EN summary empty, retrying...")
-        skill.summary_en = await ollama_generate(prompt_en)
-    skill.summary_en = skill.summary_en or None
-    gen_logger.info("Skill %s EN summary: %d chars", skill.name, len(skill.summary_en or ""))
-
-    # FR
-    with open(os.path.join(prompts_dir, "skill_summary_fr.md"), encoding="utf-8") as f:
-        prompt_fr = f.read().replace("{content}", cleaned)
-    skill.summary_fr = await ollama_generate(prompt_fr)
-    if not skill.summary_fr:
-        gen_logger.warning("FR summary empty, retrying...")
-        skill.summary_fr = await ollama_generate(prompt_fr)
-    skill.summary_fr = skill.summary_fr or None
-
-    # Embedding
-    await db.execute(delete(McpEmbedding).where(
-        McpEmbedding.skill_id == skill.id,
-        McpEmbedding.chunk_type == "skill_summary",
-    ))
-    if skill.summary_en:
-        vec = await embed_text(skill.summary_en)
-        if vec:
-            db.add(McpEmbedding(
-                skill_id=skill.id,
-                chunk_type="skill_summary",
-                chunk_index=0,
-                content=skill.summary_en,
-                embedding=vec,
-            ))
+    cultures = await get_active_language_codes(db)
+    generated: dict[str, bool] = {}
+    for culture in cultures:
+        try:
+            template = load_prompt("skill_summary", culture)
+        except PromptNotFound:
+            gen_logger.warning("skill_summary prompt missing for %s", culture)
+            generated[culture] = False
+            continue
+        prompt = render_prompt(template, cleaned)
+        summary = await ollama_generate(prompt)
+        if not summary:
+            gen_logger.warning("%s summary empty, retrying...", culture)
+            summary = await ollama_generate(prompt)
+        if summary:
+            await _upsert_skill_translation(db, skill.id, culture, summary)
+            gen_logger.info("Skill %s %s summary: %d chars", skill.name, culture, len(summary))
+            generated[culture] = True
+        else:
+            generated[culture] = False
 
     skill.needs_summary = False
     await db.commit()
 
-    return {"status": "done", "summary_en": bool(skill.summary_en), "summary_fr": bool(skill.summary_fr)}
+    return {"status": "done", "generated": generated}
 
 
 def _derive_repo_url(skills_sh_url: str) -> str | None:
@@ -253,18 +276,17 @@ async def generate_source_summary(
     db: AsyncSession = Depends(get_db),
     admin: dict = Depends(require_admin),
 ):
-    """Generate EN/FR summaries for a skill source and index in RAG.
+    """Generate summaries (one per active language) for a skill source and index in RAG.
 
     Derives the GitHub repo URL from the skills.sh URL, fetches the README,
     and uses it as context for summary generation.
     """
-    import os
+    import logging
     from mcp_manager.summarizer.ollama_client import ollama_generate
     from mcp_manager.summarizer.cleaner import clean_markdown
-    from mcp_manager.indexer.embedder import embed_text
     from mcp_manager.connectors.github_readme import fetch_github_readme
-    from mcp_manager.db.models import McpEmbedding
-    from sqlalchemy import delete
+
+    gen_logger = logging.getLogger(__name__)
 
     result = await db.execute(select(SkillSource).where(SkillSource.id == source_id))
     source = result.scalar_one_or_none()
@@ -288,45 +310,30 @@ async def generate_source_summary(
     if not context:
         context = f"Skill source: {source.name}\nURL: {source.url}\nType: {source.type}"
 
-    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "prompts")
-
-    # EN
-    with open(os.path.join(prompts_dir, "source_summary_en.md"), encoding="utf-8") as f:
-        prompt_en = f.read().replace("{content}", context)
-    source.summary_en = await ollama_generate(prompt_en)
-    if not source.summary_en:
-        source.summary_en = await ollama_generate(prompt_en)
-    source.summary_en = source.summary_en or None  # never store empty string
-
-    # FR
-    with open(os.path.join(prompts_dir, "source_summary_fr.md"), encoding="utf-8") as f:
-        prompt_fr = f.read().replace("{content}", context)
-    source.summary_fr = await ollama_generate(prompt_fr)
-    if not source.summary_fr:
-        source.summary_fr = await ollama_generate(prompt_fr)
-    source.summary_fr = source.summary_fr or None  # never store empty string
-
-    # Index in RAG
-    await db.execute(delete(McpEmbedding).where(
-        McpEmbedding.chunk_type == "source_summary",
-        McpEmbedding.content.like(f"source:{source_id}%"),
-    ))
-    if source.summary_en:
-        vec = await embed_text(source.summary_en)
-        if vec:
-            db.add(McpEmbedding(
-                chunk_type="source_summary",
-                chunk_index=0,
-                content=f"source:{source_id} {source.summary_en}",
-                embedding=vec,
-            ))
+    cultures = await get_active_language_codes(db)
+    generated: dict[str, bool] = {}
+    for culture in cultures:
+        try:
+            template = load_prompt("source_summary", culture)
+        except PromptNotFound:
+            gen_logger.warning("source_summary prompt missing for %s", culture)
+            generated[culture] = False
+            continue
+        prompt = render_prompt(template, context)
+        summary = await ollama_generate(prompt)
+        if not summary:
+            summary = await ollama_generate(prompt)
+        if summary:
+            await _upsert_source_translation(db, source.id, culture, summary)
+            generated[culture] = True
+        else:
+            generated[culture] = False
 
     await db.commit()
     return {
         "status": "done",
         "repo_url": source.repo_url,
-        "summary_en": bool(source.summary_en),
-        "summary_fr": bool(source.summary_fr),
+        "generated": generated,
     }
 
 
@@ -369,9 +376,8 @@ async def sync_skill_source(
         try:
             parts = source.repo_url.rstrip("/").split("/")
             owner, repo = parts[-2], parts[-1]
-            headers = {"Accept": "application/vnd.github.v3+json"}
-            if _settings.github_token:
-                headers["Authorization"] = f"token {_settings.github_token}"
+            from mcp_manager.connectors.github_pool import get_github_headers
+            headers = get_github_headers()
             async with httpx.AsyncClient(timeout=10.0) as gh:
                 resp = await gh.get(f"https://api.github.com/repos/{owner}/{repo}", headers=headers)
                 if resp.status_code == 200:
@@ -446,14 +452,11 @@ async def sync_skill_source(
 
 async def _generate_skill_summaries(db: AsyncSession, source_id, raw_skills: list[dict]) -> int:
     """Generate summaries for skills that need it."""
-    import os
     from mcp_manager.summarizer.ollama_client import ollama_generate
     from mcp_manager.summarizer.cleaner import clean_markdown
-    from mcp_manager.indexer.embedder import embed_text
-    from mcp_manager.db.models import McpEmbedding
-
-    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "prompts")
     count = 0
+
+    cultures = await get_active_language_codes(db)
 
     # Build raw content map by name
     content_map = {r["name"]: r.get("raw_content", "") for r in raw_skills}
@@ -477,33 +480,18 @@ async def _generate_skill_summaries(db: AsyncSession, source_id, raw_skills: lis
         if len(cleaned) > 8000:
             cleaned = cleaned[:8000]
 
-        # Generate EN summary
-        try:
-            with open(os.path.join(prompts_dir, "skill_summary_en.md"), encoding="utf-8") as f:
-                prompt_en = f.read().replace("{content}", cleaned)
-            skill.summary_en = await ollama_generate(prompt_en)
-        except Exception:
-            pass
-
-        # Generate FR summary
-        try:
-            with open(os.path.join(prompts_dir, "skill_summary_fr.md"), encoding="utf-8") as f:
-                prompt_fr = f.read().replace("{content}", cleaned)
-            skill.summary_fr = await ollama_generate(prompt_fr)
-        except Exception:
-            pass
-
-        # Embed summary for RAG search
-        if skill.summary_en:
-            vec = await embed_text(skill.summary_en)
-            if vec:
-                db.add(McpEmbedding(
-                    skill_id=skill.id,  # Reuse embeddings table
-                    chunk_type="skill_summary",
-                    chunk_index=0,
-                    content=skill.summary_en,
-                    embedding=vec,
-                ))
+        for culture in cultures:
+            try:
+                template = load_prompt("skill_summary", culture)
+            except PromptNotFound:
+                continue
+            try:
+                prompt = render_prompt(template, cleaned)
+                summary = await ollama_generate(prompt)
+                if summary:
+                    await _upsert_skill_translation(db, skill.id, culture, summary)
+            except Exception:
+                pass
 
         skill.needs_summary = False
         count += 1
@@ -604,13 +592,15 @@ async def _enrich_repo_url(source: SkillSource) -> bool:
 
 
 async def _enrich_summaries(source: SkillSource, db: AsyncSession) -> bool:
-    """Generate EN/FR summaries if missing. Returns True if generated."""
-    import os
+    """Generate summaries (one per active language) if missing. Returns True if generated."""
     from mcp_manager.summarizer.ollama_client import ollama_generate
     from mcp_manager.summarizer.cleaner import clean_markdown
     from mcp_manager.connectors.github_readme import fetch_github_readme
 
-    if source.summary_en and source.summary_fr:
+    cultures = await get_active_language_codes(db)
+    present = {t.culture for t in source.translations}
+    missing = [c for c in cultures if c not in present]
+    if not missing:
         return False
 
     if not source.repo_url:
@@ -627,43 +617,21 @@ async def _enrich_summaries(source: SkillSource, db: AsyncSession) -> bool:
     if not context:
         context = f"Skill source: {source.name}\nURL: {source.url}\nType: {source.type}"
 
-    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "prompts")
+    generated = False
+    for culture in missing:
+        try:
+            template = load_prompt("source_summary", culture)
+        except PromptNotFound:
+            continue
+        prompt = render_prompt(template, context)
+        summary = await ollama_generate(prompt)
+        if not summary:
+            summary = await ollama_generate(prompt)
+        if summary:
+            await _upsert_source_translation(db, source.id, culture, summary)
+            generated = True
 
-    if not source.summary_en:
-        with open(os.path.join(prompts_dir, "source_summary_en.md"), encoding="utf-8") as f:
-            prompt_en = f.read().replace("{content}", context)
-        source.summary_en = await ollama_generate(prompt_en)
-        if not source.summary_en:
-            source.summary_en = await ollama_generate(prompt_en)
-        source.summary_en = source.summary_en or None
-
-    if not source.summary_fr:
-        with open(os.path.join(prompts_dir, "source_summary_fr.md"), encoding="utf-8") as f:
-            prompt_fr = f.read().replace("{content}", context)
-        source.summary_fr = await ollama_generate(prompt_fr)
-        if not source.summary_fr:
-            source.summary_fr = await ollama_generate(prompt_fr)
-        source.summary_fr = source.summary_fr or None
-
-    # Index in RAG
-    if source.summary_en:
-        from mcp_manager.indexer.embedder import embed_text
-        from mcp_manager.db.models import McpEmbedding
-        from sqlalchemy import delete
-        await db.execute(delete(McpEmbedding).where(
-            McpEmbedding.chunk_type == "source_summary",
-            McpEmbedding.content.like(f"source:{source.id}%"),
-        ))
-        vec = await embed_text(source.summary_en)
-        if vec:
-            db.add(McpEmbedding(
-                chunk_type="source_summary",
-                chunk_index=0,
-                content=f"source:{source.id} {source.summary_en}",
-                embedding=vec,
-            ))
-
-    return bool(source.summary_en or source.summary_fr)
+    return generated
 
 
 async def _enrich_sync_skills(source: SkillSource, db: AsyncSession) -> int:
@@ -686,9 +654,8 @@ async def _enrich_sync_skills(source: SkillSource, db: AsyncSession) -> int:
     try:
         parts = source.repo_url.rstrip("/").split("/")
         owner, repo = parts[-2], parts[-1]
-        headers = {"Accept": "application/vnd.github.v3+json"}
-        if _settings.github_token:
-            headers["Authorization"] = f"token {_settings.github_token}"
+        from mcp_manager.connectors.github_pool import get_github_headers
+        headers = get_github_headers()
         async with httpx.AsyncClient(timeout=10.0) as gh:
             resp = await gh.get(f"https://api.github.com/repos/{owner}/{repo}", headers=headers)
             if resp.status_code == 200:
@@ -738,15 +705,10 @@ async def _enrich_sync_skills(source: SkillSource, db: AsyncSession) -> int:
 async def _enrich_one_skill(skill: Skill, db: AsyncSession) -> bool:
     """Enrich a single skill: generate summaries if missing or if source branch changed.
     Returns True if the skill was updated."""
-    import os
     from mcp_manager.summarizer.ollama_client import ollama_generate
     from mcp_manager.summarizer.cleaner import clean_markdown
     from mcp_manager.connectors.github_readme import fetch_github_readme
     from mcp_manager.connectors.skill_scanner import get_repo_branch_hash
-    from mcp_manager.indexer.embedder import embed_text
-    from mcp_manager.db.models import McpEmbedding
-    from sqlalchemy import delete
-
     # Get the parent source for repo_url and branch_hash
     src_result = await db.execute(
         select(SkillSource)
@@ -756,11 +718,9 @@ async def _enrich_one_skill(skill: Skill, db: AsyncSession) -> bool:
     )
     source = src_result.scalar_one_or_none()
 
-    needs_regen = False
-
-    # Check if summaries are missing
-    if not skill.summary_en or not skill.summary_fr:
-        needs_regen = True
+    cultures = await get_active_language_codes(db)
+    present = {t.culture for t in skill.translations}
+    needs_regen = not set(cultures).issubset(present)
 
     # Check if source branch has changed
     if not needs_regen and source and source.repo_url:
@@ -785,44 +745,37 @@ async def _enrich_one_skill(skill: Skill, db: AsyncSession) -> bool:
     if len(cleaned) > 8000:
         cleaned = cleaned[:8000]
 
-    prompts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "prompts")
-
-    # EN
-    with open(os.path.join(prompts_dir, "skill_summary_en.md"), encoding="utf-8") as f:
-        prompt_en = f.read().replace("{content}", cleaned)
-    skill.summary_en = await ollama_generate(prompt_en)
-    if not skill.summary_en:
-        skill.summary_en = await ollama_generate(prompt_en)
-    skill.summary_en = skill.summary_en or None
-
-    # FR
-    with open(os.path.join(prompts_dir, "skill_summary_fr.md"), encoding="utf-8") as f:
-        prompt_fr = f.read().replace("{content}", cleaned)
-    skill.summary_fr = await ollama_generate(prompt_fr)
-    if not skill.summary_fr:
-        skill.summary_fr = await ollama_generate(prompt_fr)
-    skill.summary_fr = skill.summary_fr or None
-
-    # Embedding RAG
-    if skill.summary_en:
-        await db.execute(delete(McpEmbedding).where(
-            McpEmbedding.skill_id == skill.id,
-            McpEmbedding.chunk_type == "skill_summary",
-        ))
-        vec = await embed_text(skill.summary_en)
-        if vec:
-            db.add(McpEmbedding(
-                skill_id=skill.id,
-                chunk_type="skill_summary",
-                chunk_index=0,
-                content=skill.summary_en,
-                embedding=vec,
-            ))
+    for culture in cultures:
+        try:
+            template = load_prompt("skill_summary", culture)
+        except PromptNotFound:
+            continue
+        prompt = render_prompt(template, cleaned)
+        summary = await ollama_generate(prompt)
+        if not summary:
+            summary = await ollama_generate(prompt)
+        if summary:
+            await _upsert_skill_translation(db, skill.id, culture, summary)
 
     return True
 
 
+def _serialize_translation(t) -> dict:
+    return {
+        "culture": t.culture,
+        "summary": t.summary,
+        "source_hash": t.source_hash,
+        "heuristic_quality": t.heuristic_quality,
+        "llm_quality": t.llm_quality,
+        "created_at": t.created_at.isoformat() if t.created_at else None,
+        "updated_at": t.updated_at.isoformat() if t.updated_at else None,
+        "rag_indexed_at": t.rag_indexed_at.isoformat() if t.rag_indexed_at else None,
+    }
+
+
 def _serialize_source(s: SkillSource) -> dict:
+    translations = sorted(s.translations, key=lambda t: t.culture)
+    has_en = any(t.culture == "en" and t.summary for t in translations)
     return {
         "id": str(s.id),
         "name": s.name,
@@ -831,9 +784,8 @@ def _serialize_source(s: SkillSource) -> dict:
         "skills_path": s.skills_path,
         "type": s.type,
         "description": s.description,
-        "summary_en": s.summary_en,
-        "summary_fr": s.summary_fr,
-        "has_summary": bool(s.summary_en),
+        "translations": [_serialize_translation(t) for t in translations],
+        "has_summary": has_en,
         "repo_status": s.repo_status,
         "branch_hash": s.branch_hash,
         "is_active": s.is_active,
@@ -846,12 +798,13 @@ def _serialize_source(s: SkillSource) -> dict:
 
 
 def _serialize_skill(s: Skill) -> dict:
+    translations = sorted(s.translations, key=lambda t: t.culture)
+    has_en = any(t.culture == "en" and t.summary for t in translations)
     return {
         "id": str(s.id),
         "name": s.name,
         "description": s.description,
-        "summary_en": s.summary_en,
-        "summary_fr": s.summary_fr,
+        "translations": [_serialize_translation(t) for t in translations],
         "target_type": s.target_type,
         "licence": s.licence,
         "licence_url": s.licence_url,
@@ -859,7 +812,7 @@ def _serialize_skill(s: Skill) -> dict:
         "category": s.category,
         "install_command": s.install_command,
         "weekly_installs": s.weekly_installs,
-        "has_summary": bool(s.summary_en),
+        "has_summary": has_en,
         "created_at": s.created_at.isoformat() if s.created_at else None,
         "updated_at": s.updated_at.isoformat() if s.updated_at else None,
     }

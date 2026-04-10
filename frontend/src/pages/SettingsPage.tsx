@@ -5,6 +5,8 @@ import { useCurrentUser } from "../api/auth";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
+import { LanguagesSection } from "./settings/LanguagesSection";
+import { PromptsSection } from "./settings/PromptsSection";
 
 interface LLMProvider {
   id: number;
@@ -418,6 +420,117 @@ function AuthFilesBlock() {
   );
 }
 
+interface ApiTokenInfo {
+  id: string;
+  domain: string;
+  token_prefix: string;
+  rate_limit_per_min: number;
+  created_at: string | null;
+}
+
+function ApiTokensBlock() {
+  const { data: tokens } = useQuery({
+    queryKey: ["settings", "api-tokens"],
+    queryFn: () => apiFetch<ApiTokenInfo[]>("/settings/api-tokens"),
+  });
+  const qc = useQueryClient();
+  const [domain, setDomain] = useState("github.com");
+  const [token, setToken] = useState("");
+  const [rateLimit, setRateLimit] = useState(60);
+
+  const addToken = useMutation({
+    mutationFn: (body: { domain: string; token: string; rate_limit_per_min: number }) =>
+      apiFetch<{ status: string }>("/settings/api-tokens", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => {
+      setToken("");
+      qc.invalidateQueries({ queryKey: ["settings", "api-tokens"] });
+    },
+  });
+
+  const deleteToken = useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<{ status: string }>(`/settings/api-tokens/${id}`, { method: "DELETE" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["settings", "api-tokens"] }),
+  });
+
+  return (
+    <Card title="API Tokens (Rate-Limited Pool)">
+      <div className="space-y-3">
+        {tokens && tokens.length > 0 && (
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-left text-gray-500 border-b">
+                <th className="py-1 pr-2">Domain</th>
+                <th className="py-1 pr-2">Token</th>
+                <th className="py-1 pr-2">Rate/min</th>
+                <th className="py-1"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {tokens.map((t) => (
+                <tr key={t.id} className="border-b border-gray-100">
+                  <td className="py-1 pr-2 font-mono">{t.domain}</td>
+                  <td className="py-1 pr-2 font-mono text-gray-400">{t.token_prefix}</td>
+                  <td className="py-1 pr-2">{t.rate_limit_per_min}</td>
+                  <td className="py-1">
+                    <button
+                      onClick={() => deleteToken.mutate(t.id)}
+                      className="text-red-400 hover:text-red-600"
+                    >
+                      &times;
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        <div className="flex gap-2 items-end">
+          <div>
+            <label className="block text-xs text-gray-500 mb-0.5">Domain</label>
+            <input
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              className="rounded border border-gray-300 px-2 py-1 text-xs font-mono w-36"
+              placeholder="github.com"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block text-xs text-gray-500 mb-0.5">Token</label>
+            <input
+              type="password"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              className="w-full rounded border border-gray-300 px-2 py-1 text-xs font-mono"
+              placeholder="ghp_..."
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-0.5">Rate/min</label>
+            <input
+              type="number"
+              value={rateLimit}
+              onChange={(e) => setRateLimit(parseInt(e.target.value) || 60)}
+              className="rounded border border-gray-300 px-2 py-1 text-xs w-16"
+            />
+          </div>
+          <Button
+            size="sm"
+            onClick={() => addToken.mutate({ domain, token, rate_limit_per_min: rateLimit })}
+            loading={addToken.isPending}
+            disabled={!token.trim()}
+          >
+            Add
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 function DockerRunPreview({ imageName, providerId }: { imageName: string | undefined; providerId: number }) {
   const { data } = useDockerRunCmd(imageName, providerId);
   if (!imageName || !data?.cmd) return null;
@@ -503,9 +616,15 @@ export function SettingsPage() {
         </div>
       </Card>
 
+      <LanguagesSection />
+
+      <PromptsSection />
+
       <EnvKeysBlock />
 
       <AuthFilesBlock />
+
+      <ApiTokensBlock />
 
       <div className="space-y-3">
         <h2 className="text-lg font-medium">LLM Providers</h2>

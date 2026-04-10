@@ -66,7 +66,8 @@ async def generate_for_service(
     import mcp_manager.connectors  # noqa: F401
     from mcp_manager.connectors.registry import get_connector
     from mcp_manager.connectors.base import RawMcpService
-    from mcp_manager.summarizer.summarizer import generate_summary, CULTURES
+    from mcp_manager.summarizer.summarizer import generate_summary
+    from mcp_manager.prompts import get_active_language_codes
 
     logger = logging.getLogger(__name__)
 
@@ -94,7 +95,8 @@ async def generate_for_service(
     service.repo_status = "ok"
 
     generated = []
-    for culture in CULTURES:
+    cultures = await get_active_language_codes(db)
+    for culture in cultures:
         logger.info("Generating %s summary for: %s", culture, service.name)
         summary_text = await generate_summary(doc_content, culture)
         if not summary_text:

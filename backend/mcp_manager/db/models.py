@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, String, Table, Text, UniqueConstraint, text
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, String, Table, Text, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR, UUID
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -74,6 +74,9 @@ class McpSummary(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+    rag_indexed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    heuristic_quality: Mapped[int | None] = mapped_column(nullable=True)
+    llm_quality: Mapped[int | None] = mapped_column(nullable=True)
 
     service: Mapped["McpService"] = relationship(back_populates="summaries")
 
@@ -173,8 +176,6 @@ class SkillSource(Base):
     skills_path: Mapped[str] = mapped_column(String(255), default="")  # directory in the repo (empty = root)
     type: Mapped[str] = mapped_column(String(200), nullable=False)  # pipe-separated: opencode|codex|gemini-cli|github-copilot|amp|claude|cursor
     description: Mapped[str | None] = mapped_column(Text)
-    summary_en: Mapped[str | None] = mapped_column(Text)
-    summary_fr: Mapped[str | None] = mapped_column(Text)
     repo_status: Mapped[str | None] = mapped_column(String(20))  # "ok", "no_skills_dir", "repo_404", etc.
     branch_hash: Mapped[str | None] = mapped_column(String(64))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -189,6 +190,12 @@ class SkillSource(Base):
     )
 
     skills: Mapped[list["Skill"]] = relationship(secondary=skill_source_skills, back_populates="sources")
+    translations: Mapped[list["SkillSourceTranslation"]] = relationship(
+        back_populates="source",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        lazy="selectin",
+    )
 
 
 class Skill(Base):
@@ -199,10 +206,8 @@ class Skill(Base):
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
-    summary_en: Mapped[str | None] = mapped_column(Text)
-    summary_fr: Mapped[str | None] = mapped_column(Text)
     target_type: Mapped[str] = mapped_column(String(200), nullable=False)  # pipe-separated: opencode|codex|gemini-cli|github-copilot|amp|claude|cursor
-    licence: Mapped[str | None] = mapped_column(String(50))
+    licence: Mapped[str | None] = mapped_column(String(255))
     licence_url: Mapped[str | None] = mapped_column(Text)
     source_url: Mapped[str | None] = mapped_column(Text)
     category: Mapped[str | None] = mapped_column(String(100))
@@ -218,6 +223,88 @@ class Skill(Base):
     )
 
     sources: Mapped[list["SkillSource"]] = relationship(secondary=skill_source_skills, back_populates="skills")
+    translations: Mapped[list["SkillTranslation"]] = relationship(
+        back_populates="skill",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        lazy="selectin",
+    )
+
+
+class SkillSourceTranslation(Base):
+    __tablename__ = "skill_sources_translations"
+    __table_args__ = (
+        UniqueConstraint("skill_source_id", "culture", name="uq_skill_source_culture"),
+        Index("idx_skill_sources_translations_culture", "culture"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    skill_source_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("skill_sources.id", ondelete="CASCADE"), nullable=False
+    )
+    culture: Mapped[str] = mapped_column(String(5), nullable=False)
+    summary: Mapped[str] = mapped_column(Text, nullable=False)
+    source_hash: Mapped[str | None] = mapped_column(String(64))
+    heuristic_quality: Mapped[int | None] = mapped_column(nullable=True)
+    llm_quality: Mapped[int | None] = mapped_column(nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+    rag_indexed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    source: Mapped["SkillSource"] = relationship(back_populates="translations")
+
+
+class SkillTranslation(Base):
+    __tablename__ = "skills_translations"
+    __table_args__ = (
+        UniqueConstraint("skill_id", "culture", name="uq_skill_culture"),
+        Index("idx_skills_translations_culture", "culture"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    skill_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("skills.id", ondelete="CASCADE"), nullable=False
+    )
+    culture: Mapped[str] = mapped_column(String(5), nullable=False)
+    summary: Mapped[str] = mapped_column(Text, nullable=False)
+    source_hash: Mapped[str | None] = mapped_column(String(64))
+    heuristic_quality: Mapped[int | None] = mapped_column(nullable=True)
+    llm_quality: Mapped[int | None] = mapped_column(nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+    rag_indexed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    skill: Mapped["Skill"] = relationship(back_populates="translations")
+
+
+class ApiToken(Base):
+    __tablename__ = "api_tokens"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    domain: Mapped[str] = mapped_column(String(255), nullable=False)
+    token: Mapped[str] = mapped_column(Text, nullable=False)
+    rate_limit_per_min: Mapped[int] = mapped_column(default=60)
+    request_count: Mapped[int] = mapped_column(default=0)
+    last_reset_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
 
 class McpInstance(Base):
@@ -251,6 +338,25 @@ class ApiKey(Base):
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class Language(Base):
+    __tablename__ = "languages"
+
+    code: Mapped[str] = mapped_column(String(5), primary_key=True)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    display_order: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=100, server_default="100"
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
 

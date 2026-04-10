@@ -109,13 +109,15 @@ async def _run_summarize(force: bool = False) -> int:
     from sqlalchemy import select
     from mcp_manager.db.session import SessionLocal
     from mcp_manager.db.models import McpService, McpSummary
-    from mcp_manager.summarizer.summarizer import generate_summary, CULTURES
+    from mcp_manager.summarizer.summarizer import generate_summary
+    from mcp_manager.prompts import get_active_language_codes
     from mcp_manager.connectors.registry import get_connector
     from mcp_manager.connectors.base import RawMcpService
 
 
     count = 0
     async with SessionLocal() as db:
+        cultures = await get_active_language_codes(db)
         result = await db.execute(select(McpService))
         services = result.scalars().all()
 
@@ -124,7 +126,7 @@ async def _run_summarize(force: bool = False) -> int:
             if not connector:
                 continue
 
-            for culture in CULTURES:
+            for culture in cultures:
                 if not force:
                     existing = await db.execute(
                         select(McpSummary).where(
