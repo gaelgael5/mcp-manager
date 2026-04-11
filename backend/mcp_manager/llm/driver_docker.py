@@ -1,4 +1,20 @@
-"""Docker LLM driver — launches a container, communicates via stdin/stdout JSON."""
+"""Docker LLM driver — long-running container acting as a task daemon.
+
+Protocol: one JSON task per line written to the container's stdin, one JSON
+response per line read from its stdout. Responses carry the original task_id so
+the driver can correlate concurrent requests to their futures.
+
+Task shape:
+    {"task_id": "abc123",
+     "payload": {"instruction": "..."},
+     "timeout_seconds": 120}
+
+Response shape (success):
+    {"task_id": "abc123", "status": "success", "data": "<model output>"}
+
+Response shape (failure):
+    {"task_id": "abc123", "status": "failure", "exit_code": <int>}
+"""
 import asyncio
 import json
 import logging
@@ -14,7 +30,6 @@ def _resolve_env_var(value: str) -> str:
     """Resolve ${VAR} and ${VAR:-default} patterns from environment."""
     if not value.startswith("${"):
         return value
-    # ${VAR:-default}
     inner = value[2:-1]
     if ":-" in inner:
         var_name, default = inner.split(":-", 1)
@@ -26,7 +41,7 @@ _IMAGE_ENV_KEY = {
     "claude-code": "ANTHROPIC_API_KEY",
     "openai": "OPENAI_API_KEY",
     "mistral": "MISTRAL_API_KEY",
-    "codex": None,  # Auth via mounted auth.json, no API key env var
+    "codex": None,  # Auth via mounted auth.json
 }
 
 _IMAGE_MODEL_ENV = {
@@ -47,7 +62,11 @@ class DockerDriver:
         self.api_key = _resolve_env_var(args.get("API_KEY", ""))
         self.workspace = _resolve_env_var(args.get("WORKSPACE_PATH", "./workspace"))
         self.codex_auth_path = _resolve_env_var(args.get("CODEX_AUTH_PATH", "/root/.codex/auth.json"))
-        self._process = None
+        self._process: asyncio.subprocess.Process | None = None
+        self._stdin_lock = asyncio.Lock()
+        self._pending: dict[str, asyncio.Future] = {}
+        self._reader_task: asyncio.Task | None = None
+        self._closed = False
         self._rate_limit = 1.0  # seconds between calls
         self._last_call = 0.0
         self.request_count = 0
@@ -55,17 +74,7 @@ class DockerDriver:
     def set_rate_limit(self, rps: float):
         self._rate_limit = 1.0 / rps if rps > 0 else 1.0
 
-    def start(self):
-        """Build and start the Docker container."""
-        logger.info("Starting Docker LLM container: %s", self.container_name)
-
-        # Stop if already running
-        subprocess.run(
-            ["docker", "rm", "-f", self.container_name],
-            capture_output=True,
-        )
-
-        # Build docker run command based on image type
+    def _build_run_cmd(self) -> list[str]:
         cmd = [
             "docker", "run",
             "--name", self.container_name,
@@ -78,14 +87,12 @@ class DockerDriver:
             "-w", "/workspace",
         ]
 
-        # Inject API key env var (image-specific) or auth volume
         env_key = _IMAGE_ENV_KEY.get(self.image, "ANTHROPIC_API_KEY")
         if env_key and self.api_key:
             cmd.extend(["-e", f"{env_key}={self.api_key}"])
         if self.image == "codex":
             cmd.extend(["-v", f"{self.codex_auth_path}:/home/agent/.codex/auth.json:ro"])
 
-        # Inject extra args as env vars (MODEL, AGENT_MAX_TOKENS, etc.)
         _skip_keys = {"API_KEY", "WORKSPACE_PATH", "CODEX_AUTH_PATH"}
         for key, val in self._args.items():
             if key in _skip_keys:
@@ -97,39 +104,69 @@ class DockerDriver:
             else:
                 cmd.extend(["-e", f"{key}={resolved}"])
 
-        # Find the built image: agent-{image}:{hash} or fallback to mcp-manager-{image}
-        import subprocess as _sp
-        result = _sp.run(
+        result = subprocess.run(
             ["docker", "images", f"agent-{self.image}", "--format", "{{.Repository}}:{{.Tag}}"],
             capture_output=True, text=True,
         )
         built_image = result.stdout.strip().split("\n")[0] if result.stdout.strip() else ""
         cmd.append(built_image if built_image else f"agent-{self.image}")
+        return cmd
 
-        # Start container in background with stdin open
-        self._process = subprocess.Popen(
-            cmd,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+    async def start(self):
+        """Start the container as a long-running daemon reading tasks on stdin."""
+        logger.info("Starting Docker LLM container: %s", self.container_name)
+
+        rm = await asyncio.create_subprocess_exec(
+            "docker", "rm", "-f", self.container_name,
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.DEVNULL,
         )
+        await rm.wait()
+
+        cmd = self._build_run_cmd()
+        self._closed = False
+        self._process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.DEVNULL,
+        )
+        self._reader_task = asyncio.create_task(self._read_loop())
         logger.info("Container %s started (PID %d)", self.container_name, self._process.pid)
 
-    def stop(self):
-        """Stop and remove the container."""
-        logger.info("Stopping Docker LLM container: %s", self.container_name)
-        subprocess.run(
-            ["docker", "rm", "-f", self.container_name],
-            capture_output=True,
-        )
-        if self._process:
-            self._process.kill()
-            self._process = None
+    async def _read_loop(self):
+        """Read JSON lines from the container stdout and dispatch to pending futures."""
+        assert self._process is not None
+        try:
+            while True:
+                line = await self._process.stdout.readline()
+                if not line:
+                    break  # container stdout closed
+                try:
+                    event = json.loads(line)
+                except json.JSONDecodeError:
+                    continue  # ignore non-protocol chatter
+                task_id = event.get("task_id", "")
+                future = self._pending.pop(task_id, None)
+                if future and not future.done():
+                    future.set_result(event)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.exception("Reader loop crashed for %s", self.container_name)
+        finally:
+            # Fail any pending futures so callers don't hang forever.
+            for fut in list(self._pending.values()):
+                if not fut.done():
+                    fut.set_result({"status": "failure", "exit_code": -1})
+            self._pending.clear()
 
     async def generate(self, prompt: str) -> str:
-        """Send a task to the container via docker exec and get result."""
+        """Send a task to the daemon, await the response, return its text output."""
         self.request_count += 1
-        # Rate limit
+        if self._process is None or self._closed:
+            return ""
+
         now = time.monotonic()
         wait = self._rate_limit - (now - self._last_call)
         if wait > 0:
@@ -143,42 +180,67 @@ class DockerDriver:
             "timeout_seconds": 120,
         })
 
+        future: asyncio.Future = asyncio.get_running_loop().create_future()
+        self._pending[task_id] = future
+
         try:
-            proc = await asyncio.create_subprocess_exec(
-                "docker", "exec", "-i", self.container_name,
-                "/usr/local/bin/entrypoint.claude-code.sh",
-                stdin=asyncio.subprocess.PIPE,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-            stdout, stderr = await asyncio.wait_for(
-                proc.communicate(input=task_json.encode()),
-                timeout=180,
-            )
-
-            # Parse events from stdout, extract result
-            result_text = ""
-            for line in stdout.decode().strip().split("\n"):
-                if not line:
-                    continue
+            async with self._stdin_lock:
                 try:
-                    event = json.loads(line)
-                    if event.get("type") == "progress" and isinstance(event.get("data"), str):
-                        result_text = event["data"]
-                    elif event.get("type") == "result":
-                        break
-                except json.JSONDecodeError:
-                    continue
+                    self._process.stdin.write(task_json.encode() + b"\n")
+                    await self._process.stdin.drain()
+                except (BrokenPipeError, ConnectionResetError):
+                    logger.warning("Docker stdin broken on %s", self.container_name)
+                    self._pending.pop(task_id, None)
+                    return ""
 
-            return result_text.strip().strip('"')
-
-        except asyncio.TimeoutError:
-            logger.warning("Docker generate timed out for task %s", task_id)
-            return ""
+            try:
+                event = await asyncio.wait_for(future, timeout=180)
+            except asyncio.TimeoutError:
+                self._pending.pop(task_id, None)
+                logger.warning("Docker generate timeout task %s on %s", task_id, self.container_name)
+                return ""
         except Exception:
-            logger.exception("Docker generate failed for task %s", task_id)
+            self._pending.pop(task_id, None)
+            logger.exception("Docker generate failed task %s", task_id)
             return ""
+
+        if event.get("status") == "success":
+            return event.get("data", "") or ""
+        return ""
 
     async def embed(self, text: str) -> list[float] | None:
-        """Docker/Claude doesn't do embeddings — fallback to None."""
+        """Docker drivers don't embed."""
         return None
+
+    async def stop(self):
+        """Close the daemon cleanly: close stdin, cancel reader, remove container."""
+        logger.info("Stopping Docker LLM container: %s", self.container_name)
+        self._closed = True
+
+        if self._process and self._process.stdin and not self._process.stdin.is_closing():
+            try:
+                self._process.stdin.close()
+            except Exception:
+                pass
+
+        if self._reader_task:
+            self._reader_task.cancel()
+            try:
+                await self._reader_task
+            except (asyncio.CancelledError, Exception):
+                pass
+            self._reader_task = None
+
+        rm = await asyncio.create_subprocess_exec(
+            "docker", "rm", "-f", self.container_name,
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.DEVNULL,
+        )
+        await rm.wait()
+
+        if self._process:
+            try:
+                await asyncio.wait_for(self._process.wait(), timeout=5)
+            except asyncio.TimeoutError:
+                self._process.kill()
+            self._process = None

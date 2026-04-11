@@ -4,7 +4,7 @@ load_dotenv("/app/.env", override=True)
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from mcp_manager.config import settings
-from mcp_manager.api.routers import services, summaries, installations, targets, sync, stats, parameters, search, openapi_search, health, auth, api_keys, instances, skill_sources
+from mcp_manager.api.routers import services, summaries, installations, targets, sync, stats, parameters, search, openapi_search, health, auth, api_keys, instances, skill_sources, community_sync
 from mcp_manager.api.routers import settings as settings_router
 from mcp_manager.api.rate_limit import RateLimitMiddleware
 
@@ -103,4 +103,5 @@ def create_app() -> FastAPI:
     app.include_router(instances.router, prefix="/api/v1")
     app.include_router(settings_router.router, prefix="/api/v1")
     app.include_router(skill_sources.router, prefix="/api/v1")
+    app.include_router(community_sync.router, prefix="/api/v1")
     return app

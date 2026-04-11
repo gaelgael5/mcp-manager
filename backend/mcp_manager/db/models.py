@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, String, Table, Text, UniqueConstraint, text
+from sqlalchemy import BigInteger, Boolean, Column, DateTime, ForeignKey, Index, Integer, String, Table, Text, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR, UUID
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -19,6 +19,12 @@ class McpService(Base):
         Index("idx_services_source_type", "source_type"),
     )
 
+    _id: Mapped[int] = mapped_column(
+        BigInteger,
+        server_default=text("nextval('mcp_services__id_seq')"),
+        nullable=False,
+        unique=True,
+    )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
@@ -59,6 +65,15 @@ class McpSummary(Base):
         Index("idx_summaries_culture", "culture"),
     )
 
+    _id: Mapped[int] = mapped_column(
+        BigInteger,
+        server_default=text("nextval('mcp_summaries__id_seq')"),
+        nullable=False,
+        unique=True,
+    )
+    parent_id: Mapped[int] = mapped_column(
+        BigInteger, nullable=False
+    )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
@@ -105,6 +120,15 @@ class McpInstallation(Base):
         Index("idx_installations_target", "install_target_id"),
     )
 
+    _id: Mapped[int] = mapped_column(
+        BigInteger,
+        server_default=text("nextval('mcp_installations__id_seq')"),
+        nullable=False,
+        unique=True,
+    )
+    parent_id: Mapped[int] = mapped_column(
+        BigInteger, nullable=False
+    )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
@@ -134,6 +158,15 @@ class McpParameter(Base):
         UniqueConstraint("mcp_service_id", "name", name="uq_service_param_name"),
     )
 
+    _id: Mapped[int] = mapped_column(
+        BigInteger,
+        server_default=text("nextval('mcp_parameters__id_seq')"),
+        nullable=False,
+        unique=True,
+    )
+    parent_id: Mapped[int] = mapped_column(
+        BigInteger, nullable=False
+    )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
@@ -147,6 +180,9 @@ class McpParameter(Base):
     source: Mapped[str] = mapped_column(String(20), default="manual")  # "registry", "ai", "manual"
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
     service: Mapped["McpService"] = relationship(back_populates="parameters")
@@ -167,6 +203,12 @@ class SkillSource(Base):
               postgresql_where=text("repo_url IS NOT NULL")),
     )
 
+    _id: Mapped[int] = mapped_column(
+        BigInteger,
+        server_default=text("nextval('skill_sources__id_seq')"),
+        nullable=False,
+        unique=True,
+    )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
@@ -176,6 +218,9 @@ class SkillSource(Base):
     skills_path: Mapped[str] = mapped_column(String(255), default="")  # directory in the repo (empty = root)
     type: Mapped[str] = mapped_column(String(200), nullable=False)  # pipe-separated: opencode|codex|gemini-cli|github-copilot|amp|claude|cursor
     description: Mapped[str | None] = mapped_column(Text)
+    repo_format: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="skills", server_default="skills"
+    )  # "skills" (flat skills.sh layout) or "plugin" (wshobson/agents-style plugins/*/skills/*)
     repo_status: Mapped[str | None] = mapped_column(String(20))  # "ok", "no_skills_dir", "repo_404", etc.
     branch_hash: Mapped[str | None] = mapped_column(String(64))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -187,6 +232,9 @@ class SkillSource(Base):
     )  # pending, enriching, done, failed
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
     skills: Mapped[list["Skill"]] = relationship(secondary=skill_source_skills, back_populates="sources")
@@ -201,6 +249,12 @@ class SkillSource(Base):
 class Skill(Base):
     __tablename__ = "skills"
 
+    _id: Mapped[int] = mapped_column(
+        BigInteger,
+        server_default=text("nextval('skills__id_seq')"),
+        nullable=False,
+        unique=True,
+    )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
@@ -238,6 +292,15 @@ class SkillSourceTranslation(Base):
         Index("idx_skill_sources_translations_culture", "culture"),
     )
 
+    _id: Mapped[int] = mapped_column(
+        BigInteger,
+        server_default=text("nextval('skill_sources_translations__id_seq')"),
+        nullable=False,
+        unique=True,
+    )
+    parent_id: Mapped[int] = mapped_column(
+        BigInteger, nullable=False
+    )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
@@ -267,6 +330,15 @@ class SkillTranslation(Base):
         Index("idx_skills_translations_culture", "culture"),
     )
 
+    _id: Mapped[int] = mapped_column(
+        BigInteger,
+        server_default=text("nextval('skills_translations__id_seq')"),
+        nullable=False,
+        unique=True,
+    )
+    parent_id: Mapped[int] = mapped_column(
+        BigInteger, nullable=False
+    )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )

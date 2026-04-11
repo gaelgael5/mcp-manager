@@ -162,7 +162,7 @@ async def _run_summarize(force: bool = False) -> int:
                     summary_row.source_hash = service.doc_hash
                 else:
                     db.add(McpSummary(
-                        mcp_service_id=service.id, culture=culture,
+                        mcp_service_id=service.id, parent_id=service._id, culture=culture,
                         summary=summary_text, source_hash=service.doc_hash,
                     ))
                 count += 1
@@ -306,25 +306,23 @@ def index(
 ):
     """Run indexation pipeline on services flagged needs_reindex."""
     logging.basicConfig(level=logging.INFO)
-
-    # Start LLM providers (launches Docker containers if configured)
-    from mcp_manager.summarizer.ollama_client import get_llm_manager
-    manager = get_llm_manager()
-    manager.load()
-    typer.echo(f"LLM providers: {len(manager.drivers)} loaded")
-    manager.start_all()
-
-    try:
-        result = asyncio.run(_run_index(limit=limit))
-        typer.echo(f"Index complete: {result}")
-    finally:
-        manager.stop_all()
-        typer.echo("LLM providers stopped")
+    result = asyncio.run(_run_index(limit=limit))
+    typer.echo(f"Index complete: {result}")
 
 
 async def _run_index(limit: int) -> dict:
     from mcp_manager.indexer.pipeline import run_index
-    return await run_index(limit=limit)
+    from mcp_manager.summarizer.ollama_client import get_llm_manager
+
+    manager = get_llm_manager()
+    manager.load()
+    typer.echo(f"LLM providers: {len(manager.drivers)} loaded")
+    await manager.start_all()
+    try:
+        return await run_index(limit=limit)
+    finally:
+        await manager.stop_all()
+        typer.echo("LLM providers stopped")
 
 
 @app.command()

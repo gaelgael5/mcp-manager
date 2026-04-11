@@ -115,6 +115,7 @@ async def generate_for_service(
         else:
             db.add(McpSummary(
                 mcp_service_id=service.id,
+                parent_id=service._id,
                 culture=culture,
                 summary=summary_text,
                 source_hash=service.doc_hash,

@@ -1,4 +1,5 @@
 """LLM Manager — load providers, start/stop containers, route calls."""
+import asyncio
 import logging
 
 from mcp_manager.llm.config import load_config
@@ -45,15 +46,19 @@ class LLMManager:
 
         logger.info("LLM Manager loaded %d providers", len(self.drivers))
 
-    def start_all(self):
+    async def start_all(self):
         """Start containers for Docker providers."""
         for driver in self.drivers:
-            driver.start()
+            result = driver.start()
+            if asyncio.iscoroutine(result):
+                await result
 
-    def stop_all(self):
+    async def stop_all(self):
         """Stop containers for Docker providers."""
         for driver in self.drivers:
-            driver.stop()
+            result = driver.stop()
+            if asyncio.iscoroutine(result):
+                await result
 
     def get_driver(self):
         """Round-robin across available drivers."""

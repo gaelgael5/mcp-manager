@@ -1,5 +1,6 @@
 """Shared utility to fetch README from GitHub repos, trying multiple branches."""
 import logging
+import re
 
 import httpx
 
@@ -8,6 +9,56 @@ from mcp_manager.connectors.github_pool import get_github_headers_async
 logger = logging.getLogger(__name__)
 
 BRANCHES = ["main", "master", "develop"]
+
+_GITHUB_OWNER_REPO_RE = re.compile(r"github\.com[/:]([^/]+)/([^/#?]+)")
+
+
+def _parse_owner_repo(source_url: str) -> tuple[str, str] | None:
+    """Extract (owner, repo) from a github URL, stripping .git and /tree/ suffixes."""
+    if not source_url or "github.com" not in source_url:
+        return None
+    m = _GITHUB_OWNER_REPO_RE.search(source_url)
+    if not m:
+        return None
+    owner = m.group(1)
+    repo = m.group(2).removesuffix(".git")
+    return owner, repo
+
+
+async def fetch_branch_sha(source_url: str) -> str | None:
+    """Return the SHA of the HEAD commit on the default branch.
+
+    Two GitHub API calls:
+      1. GET /repos/{owner}/{repo}        → default_branch
+      2. GET /repos/{owner}/{repo}/branches/{default_branch} → commit.sha
+
+    Returns None on any failure (non-github URL, 404, network error).
+    """
+    parsed = _parse_owner_repo(source_url)
+    if parsed is None:
+        return None
+    owner, repo = parsed
+
+    headers = await get_github_headers_async()
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            repo_resp = await client.get(
+                f"https://api.github.com/repos/{owner}/{repo}", headers=headers
+            )
+            if repo_resp.status_code != 200:
+                return None
+            default_branch = repo_resp.json().get("default_branch") or "main"
+
+            branch_resp = await client.get(
+                f"https://api.github.com/repos/{owner}/{repo}/branches/{default_branch}",
+                headers=headers,
+            )
+            if branch_resp.status_code != 200:
+                return None
+            return branch_resp.json().get("commit", {}).get("sha")
+    except Exception:
+        logger.debug("fetch_branch_sha failed for %s", source_url, exc_info=True)
+        return None
 
 
 async def fetch_github_readme(source_url: str) -> str | None:

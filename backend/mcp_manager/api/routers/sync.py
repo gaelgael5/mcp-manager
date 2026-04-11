@@ -122,11 +122,11 @@ async def start_agents(batch_id: str, provider_id: int = Query(None)):
     if provider_id is not None:
         for d in manager.drivers:
             if isinstance(d, DockerDriver) and d.provider_id == provider_id:
-                d.start()
+                await d.start()
                 return {"status": "started", "container": d.container_name}
         return {"status": "not_found"}
 
-    manager.start_all()
+    await manager.start_all()
     return {"status": "started", "drivers": len(manager.drivers)}
 
 
@@ -143,11 +143,11 @@ async def stop_agents(batch_id: str, provider_id: int = Query(None)):
     if provider_id is not None:
         for d in manager.drivers:
             if isinstance(d, DockerDriver) and d.provider_id == provider_id:
-                d.stop()
+                await d.stop()
                 return {"status": "stopped", "container": d.container_name}
         return {"status": "not_found"}
 
-    manager.stop_all()
+    await manager.stop_all()
     _unregister_batch_manager(batch_id)
     return {"status": "stopped"}
 
@@ -403,7 +403,7 @@ async def _run_scrape_skills_bg(limit: int | None, skip_summaries: bool):
 
     manager = LLMManager(batch_id="scrape")
     manager.load()
-    manager.start_all()
+    await manager.start_all()
     _register_batch_manager("scrape", manager)
 
     try:
@@ -416,7 +416,7 @@ async def _run_scrape_skills_bg(limit: int | None, skip_summaries: bool):
     except Exception:
         logger.exception("Scrape skills failed")
     finally:
-        manager.stop_all()
+        await manager.stop_all()
         _unregister_batch_manager("scrape")
         _sync_status["scraping"] = False
 
@@ -439,7 +439,7 @@ async def _run_enrich_skills_bg():
 
     manager = LLMManager(batch_id="enrich")
     manager.load()
-    manager.start_all()
+    await manager.start_all()
     _register_batch_manager("enrich", manager)
 
     try:
@@ -566,7 +566,7 @@ async def _run_enrich_skills_bg():
     except Exception:
         enrich_logger.exception("enrich-pipeline failed")
     finally:
-        manager.stop_all()
+        await manager.stop_all()
         _unregister_batch_manager("enrich")
         _sync_status["enriching"] = False
         _sync_status["enrich_cancel"] = False
@@ -588,7 +588,7 @@ async def _run_index_skills_bg():
 
     manager = LLMManager(batch_id="skills")
     manager.load()
-    manager.start_all()
+    await manager.start_all()
     _register_batch_manager("skills", manager)
 
     try:
@@ -679,7 +679,7 @@ async def _run_index_skills_bg():
     except Exception:
         skills_logger.exception("index-skills failed")
     finally:
-        manager.stop_all()
+        await manager.stop_all()
         _unregister_batch_manager("skills")
         _sync_status["indexing_skills"] = False
         _sync_status["index_skills_cancel"] = False
@@ -695,7 +695,7 @@ async def _run_index_bg(limit: int):
 
         manager = LLMManager(batch_id="mcp")
         manager.load()
-        manager.start_all()
+        await manager.start_all()
         _register_batch_manager("mcp", manager)
 
         def _update_index_progress(stats):
@@ -713,7 +713,7 @@ async def _run_index_bg(limit: int):
                 "time": datetime.now(timezone.utc).isoformat(),
             }
         finally:
-            manager.stop_all()
+            await manager.stop_all()
             _unregister_batch_manager("mcp")
     except Exception:
         logger.exception("Index failed")

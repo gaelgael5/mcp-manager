@@ -1,7 +1,7 @@
 """Skill sources management — admin only for write, public for read."""
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -28,11 +28,20 @@ router = APIRouter(tags=["skills"])
 
 
 async def _upsert_source_translation(
-    db: AsyncSession, source_id: uuid.UUID, culture: str, summary: str
+    db: AsyncSession,
+    source_id: uuid.UUID,
+    source_pid: int,
+    culture: str,
+    summary: str,
 ) -> None:
     stmt = (
         pg_insert(SkillSourceTranslation)
-        .values(skill_source_id=source_id, culture=culture, summary=summary)
+        .values(
+            skill_source_id=source_id,
+            parent_id=source_pid,
+            culture=culture,
+            summary=summary,
+        )
         .on_conflict_do_update(
             index_elements=["skill_source_id", "culture"],
             set_={"summary": summary, "updated_at": func.now()},
@@ -42,11 +51,20 @@ async def _upsert_source_translation(
 
 
 async def _upsert_skill_translation(
-    db: AsyncSession, skill_id: uuid.UUID, culture: str, summary: str
+    db: AsyncSession,
+    skill_id: uuid.UUID,
+    skill_pid: int,
+    culture: str,
+    summary: str,
 ) -> None:
     stmt = (
         pg_insert(SkillTranslation)
-        .values(skill_id=skill_id, culture=culture, summary=summary)
+        .values(
+            skill_id=skill_id,
+            parent_id=skill_pid,
+            culture=culture,
+            summary=summary,
+        )
         .on_conflict_do_update(
             index_elements=["skill_id", "culture"],
             set_={"summary": summary, "updated_at": func.now()},
@@ -152,6 +170,8 @@ async def delete_skill_source(
 async def list_skills(
     source_id: uuid.UUID | None = None,
     target_type: str | None = None,
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(Skill)
@@ -161,7 +181,7 @@ async def list_skills(
         )
     if target_type:
         query = query.where(Skill.target_type == target_type)
-    query = query.order_by(Skill.name)
+    query = query.order_by(Skill.name).offset(offset).limit(limit)
     result = await db.execute(query)
     skills = result.scalars().all()
     return [_serialize_skill(s) for s in skills]
@@ -240,7 +260,7 @@ async def generate_skill_summary(
             gen_logger.warning("%s summary empty, retrying...", culture)
             summary = await ollama_generate(prompt)
         if summary:
-            await _upsert_skill_translation(db, skill.id, culture, summary)
+            await _upsert_skill_translation(db, skill.id, skill._id, culture, summary)
             gen_logger.info("Skill %s %s summary: %d chars", skill.name, culture, len(summary))
             generated[culture] = True
         else:
@@ -324,7 +344,7 @@ async def generate_source_summary(
         if not summary:
             summary = await ollama_generate(prompt)
         if summary:
-            await _upsert_source_translation(db, source.id, culture, summary)
+            await _upsert_source_translation(db, source.id, source._id, culture, summary)
             generated[culture] = True
         else:
             generated[culture] = False
@@ -363,11 +383,13 @@ async def sync_skill_source(
             source.repo_url = f"https://github.com/{parts[3]}/{parts[4]}"
 
     if source.repo_url:
-        # Skills.sh source → scan GitHub repo for skills/ directory
+        # Skills.sh source → scan GitHub repo for skills/ or plugins/*/skills/*
         from mcp_manager.connectors.skillssh_scanner import scan_repo_skills
 
-        scan_result = await scan_repo_skills(source.repo_url)
+        scan_result = await scan_repo_skills(source.repo_url, source.repo_format)
         source.repo_status = scan_result["status"]
+        if scan_result.get("repo_format"):
+            source.repo_format = scan_result["repo_format"]
         raw_skills = scan_result["skills"]
 
         # Fetch GitHub stars
@@ -489,7 +511,7 @@ async def _generate_skill_summaries(db: AsyncSession, source_id, raw_skills: lis
                 prompt = render_prompt(template, cleaned)
                 summary = await ollama_generate(prompt)
                 if summary:
-                    await _upsert_skill_translation(db, skill.id, culture, summary)
+                    await _upsert_skill_translation(db, skill.id, skill._id, culture, summary)
             except Exception:
                 pass
 
@@ -628,7 +650,7 @@ async def _enrich_summaries(source: SkillSource, db: AsyncSession) -> bool:
         if not summary:
             summary = await ollama_generate(prompt)
         if summary:
-            await _upsert_source_translation(db, source.id, culture, summary)
+            await _upsert_source_translation(db, source.id, source._id, culture, summary)
             generated = True
 
     return generated
@@ -645,8 +667,10 @@ async def _enrich_sync_skills(source: SkillSource, db: AsyncSession) -> int:
         return 0
 
     from mcp_manager.connectors.skillssh_scanner import scan_repo_skills
-    scan_result = await scan_repo_skills(source.repo_url)
+    scan_result = await scan_repo_skills(source.repo_url, source.repo_format)
     source.repo_status = scan_result["status"]
+    if scan_result.get("repo_format"):
+        source.repo_format = scan_result["repo_format"]
     raw_skills = scan_result["skills"]
 
     import httpx
@@ -755,7 +779,7 @@ async def _enrich_one_skill(skill: Skill, db: AsyncSession) -> bool:
         if not summary:
             summary = await ollama_generate(prompt)
         if summary:
-            await _upsert_skill_translation(db, skill.id, culture, summary)
+            await _upsert_skill_translation(db, skill.id, skill._id, culture, summary)
 
     return True
 
