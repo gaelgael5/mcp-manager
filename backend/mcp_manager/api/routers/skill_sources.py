@@ -29,7 +29,6 @@ router = APIRouter(tags=["skills"])
 
 async def _upsert_source_translation(
     db: AsyncSession,
-    source_id: uuid.UUID,
     source_pid: int,
     culture: str,
     summary: str,
@@ -37,13 +36,12 @@ async def _upsert_source_translation(
     stmt = (
         pg_insert(SkillSourceTranslation)
         .values(
-            skill_source_id=source_id,
             parent_id=source_pid,
             culture=culture,
             summary=summary,
         )
         .on_conflict_do_update(
-            index_elements=["skill_source_id", "culture"],
+            index_elements=["parent_id", "culture"],
             set_={"summary": summary, "updated_at": func.now()},
         )
     )
@@ -52,7 +50,6 @@ async def _upsert_source_translation(
 
 async def _upsert_skill_translation(
     db: AsyncSession,
-    skill_id: uuid.UUID,
     skill_pid: int,
     culture: str,
     summary: str,
@@ -60,13 +57,12 @@ async def _upsert_skill_translation(
     stmt = (
         pg_insert(SkillTranslation)
         .values(
-            skill_id=skill_id,
             parent_id=skill_pid,
             culture=culture,
             summary=summary,
         )
         .on_conflict_do_update(
-            index_elements=["skill_id", "culture"],
+            index_elements=["parent_id", "culture"],
             set_={"summary": summary, "updated_at": func.now()},
         )
     )
@@ -260,7 +256,7 @@ async def generate_skill_summary(
             gen_logger.warning("%s summary empty, retrying...", culture)
             summary = await ollama_generate(prompt)
         if summary:
-            await _upsert_skill_translation(db, skill.id, skill._id, culture, summary)
+            await _upsert_skill_translation(db, skill._id, culture, summary)
             gen_logger.info("Skill %s %s summary: %d chars", skill.name, culture, len(summary))
             generated[culture] = True
         else:
@@ -344,7 +340,7 @@ async def generate_source_summary(
         if not summary:
             summary = await ollama_generate(prompt)
         if summary:
-            await _upsert_source_translation(db, source.id, source._id, culture, summary)
+            await _upsert_source_translation(db, source._id, culture, summary)
             generated[culture] = True
         else:
             generated[culture] = False
@@ -511,7 +507,7 @@ async def _generate_skill_summaries(db: AsyncSession, source_id, raw_skills: lis
                 prompt = render_prompt(template, cleaned)
                 summary = await ollama_generate(prompt)
                 if summary:
-                    await _upsert_skill_translation(db, skill.id, skill._id, culture, summary)
+                    await _upsert_skill_translation(db, skill._id, culture, summary)
             except Exception:
                 pass
 
@@ -650,7 +646,7 @@ async def _enrich_summaries(source: SkillSource, db: AsyncSession) -> bool:
         if not summary:
             summary = await ollama_generate(prompt)
         if summary:
-            await _upsert_source_translation(db, source.id, source._id, culture, summary)
+            await _upsert_source_translation(db, source._id, culture, summary)
             generated = True
 
     return generated
@@ -779,7 +775,7 @@ async def _enrich_one_skill(skill: Skill, db: AsyncSession) -> bool:
         if not summary:
             summary = await ollama_generate(prompt)
         if summary:
-            await _upsert_skill_translation(db, skill.id, skill._id, culture, summary)
+            await _upsert_skill_translation(db, skill._id, culture, summary)
 
     return True
 

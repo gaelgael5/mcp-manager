@@ -779,6 +779,7 @@ async def _run_rag_index_bg(scope: str = "all"):
     )
     from mcp_manager.indexer.embedder import embed_text
     from sqlalchemy import select, delete, func, or_
+    from sqlalchemy.orm import selectinload
 
     rag_logger = logging.getLogger("rag-index")
 
@@ -889,14 +890,14 @@ async def _run_rag_index_bg(scope: str = "all"):
                 try:
                     await db.execute(delete(McpEmbedding).where(
                         McpEmbedding.chunk_type == "source_summary",
-                        McpEmbedding.content.like(f"source:{translation.skill_source_id}%"),
+                        McpEmbedding.content.like(f"source:{translation.parent_id}%"),
                     ))
                     vec = await embed_text(translation.summary)
                     if vec:
                         db.add(McpEmbedding(
                             chunk_type="source_summary",
                             chunk_index=0,
-                            content=f"source:{translation.skill_source_id} {translation.summary}",
+                            content=f"source:{translation.parent_id} {translation.summary}",
                             embedding=vec,
                         ))
                         translation.rag_indexed_at = datetime.now(timezone.utc)
@@ -920,7 +921,11 @@ async def _run_rag_index_bg(scope: str = "all"):
         # Phase 3: Skill summaries
         rag_logger.info("rag-index: phase 3 — %d skills", skill_count)
         async with SessionLocal() as db:
-            result = await db.execute(select(SkillTranslation).where(skill_filter))
+            result = await db.execute(
+                select(SkillTranslation)
+                .options(selectinload(SkillTranslation.skill))
+                .where(skill_filter)
+            )
             translations = result.scalars().all() if do_skills else []
 
             for translation in translations:
@@ -928,14 +933,15 @@ async def _run_rag_index_bg(scope: str = "all"):
                     break
 
                 try:
+                    skill_uuid = translation.skill.id
                     await db.execute(delete(McpEmbedding).where(
-                        McpEmbedding.skill_id == translation.skill_id,
+                        McpEmbedding.skill_id == skill_uuid,
                         McpEmbedding.chunk_type == "skill_summary",
                     ))
                     vec = await embed_text(translation.summary)
                     if vec:
                         db.add(McpEmbedding(
-                            skill_id=translation.skill_id,
+                            skill_id=skill_uuid,
                             chunk_type="skill_summary",
                             chunk_index=0,
                             content=translation.summary,

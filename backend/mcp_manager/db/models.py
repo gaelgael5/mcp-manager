@@ -234,6 +234,8 @@ class SkillSource(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
         lazy="selectin",
+        foreign_keys="[SkillSourceTranslation.parent_id]",
+        primaryjoin="SkillSource._id == SkillSourceTranslation.parent_id",
     )
 
 
@@ -273,13 +275,15 @@ class Skill(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
         lazy="selectin",
+        foreign_keys="[SkillTranslation.parent_id]",
+        primaryjoin="Skill._id == SkillTranslation.parent_id",
     )
 
 
 class SkillSourceTranslation(Base):
     __tablename__ = "skill_sources_translations"
     __table_args__ = (
-        UniqueConstraint("skill_source_id", "culture", name="uq_skill_source_culture"),
+        UniqueConstraint("parent_id", "culture", name="uq_skill_source_culture"),
         Index("idx_skill_sources_translations_culture", "culture"),
     )
 
@@ -290,13 +294,10 @@ class SkillSourceTranslation(Base):
         unique=True,
     )
     parent_id: Mapped[int] = mapped_column(
-        BigInteger, nullable=False
+        BigInteger, ForeignKey("skill_sources._id", ondelete="CASCADE"), nullable=False
     )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
-    skill_source_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("skill_sources.id", ondelete="CASCADE"), nullable=False
     )
     culture: Mapped[str] = mapped_column(String(5), nullable=False)
     summary: Mapped[str] = mapped_column(Text, nullable=False)
@@ -311,13 +312,17 @@ class SkillSourceTranslation(Base):
     )
     rag_indexed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    source: Mapped["SkillSource"] = relationship(back_populates="translations")
+    source: Mapped["SkillSource"] = relationship(
+        back_populates="translations",
+        foreign_keys=[parent_id],
+        primaryjoin="SkillSource._id == SkillSourceTranslation.parent_id",
+    )
 
 
 class SkillTranslation(Base):
     __tablename__ = "skills_translations"
     __table_args__ = (
-        UniqueConstraint("skill_id", "culture", name="uq_skill_culture"),
+        UniqueConstraint("parent_id", "culture", name="uq_skill_culture"),
         Index("idx_skills_translations_culture", "culture"),
     )
 
@@ -328,13 +333,10 @@ class SkillTranslation(Base):
         unique=True,
     )
     parent_id: Mapped[int] = mapped_column(
-        BigInteger, nullable=False
+        BigInteger, ForeignKey("skills._id", ondelete="CASCADE"), nullable=False
     )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
-    skill_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("skills.id", ondelete="CASCADE"), nullable=False
     )
     culture: Mapped[str] = mapped_column(String(5), nullable=False)
     summary: Mapped[str] = mapped_column(Text, nullable=False)
@@ -349,7 +351,11 @@ class SkillTranslation(Base):
     )
     rag_indexed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    skill: Mapped["Skill"] = relationship(back_populates="translations")
+    skill: Mapped["Skill"] = relationship(
+        back_populates="translations",
+        foreign_keys=[parent_id],
+        primaryjoin="Skill._id == SkillTranslation.parent_id",
+    )
 
 
 class ApiToken(Base):

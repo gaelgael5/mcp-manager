@@ -288,9 +288,9 @@ async def search_skill_sources(
     if q:
         pattern = f"%{q}%"
         translation_match = (
-            select(SkillSourceTranslation.skill_source_id)
+            select(SkillSourceTranslation.parent_id)
             .where(
-                SkillSourceTranslation.skill_source_id == SkillSource.id,
+                SkillSourceTranslation.parent_id == SkillSource._id,
                 SkillSourceTranslation.summary.ilike(pattern),
             )
         )
@@ -306,9 +306,9 @@ async def search_skill_sources(
         query = query.where(SkillSource.repo_status == repo_status)
     if has_summary is not None:
         has_en = (
-            select(SkillSourceTranslation.skill_source_id)
+            select(SkillSourceTranslation.parent_id)
             .where(
-                SkillSourceTranslation.skill_source_id == SkillSource.id,
+                SkillSourceTranslation.parent_id == SkillSource._id,
                 SkillSourceTranslation.culture == "en",
             )
         )
@@ -411,9 +411,9 @@ async def search_skills(
     if q:
         pattern = f"%{q}%"
         translation_match = (
-            select(SkillTranslation.skill_id)
+            select(SkillTranslation.parent_id)
             .where(
-                SkillTranslation.skill_id == Skill.id,
+                SkillTranslation.parent_id == Skill._id,
                 SkillTranslation.summary.ilike(pattern),
             )
         )
@@ -428,9 +428,9 @@ async def search_skills(
         query = query.where(Skill.category == category)
     if has_summary is not None:
         has_en = (
-            select(SkillTranslation.skill_id)
+            select(SkillTranslation.parent_id)
             .where(
-                SkillTranslation.skill_id == Skill.id,
+                SkillTranslation.parent_id == Skill._id,
                 SkillTranslation.culture == "en",
             )
         )

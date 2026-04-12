@@ -88,11 +88,11 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
         select(func.count()).select_from(SkillSource).where(SkillSource.repo_url.isnot(None))
     )).scalar() or 0
     ss_with_summary_en = (await db.execute(
-        select(func.count(func.distinct(SkillSourceTranslation.skill_source_id)))
+        select(func.count(func.distinct(SkillSourceTranslation.parent_id)))
         .where(SkillSourceTranslation.culture == "en")
     )).scalar() or 0
     ss_with_summary_fr = (await db.execute(
-        select(func.count(func.distinct(SkillSourceTranslation.skill_source_id)))
+        select(func.count(func.distinct(SkillSourceTranslation.parent_id)))
         .where(SkillSourceTranslation.culture == "fr")
     )).scalar() or 0
     ss_synced = (await db.execute(
@@ -109,11 +109,11 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
 
     # Skills indexation stats
     skills_with_summary = (await db.execute(
-        select(func.count(func.distinct(SkillTranslation.skill_id)))
+        select(func.count(func.distinct(SkillTranslation.parent_id)))
         .where(SkillTranslation.culture == "en")
     )).scalar() or 0
     skills_with_summary_fr = (await db.execute(
-        select(func.count(func.distinct(SkillTranslation.skill_id)))
+        select(func.count(func.distinct(SkillTranslation.parent_id)))
         .where(SkillTranslation.culture == "fr")
     )).scalar() or 0
     skills_needs_summary = (await db.execute(
