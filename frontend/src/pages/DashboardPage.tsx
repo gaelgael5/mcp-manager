@@ -139,7 +139,7 @@ export function DashboardPage() {
         <div className="space-y-3">
           <ProgressBar value={total - (idx?.needs_reindex ?? 0)} max={total} label="Traitement global" color="green" />
           <ProgressBar value={idx?.with_summaries ?? 0} max={total} label="Summaries" color="blue" />
-          <ProgressBar value={idx?.with_installations ?? 0} max={total} label="Installations" color="green" />
+          <ProgressBar value={idx?.with_installations ?? 0} max={total} label="Installations" color="yellow" />
           <ProgressBar value={idx?.with_params ?? 0} max={total} label="Parameters" color="yellow" />
           <ProgressBar value={((stats as any)?.rag_pending?.mcp_total ?? 0) - ((stats as any)?.rag_pending?.mcp ?? 0)} max={(stats as any)?.rag_pending?.mcp_total ?? 0} label="RAG Indexed" color="purple" />
           <div className="flex gap-4 text-xs text-gray-400 pt-1">
@@ -166,11 +166,9 @@ export function DashboardPage() {
       }>
         <div className="space-y-3">
           <ProgressBar value={((stats as any)?.skill_sources?.by_enrichment?.done ?? 0)} max={(stats as any)?.skill_sources?.total ?? 0} label="Traitement global" color="green" />
-          <ProgressBar value={(stats as any)?.skill_sources?.with_repo ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label="Repo URL" color="blue" />
-          <ProgressBar value={(stats as any)?.skill_sources?.with_summary_en ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label="Summary EN" color="purple" />
-          <ProgressBar value={(stats as any)?.skill_sources?.with_summary_fr ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label="Summary FR" color="purple" />
-          <ProgressBar value={(stats as any)?.skill_sources?.synced ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label="Synced" color="green" />
-          <ProgressBar value={((stats as any)?.rag_pending?.sources_total ?? 0) - ((stats as any)?.rag_pending?.sources ?? 0)} max={(stats as any)?.rag_pending?.sources_total ?? 0} label="RAG Indexed" color="yellow" />
+          <ProgressBar value={(stats as any)?.skill_sources?.with_summary_en ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label="Summaries" color="blue" />
+          <ProgressBar value={(stats as any)?.skill_sources?.synced ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label="Synced" color="yellow" />
+          <ProgressBar value={((stats as any)?.rag_pending?.sources_total ?? 0) - ((stats as any)?.rag_pending?.sources ?? 0)} max={(stats as any)?.rag_pending?.sources_total ?? 0} label="RAG Indexed" color="purple" />
           <div className="flex gap-4 text-xs text-gray-400 pt-1">
             {(stats as any)?.skill_sources?.by_enrichment && Object.entries((stats as any).skill_sources.by_enrichment).map(([k, v]) => (
               <span key={k}>{k}: {(v as number).toLocaleString()}</span>
@@ -196,7 +194,7 @@ export function DashboardPage() {
       }>
         <div className="space-y-3">
           <ProgressBar value={((stats as any)?.skills?.total ?? 0) - ((stats as any)?.skills?.needs_summary ?? 0)} max={(stats as any)?.skills?.total ?? 0} label="Traitement global" color="green" />
-          <ProgressBar value={(stats as any)?.skills?.with_summary ?? 0} max={(stats as any)?.skills?.total ?? 0} label="With Summary" color="blue" />
+          <ProgressBar value={(stats as any)?.skills?.with_summary ?? 0} max={(stats as any)?.skills?.total ?? 0} label="Summaries" color="blue" />
           <ProgressBar value={((stats as any)?.rag_pending?.skills_total ?? 0) - ((stats as any)?.rag_pending?.skills ?? 0)} max={(stats as any)?.rag_pending?.skills_total ?? 0} label="RAG Indexed" color="purple" />
           <div className="flex gap-4 text-xs text-gray-400 pt-1">
             {((stats as any)?.rag_pending?.skills ?? 0) > 0 && (
