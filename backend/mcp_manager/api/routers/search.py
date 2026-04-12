@@ -185,7 +185,7 @@ def _apply_filters(query, transport, category, source_type, repo_status, has_sum
     if repo_status:
         query = query.where(McpService.repo_status == repo_status)
     if has_summaries is not None:
-        sub = select(McpSummary.id).where(McpSummary.mcp_service_id == McpService.id)
+        sub = select(McpSummary.id).where(McpSummary.parent_id == McpService._id)
         if has_summaries:
             query = query.where(exists(sub))
         else:
@@ -208,24 +208,24 @@ async def _build_response_items(
     all_targets = {t.id: t for t in targets_result.scalars().all()}
     target_name_to_id = {t.name: t.id for t in all_targets.values()}
 
-    service_ids = [s.id for s in services]
+    service_ids = [s._id for s in services]
 
     # Summaries (EN)
     summaries_result = await db.execute(
         select(McpSummary).where(
-            McpSummary.mcp_service_id.in_(service_ids),
+            McpSummary.parent_id.in_(service_ids),
             McpSummary.culture == "en",
         )
     )
-    summaries_map = {s.mcp_service_id: s.summary for s in summaries_result.scalars().all()}
+    summaries_map = {s.parent_id: s.summary for s in summaries_result.scalars().all()}
 
     # Parameters
     params_result = await db.execute(
-        select(McpParameter).where(McpParameter.mcp_service_id.in_(service_ids))
+        select(McpParameter).where(McpParameter.parent_id.in_(service_ids))
     )
-    params_map: dict[uuid.UUID, list] = {}
+    params_map: dict[int, list] = {}
     for p in params_result.scalars().all():
-        params_map.setdefault(p.mcp_service_id, []).append({
+        params_map.setdefault(p.parent_id, []).append({
             "name": p.name,
             "description": p.description,
             "is_required": p.is_required,
@@ -234,7 +234,7 @@ async def _build_response_items(
 
     # Installations
     install_query = select(McpInstallation).where(
-        McpInstallation.mcp_service_id.in_(service_ids)
+        McpInstallation.parent_id.in_(service_ids)
     )
     if target_names:
         target_ids = [target_name_to_id[n] for n in target_names if n in target_name_to_id]
@@ -242,12 +242,12 @@ async def _build_response_items(
             install_query = install_query.where(McpInstallation.install_target_id.in_(target_ids))
 
     installs_result = await db.execute(install_query)
-    installs_map: dict[uuid.UUID, dict] = {}
+    installs_map: dict[int, dict] = {}
     for inst in installs_result.scalars().all():
         target = all_targets.get(inst.install_target_id)
         if not target:
             continue
-        installs_map.setdefault(inst.mcp_service_id, {})[target.name] = {
+        installs_map.setdefault(inst.parent_id, {})[target.name] = {
             "action_type": inst.action_type,
             "data": inst.data,
         }
@@ -257,7 +257,7 @@ async def _build_response_items(
         items.append({
             "id": svc._id,
             "name": svc.name,
-            "description": summaries_map.get(svc.id),
+            "description": summaries_map.get(svc._id),
             "source_url": svc.source_url or None,
             "doc_url": svc.doc_url,
             "transport": svc.transport,
@@ -265,8 +265,8 @@ async def _build_response_items(
             "repo_status": svc.repo_status,
             "stars": svc.stars,
             "canonical_id": svc.canonical_id,
-            "parameters": params_map.get(svc.id, []),
-            "recipes": installs_map.get(svc.id, {}),
+            "parameters": params_map.get(svc._id, []),
+            "recipes": installs_map.get(svc._id, {}),
         })
 
     return items

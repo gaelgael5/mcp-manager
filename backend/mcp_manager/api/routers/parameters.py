@@ -26,7 +26,7 @@ class ParameterCreate(BaseModel):
 async def list_parameters(service_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(McpParameter)
-        .join(McpService, McpParameter.mcp_service_id == McpService.id)
+        .join(McpService, McpParameter.parent_id == McpService._id)
         .where(McpService._id == service_id)
         .order_by(McpParameter.name)
     )
@@ -42,7 +42,6 @@ async def add_parameter(service_id: int, body: ParameterCreate, db: AsyncSession
         raise HTTPException(status_code=404, detail="Service not found")
 
     param = McpParameter(
-        mcp_service_id=service.id,
         parent_id=service._id,
         name=body.name,
         description=body.description,
@@ -137,7 +136,7 @@ async def detect_parameters_for_service(
 
     # Upsert: skip names that already exist for this service
     existing_names_q = await db.execute(
-        select(McpParameter.name).where(McpParameter.mcp_service_id == service.id)
+        select(McpParameter.name).where(McpParameter.parent_id == service._id)
     )
     existing_names = {row[0] for row in existing_names_q.all()}
 
@@ -146,14 +145,13 @@ async def detect_parameters_for_service(
         if p["name"] in existing_names:
             continue
         stmt = pg_insert(McpParameter.__table__).values(
-            mcp_service_id=service.id,
             parent_id=service._id,
             name=p["name"],
             description=p.get("description", ""),
             is_required=p.get("is_required", False),
             is_secret=p.get("is_secret", False),
             source=p.get("source", "ai"),
-        ).on_conflict_do_nothing(index_elements=["mcp_service_id", "name"])
+        ).on_conflict_do_nothing(index_elements=["parent_id", "name"])
         await db.execute(stmt)
         existing_names.add(p["name"])
         added += 1

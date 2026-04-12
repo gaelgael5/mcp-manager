@@ -17,7 +17,7 @@ async def list_summaries(
     if culture:
         query = query.where(McpSummary.culture == culture)
     if service_id:
-        query = query.join(McpService, McpSummary.mcp_service_id == McpService.id).where(McpService._id == service_id)
+        query = query.join(McpService, McpSummary.parent_id == McpService._id).where(McpService._id == service_id)
 
     count_query = select(func.count()).select_from(query.subquery())
     total = (await db.execute(count_query)).scalar() or 0
@@ -43,7 +43,7 @@ async def summaries_stats(db: AsyncSession = Depends(get_db)):
     outdated_query = (
         select(func.count())
         .select_from(McpSummary)
-        .join(McpService, McpSummary.mcp_service_id == McpService.id)
+        .join(McpService, McpSummary.parent_id == McpService._id)
         .where(McpSummary.source_hash != McpService.doc_hash)
     )
     outdated = (await db.execute(outdated_query)).scalar() or 0
@@ -104,7 +104,7 @@ async def generate_for_service(
 
         existing = await db.execute(
             select(McpSummary).where(
-                McpSummary.mcp_service_id == service.id,
+                McpSummary.parent_id == service._id,
                 McpSummary.culture == culture,
             )
         )
@@ -114,7 +114,6 @@ async def generate_for_service(
             summary_row.source_hash = service.doc_hash
         else:
             db.add(McpSummary(
-                mcp_service_id=service.id,
                 parent_id=service._id,
                 culture=culture,
                 summary=summary_text,

@@ -39,7 +39,7 @@ async def list_services(
         query = query.where(McpService.repo_status.is_(None))
     if has_summaries is not None:
         from sqlalchemy import exists
-        sub = select(McpSummary.id).where(McpSummary.mcp_service_id == McpService.id)
+        sub = select(McpSummary.id).where(McpSummary.parent_id == McpService._id)
         if has_summaries:
             query = query.where(exists(sub))
         else:
@@ -62,18 +62,18 @@ async def list_services(
     services = result.scalars().all()
 
     # Batch fetch summary counts for these services
-    service_ids = [s.id for s in services]
-    summary_counts: dict[uuid.UUID, int] = {}
+    service_ids = [s._id for s in services]
+    summary_counts: dict[int, int] = {}
     if service_ids:
         sc_result = await db.execute(
-            select(McpSummary.mcp_service_id, func.count())
-            .where(McpSummary.mcp_service_id.in_(service_ids))
-            .group_by(McpSummary.mcp_service_id)
+            select(McpSummary.parent_id, func.count())
+            .where(McpSummary.parent_id.in_(service_ids))
+            .group_by(McpSummary.parent_id)
         )
         summary_counts = {row[0]: row[1] for row in sc_result}
 
     return {
-        "items": [_serialize_service(s, summary_counts.get(s.id, 0)) for s in services],
+        "items": [_serialize_service(s, summary_counts.get(s._id, 0)) for s in services],
         "total": total, "page": page, "per_page": per_page,
     }
 
@@ -84,7 +84,7 @@ async def get_service(service_id: int, db: AsyncSession = Depends(get_db)):
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
     sc = await db.execute(
-        select(func.count()).select_from(McpSummary).where(McpSummary.mcp_service_id == service.id)
+        select(func.count()).select_from(McpSummary).where(McpSummary.parent_id == service._id)
     )
     return _serialize_service(service, sc.scalar() or 0)
 

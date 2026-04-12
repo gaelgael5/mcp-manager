@@ -24,7 +24,7 @@ async def list_installations(
     if install_target_id:
         query = query.where(McpInstallation.install_target_id == install_target_id)
     if service_id:
-        query = query.join(McpService, McpInstallation.mcp_service_id == McpService.id).where(McpService._id == service_id)
+        query = query.join(McpService, McpInstallation.parent_id == McpService._id).where(McpService._id == service_id)
 
     count_query = select(func.count()).select_from(query.subquery())
     total = (await db.execute(count_query)).scalar() or 0
@@ -101,7 +101,7 @@ async def generate_installations(service_id: int, db: AsyncSession = Depends(get
 
         existing = await db.execute(
             select(McpInstallation).where(
-                McpInstallation.mcp_service_id == service.id,
+                McpInstallation.parent_id == service._id,
                 McpInstallation.install_target_id == target.id,
             )
         )
@@ -111,7 +111,7 @@ async def generate_installations(service_id: int, db: AsyncSession = Depends(get
             install_row.data = data["data"]
         else:
             db.add(McpInstallation(
-                mcp_service_id=service.id,
+                parent_id=service._id,
                 install_target_id=target.id,
                 action_type=data["action_type"],
                 data=data["data"],

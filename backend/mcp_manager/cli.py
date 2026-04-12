@@ -130,7 +130,7 @@ async def _run_summarize(force: bool = False) -> int:
                 if not force:
                     existing = await db.execute(
                         select(McpSummary).where(
-                            McpSummary.mcp_service_id == service.id,
+                            McpSummary.parent_id == service._id,
                             McpSummary.culture == culture,
                         )
                     )
@@ -152,7 +152,7 @@ async def _run_summarize(force: bool = False) -> int:
 
                 existing = await db.execute(
                     select(McpSummary).where(
-                        McpSummary.mcp_service_id == service.id,
+                        McpSummary.parent_id == service._id,
                         McpSummary.culture == culture,
                     )
                 )
@@ -162,7 +162,7 @@ async def _run_summarize(force: bool = False) -> int:
                     summary_row.source_hash = service.doc_hash
                 else:
                     db.add(McpSummary(
-                        mcp_service_id=service.id, parent_id=service._id, culture=culture,
+                        parent_id=service._id, culture=culture,
                         summary=summary_text, source_hash=service.doc_hash,
                     ))
                 count += 1
@@ -237,7 +237,7 @@ async def _run_export(target: str) -> dict[str, int]:
 
                 existing = await db.execute(
                     select(McpInstallation).where(
-                        McpInstallation.mcp_service_id == service.id,
+                        McpInstallation.parent_id == service._id,
                         McpInstallation.install_target_id == t.id,
                     )
                 )
@@ -247,7 +247,7 @@ async def _run_export(target: str) -> dict[str, int]:
                     install_row.data = data["data"]
                 else:
                     db.add(McpInstallation(
-                        mcp_service_id=service.id, install_target_id=t.id,
+                        parent_id=service._id, install_target_id=t.id,
                         action_type=data["action_type"], data=data["data"],
                     ))
                 count += 1

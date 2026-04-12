@@ -40,7 +40,7 @@ async def detailed_health(db: AsyncSession = Depends(get_db)):
     try:
         total = (await db.execute(select(func.count()).select_from(McpService))).scalar() or 0
         with_summaries = (await db.execute(
-            select(func.count(func.distinct(McpSummary.mcp_service_id)))
+            select(func.count(func.distinct(McpSummary.parent_id)))
         )).scalar() or 0
         with_embeddings = (await db.execute(
             select(func.count(func.distinct(McpEmbedding.mcp_service_id)))

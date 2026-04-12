@@ -50,7 +50,7 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
 
     # Indexation stats
     with_summaries = (await db.execute(
-        select(func.count(func.distinct(McpSummary.mcp_service_id)))
+        select(func.count(func.distinct(McpSummary.parent_id)))
     )).scalar() or 0
 
     with_embeddings = (await db.execute(
@@ -62,11 +62,11 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
     )).scalar() or 0
 
     with_params = (await db.execute(
-        select(func.count(func.distinct(McpParameter.mcp_service_id)))
+        select(func.count(func.distinct(McpParameter.parent_id)))
     )).scalar() or 0
 
     with_installations = (await db.execute(
-        select(func.count(func.distinct(McpInstallation.mcp_service_id)))
+        select(func.count(func.distinct(McpInstallation.parent_id)))
     )).scalar() or 0
 
     needs_reindex = (await db.execute(
@@ -75,7 +75,7 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
 
     outdated_query = (
         select(func.count()).select_from(McpSummary)
-        .join(McpService, McpSummary.mcp_service_id == McpService.id)
+        .join(McpService, McpSummary.parent_id == McpService._id)
         .where(McpSummary.source_hash != McpService.doc_hash)
     )
     outdated = (await db.execute(outdated_query)).scalar() or 0

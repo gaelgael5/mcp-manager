@@ -61,7 +61,7 @@ class McpService(Base):
 class McpSummary(Base):
     __tablename__ = "mcp_summaries"
     __table_args__ = (
-        UniqueConstraint("mcp_service_id", "culture", name="uq_service_culture"),
+        UniqueConstraint("parent_id", "culture", name="uq_service_culture"),
         Index("idx_summaries_culture", "culture"),
     )
 
@@ -72,13 +72,10 @@ class McpSummary(Base):
         unique=True,
     )
     parent_id: Mapped[int] = mapped_column(
-        BigInteger, nullable=False
+        BigInteger, ForeignKey("mcp_services._id", ondelete="CASCADE"), nullable=False
     )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
-    mcp_service_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("mcp_services.id", ondelete="CASCADE"), nullable=False
     )
     culture: Mapped[str] = mapped_column(String(5), nullable=False)
     summary: Mapped[str] = mapped_column(Text, nullable=False)
@@ -116,7 +113,7 @@ class InstallTarget(Base):
 class McpInstallation(Base):
     __tablename__ = "mcp_installations"
     __table_args__ = (
-        UniqueConstraint("mcp_service_id", "install_target_id", name="uq_service_target"),
+        UniqueConstraint("parent_id", "install_target_id", name="uq_service_target"),
         Index("idx_installations_target", "install_target_id"),
     )
 
@@ -127,13 +124,10 @@ class McpInstallation(Base):
         unique=True,
     )
     parent_id: Mapped[int] = mapped_column(
-        BigInteger, nullable=False
+        BigInteger, ForeignKey("mcp_services._id", ondelete="CASCADE"), nullable=False
     )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
-    mcp_service_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("mcp_services.id", ondelete="CASCADE"), nullable=False
     )
     install_target_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("install_targets.id", ondelete="CASCADE"), nullable=False
@@ -155,7 +149,7 @@ class McpInstallation(Base):
 class McpParameter(Base):
     __tablename__ = "mcp_parameters"
     __table_args__ = (
-        UniqueConstraint("mcp_service_id", "name", name="uq_service_param_name"),
+        UniqueConstraint("parent_id", "name", name="uq_service_param_name"),
     )
 
     _id: Mapped[int] = mapped_column(
@@ -165,13 +159,10 @@ class McpParameter(Base):
         unique=True,
     )
     parent_id: Mapped[int] = mapped_column(
-        BigInteger, nullable=False
+        BigInteger, ForeignKey("mcp_services._id", ondelete="CASCADE"), nullable=False
     )
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
-    mcp_service_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("mcp_services.id", ondelete="CASCADE"), nullable=False
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)

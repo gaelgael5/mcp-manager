@@ -841,23 +841,27 @@ async def _run_rag_index_bg(scope: str = "all"):
         # Phase 1: MCP summaries
         rag_logger.info("rag-index: phase 1 — %d MCP summaries", mcp_count)
         async with SessionLocal() as db:
-            result = await db.execute(select(McpSummary).where(mcp_filter))
-            summaries = result.scalars().all() if do_mcp else []
+            result = await db.execute(
+                select(McpSummary, McpService.id.label("service_uuid"))
+                .join(McpService, McpSummary.parent_id == McpService._id)
+                .where(mcp_filter)
+            ) if do_mcp else None
+            summary_rows = result.all() if result else []
 
-            for summary in summaries:
+            for summary, service_uuid in summary_rows:
                 if _sync_status.get("rag_cancel"):
                     rag_logger.info("rag-index: cancelled")
                     break
 
                 try:
                     await db.execute(delete(McpEmbedding).where(
-                        McpEmbedding.mcp_service_id == summary.mcp_service_id,
+                        McpEmbedding.mcp_service_id == service_uuid,
                         McpEmbedding.chunk_type == "summary",
                     ))
                     vec = await embed_text(summary.summary)
                     if vec:
                         db.add(McpEmbedding(
-                            mcp_service_id=summary.mcp_service_id,
+                            mcp_service_id=service_uuid,
                             chunk_type="summary",
                             chunk_index=0,
                             content=summary.summary,

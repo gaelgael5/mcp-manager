@@ -218,7 +218,7 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
 
     existing_cultures_q = await db.execute(
         select(McpSummary.culture).where(
-            McpSummary.mcp_service_id == service.id,
+            McpSummary.parent_id == service._id,
             McpSummary.culture.in_(cultures),
         )
     )
@@ -227,14 +227,14 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
 
     has_params_q = await db.execute(
         select(func.count()).select_from(McpParameter).where(
-            McpParameter.mcp_service_id == service.id
+            McpParameter.parent_id == service._id
         )
     )
     has_params = (has_params_q.scalar() or 0) > 0
 
     has_installs_q = await db.execute(
         select(func.count()).select_from(McpInstallation).where(
-            McpInstallation.mcp_service_id == service.id
+            McpInstallation.parent_id == service._id
         )
     )
     has_installs = (has_installs_q.scalar() or 0) > 0
@@ -282,7 +282,7 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
     if branch_changed and len(existing_cultures_set) > 0:
         existing_hashes_q = await db.execute(
             select(McpSummary.culture, McpSummary.source_hash).where(
-                McpSummary.mcp_service_id == service.id,
+                McpSummary.parent_id == service._id,
                 McpSummary.culture.in_(cultures),
             )
         )
@@ -295,13 +295,12 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
         if not summary_text:
             continue
         stmt = pg_insert(McpSummary.__table__).values(
-            mcp_service_id=service.id,
             parent_id=service._id,
             culture=culture,
             summary=summary_text,
             source_hash=new_doc_hash,
         ).on_conflict_do_update(
-            index_elements=["mcp_service_id", "culture"],
+            index_elements=["parent_id", "culture"],
             set_={
                 "summary": summary_text,
                 "source_hash": new_doc_hash,
@@ -344,13 +343,12 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
             if not data:
                 continue
             stmt = pg_insert(McpInstallation.__table__).values(
-                mcp_service_id=service.id,
                 parent_id=service._id,
                 install_target_id=target.id,
                 action_type=data["action_type"],
                 data=data["data"],
             ).on_conflict_do_update(
-                index_elements=["mcp_service_id", "install_target_id"],
+                index_elements=["parent_id", "install_target_id"],
                 set_={
                     "action_type": data["action_type"],
                     "data": data["data"],
@@ -367,7 +365,7 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
     # --- Step 8: refresh search vector from the EN summary -------------------
     en_summary = await db.execute(
         select(McpSummary.summary).where(
-            McpSummary.mcp_service_id == service.id,
+            McpSummary.parent_id == service._id,
             McpSummary.culture == "en",
         )
     )
