@@ -107,6 +107,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                     content={"detail": "Invalid or expired API key"},
                 )
 
+        # Require authentication on all API endpoints (except auth routes)
+        if not user and "/auth/" not in path:
+            return JSONResponse(
+                status_code=401,
+                content={"detail": "Authentication required. Use Authorization: Bearer <api_key> or Bearer <jwt>"},
+            )
+
         # Admin: no limits
         if user and user.get("is_admin"):
             return await call_next(request)
