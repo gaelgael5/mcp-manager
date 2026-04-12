@@ -15,7 +15,7 @@ def load_config() -> dict:
             return json.load(f)
     except FileNotFoundError:
         logger.warning("LLM config not found at %s, using defaults", path)
-        return {"workers": 1, "claude_rate_limit_per_second": 1, "llm": []}
+        return {"llm": []}
 
 
 def save_config(config: dict) -> None:

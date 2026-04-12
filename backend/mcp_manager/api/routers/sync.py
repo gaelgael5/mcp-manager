@@ -437,7 +437,7 @@ async def _run_enrich_skills_bg():
 
     enrich_logger = logging.getLogger("enrich-pipeline")
 
-    manager = LLMManager(batch_id="enrich")
+    manager = LLMManager(batch_id="enrich", pipeline="skill_sources")
     manager.load()
     await manager.start_all()
     _register_batch_manager("enrich", manager)
@@ -457,7 +457,17 @@ async def _run_enrich_skills_bg():
             source_ids = [row[0] for row in result.all()]
 
         total = len(source_ids)
-        enrich_logger.info("enrich-pipeline: %d sources to process with %d workers", total, len(manager.drivers))
+
+        from mcp_manager.llm.driver_docker import DockerDriver
+        gen_drivers = [d for d in manager.drivers if isinstance(d, DockerDriver)]
+        if not gen_drivers:
+            enrich_logger.error(
+                "enrich-pipeline: no docker LLM provider configured — "
+                "ollama is reserved for RAG. Aborting."
+            )
+            return
+
+        enrich_logger.info("enrich-pipeline: %d sources to process with %d workers", total, len(gen_drivers))
 
         stats = {"total": total, "done": 0, "repos_filled": 0, "summaries": 0, "syncs": 0, "failed": 0}
         _sync_status["enrich_progress"] = stats
@@ -466,12 +476,14 @@ async def _run_enrich_skills_bg():
         for sid in source_ids:
             queue.put_nowait(sid)
 
-        num_workers = len(manager.drivers)
+        num_workers = len(gen_drivers)
+        enrich_abort_event = asyncio.Event()
 
         async def _worker(worker_id: int, driver):
             # Each worker uses its own dedicated driver
             from mcp_manager.summarizer.ollama_client import set_llm_manager
             from mcp_manager.llm.manager import LLMManager
+            from mcp_manager.llm.driver_docker import LLMProviderDead
 
             # Create a single-driver manager for this worker
             worker_mgr = LLMManager.__new__(LLMManager)
@@ -485,6 +497,8 @@ async def _run_enrich_skills_bg():
             enrich_logger.info("enrich worker %d started with driver %s", worker_id, driver_name)
 
             while not queue.empty():
+                if enrich_abort_event.is_set():
+                    break
                 if _sync_status.get("enrich_cancel"):
                     break
                 try:
@@ -512,6 +526,8 @@ async def _run_enrich_skills_bg():
                         try:
                             if await _enrich_summaries(source, wdb):
                                 stats["summaries"] += 1
+                        except LLMProviderDead:
+                            raise
                         except Exception:
                             enrich_logger.warning("enrich-pipeline: summary failed for %s", source.name)
                             await wdb.rollback()
@@ -524,6 +540,8 @@ async def _run_enrich_skills_bg():
                             added = await _enrich_sync_skills(source, wdb)
                             if added > 0:
                                 stats["syncs"] += 1
+                        except LLMProviderDead:
+                            raise
                         except Exception:
                             enrich_logger.warning("enrich-pipeline: sync failed for %s", source.name)
                             await wdb.rollback()
@@ -531,6 +549,18 @@ async def _run_enrich_skills_bg():
                         source.enrichment_status = "done"
                         stats["done"] += 1
 
+                    except LLMProviderDead as e:
+                        enrich_logger.error(
+                            "enrich worker %d: LLM provider dead — aborting pipeline: %s",
+                            worker_id, e,
+                        )
+                        enrich_abort_event.set()
+                        source.enrichment_status = "pending"
+                        try:
+                            await wdb.commit()
+                        except Exception:
+                            await wdb.rollback()
+                        break
                     except Exception:
                         enrich_logger.exception("enrich-pipeline: failed for %s", source.name)
                         await wdb.rollback()
@@ -549,7 +579,7 @@ async def _run_enrich_skills_bg():
                         enrich_logger.info("enrich-pipeline: %d/%d done", done, total)
                         _sync_status["enrich_progress"] = dict(stats)
 
-        workers = [asyncio.create_task(_worker(i, manager.drivers[i])) for i in range(num_workers)]
+        workers = [asyncio.create_task(_worker(i, gen_drivers[i])) for i in range(num_workers)]
         await asyncio.gather(*workers)
 
         _sync_status["enrich_progress"] = dict(stats)
@@ -586,7 +616,7 @@ async def _run_index_skills_bg():
 
     skills_logger = logging.getLogger("index-skills")
 
-    manager = LLMManager(batch_id="skills")
+    manager = LLMManager(batch_id="skills", pipeline="skills")
     manager.load()
     await manager.start_all()
     _register_batch_manager("skills", manager)
@@ -600,7 +630,17 @@ async def _run_index_skills_bg():
             skill_ids = [row[0] for row in result.all()]
 
         total = len(skill_ids)
-        skills_logger.info("index-skills: %d skills to process with %d workers", total, len(manager.drivers))
+
+        from mcp_manager.llm.driver_docker import DockerDriver
+        gen_drivers = [d for d in manager.drivers if isinstance(d, DockerDriver)]
+        if not gen_drivers:
+            skills_logger.error(
+                "index-skills: no docker LLM provider configured — "
+                "ollama is reserved for RAG. Aborting."
+            )
+            return
+
+        skills_logger.info("index-skills: %d skills to process with %d workers", total, len(gen_drivers))
 
         stats = {"total": total, "done": 0, "summaries": 0, "unchanged": 0, "failed": 0}
         _sync_status["index_skills_progress"] = stats
@@ -609,11 +649,13 @@ async def _run_index_skills_bg():
         for sid in skill_ids:
             queue.put_nowait(sid)
 
-        num_workers = len(manager.drivers)
+        num_workers = len(gen_drivers)
+        skills_abort_event = asyncio.Event()
 
         async def _worker(worker_id: int, driver):
             from mcp_manager.summarizer.ollama_client import set_llm_manager
             from mcp_manager.llm.manager import LLMManager
+            from mcp_manager.llm.driver_docker import LLMProviderDead
 
             worker_mgr = LLMManager.__new__(LLMManager)
             worker_mgr.drivers = [driver]
@@ -626,6 +668,8 @@ async def _run_index_skills_bg():
             skills_logger.info("skills worker %d started with driver %s", worker_id, driver_name)
 
             while not queue.empty():
+                if skills_abort_event.is_set():
+                    break
                 if _sync_status.get("index_skills_cancel"):
                     break
                 try:
@@ -647,6 +691,17 @@ async def _run_index_skills_bg():
                             stats["unchanged"] += 1
                         skill.needs_summary = False
                         stats["done"] += 1
+                    except LLMProviderDead as e:
+                        skills_logger.error(
+                            "skills worker %d: LLM provider dead — aborting pipeline: %s",
+                            worker_id, e,
+                        )
+                        skills_abort_event.set()
+                        try:
+                            await wdb.rollback()
+                        except Exception:
+                            pass
+                        break
                     except Exception:
                         skills_logger.warning("index-skills: failed for %s", skill.name)
                         skill.needs_summary = False
@@ -663,7 +718,7 @@ async def _run_index_skills_bg():
                         skills_logger.info("index-skills: %d/%d done", done, total)
                         _sync_status["index_skills_progress"] = dict(stats)
 
-        workers = [asyncio.create_task(_worker(i, manager.drivers[i])) for i in range(num_workers)]
+        workers = [asyncio.create_task(_worker(i, gen_drivers[i])) for i in range(num_workers)]
         await asyncio.gather(*workers)
 
         _sync_status["index_skills_progress"] = dict(stats)
@@ -693,7 +748,7 @@ async def _run_index_bg(limit: int):
         from mcp_manager.llm.manager import LLMManager
         from mcp_manager.indexer.pipeline import run_index
 
-        manager = LLMManager(batch_id="mcp")
+        manager = LLMManager(batch_id="mcp", pipeline="mcp")
         manager.load()
         await manager.start_all()
         _register_batch_manager("mcp", manager)
@@ -707,6 +762,7 @@ async def _run_index_bg(limit: int):
                 limit=limit,
                 progress_callback=_update_index_progress,
                 cancel_check=lambda: _sync_status.get("index_cancel", False),
+                manager=manager,
             )
             _sync_status["last_index"] = {
                 "stats": result,

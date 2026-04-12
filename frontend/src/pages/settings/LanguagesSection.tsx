@@ -8,7 +8,7 @@ export function LanguagesSection() {
   const updateLang = useUpdateLanguage();
 
   return (
-    <Card title="Languages">
+    <Card title="Languages" collapsible>
       <div className="space-y-2">
         {languages.map((lang) => (
           <div

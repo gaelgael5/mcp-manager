@@ -15,11 +15,18 @@ interface LLMProvider {
   args: Record<string, string>;
 }
 
+type ConcurrencyMap = Record<string, Record<string, number>>;
+
 interface LLMConfig {
-  workers: number;
-  claude_rate_limit_per_second: number;
   llm: LLMProvider[];
+  concurrency?: ConcurrencyMap;
 }
+
+const CONCURRENCY_PIPELINES: { key: string; label: string }[] = [
+  { key: "mcp", label: "MCP" },
+  { key: "skill_sources", label: "Skill Sources" },
+  { key: "skills", label: "Skills" },
+];
 
 function useLLMConfig() {
   return useQuery({
@@ -319,7 +326,7 @@ function EnvKeysBlock() {
   if (!envKeys || envKeys.length === 0) return null;
 
   return (
-    <Card title="Environment Keys">
+    <Card title="Environment Keys" collapsible>
       <div className="space-y-3">
         {envKeys.map((k) => (
           <div key={k.name} className="flex items-center gap-2">
@@ -391,7 +398,7 @@ function AuthFilesBlock() {
   if (!authFiles || authFiles.length === 0) return null;
 
   return (
-    <Card title="Auth Files">
+    <Card title="Auth Files" collapsible>
       <div className="space-y-4">
         {authFiles.map((f) => (
           <div key={f.key}>
@@ -457,7 +464,7 @@ function ApiTokensBlock() {
   });
 
   return (
-    <Card title="API Tokens (Rate-Limited Pool)">
+    <Card title="API Tokens (Rate-Limited Pool)" collapsible>
       <div className="space-y-3">
         {tokens && tokens.length > 0 && (
           <table className="w-full text-xs">
@@ -531,6 +538,63 @@ function ApiTokensBlock() {
   );
 }
 
+function ConcurrencyBlock({
+  localConfig,
+  setLocalConfig,
+}: {
+  localConfig: LLMConfig;
+  setLocalConfig: (c: LLMConfig) => void;
+}) {
+  const dockerProviders = localConfig.llm.filter((p) => p.type === "docker");
+  const concurrency: ConcurrencyMap = localConfig.concurrency || {};
+
+  const getCount = (pipeline: string, providerId: number): number => {
+    return concurrency[pipeline]?.[String(providerId)] ?? 1;
+  };
+
+  const setCount = (pipeline: string, providerId: number, count: number) => {
+    const next: ConcurrencyMap = { ...concurrency };
+    next[pipeline] = { ...(next[pipeline] || {}) };
+    next[pipeline][String(providerId)] = Math.max(0, count);
+    setLocalConfig({ ...localConfig, concurrency: next });
+  };
+
+  return (
+    <Card title="Concurrency" collapsible>
+      {dockerProviders.length === 0 ? (
+        <p className="text-sm text-gray-500">
+          No docker providers configured. Add one in LLM Providers below to enable per-pipeline concurrency.
+        </p>
+      ) : (
+        <div className="space-y-5">
+          {CONCURRENCY_PIPELINES.map((p) => (
+            <div key={p.key}>
+              <div className="text-sm font-medium mb-2">{p.label}</div>
+              <div className="space-y-2">
+                {dockerProviders.map((dp) => (
+                  <div key={dp.id} className="flex items-center gap-3">
+                    <Badge color="purple">{dp.image || "docker"}</Badge>
+                    <span className="text-xs text-gray-500">Provider #{dp.id}</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={20}
+                      value={getCount(p.key, dp.id)}
+                      onChange={(e) => setCount(p.key, dp.id, parseInt(e.target.value) || 0)}
+                      className="w-20 rounded border border-gray-300 px-2 py-1 text-sm"
+                    />
+                    <span className="text-xs text-gray-400">instances</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 function DockerRunPreview({ imageName, providerId }: { imageName: string | undefined; providerId: number }) {
   const { data } = useDockerRunCmd(imageName, providerId);
   if (!imageName || !data?.cmd) return null;
@@ -551,7 +615,7 @@ export function SettingsPage() {
 
   useEffect(() => {
     if (config && !localConfig) {
-      setLocalConfig(config);
+      setLocalConfig({ llm: config.llm, concurrency: config.concurrency });
     }
   }, [config, localConfig]);
 
@@ -588,34 +652,6 @@ export function SettingsPage() {
         </Button>
       </div>
 
-      <Card title="General">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">Workers</label>
-            <input
-              type="number"
-              min={1}
-              max={10}
-              value={localConfig.workers}
-              onChange={(e) => setLocalConfig({ ...localConfig, workers: parseInt(e.target.value) || 1 })}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">Claude rate limit (req/s)</label>
-            <input
-              type="number"
-              min={0.1}
-              max={10}
-              step={0.1}
-              value={localConfig.claude_rate_limit_per_second}
-              onChange={(e) => setLocalConfig({ ...localConfig, claude_rate_limit_per_second: parseFloat(e.target.value) || 1 })}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-            />
-          </div>
-        </div>
-      </Card>
-
       <LanguagesSection />
 
       <PromptsSection />
@@ -626,29 +662,32 @@ export function SettingsPage() {
 
       <ApiTokensBlock />
 
-      <div className="space-y-3">
-        <h2 className="text-lg font-medium">LLM Providers</h2>
-        {localConfig.llm.map((p, i) => (
-          <div key={p.id}>
-            <ProviderEditor
-              provider={p}
-              onChange={(updated) => {
-                const llm = [...localConfig.llm];
-                llm[i] = updated;
-                setLocalConfig({ ...localConfig, llm });
-              }}
-              onDelete={() => {
-                setLocalConfig({ ...localConfig, llm: localConfig.llm.filter((_, j) => j !== i) });
-              }}
-            />
-            {p.type === "docker" && <DockerRunPreview imageName={p.image} providerId={p.id} />}
+      <ConcurrencyBlock localConfig={localConfig} setLocalConfig={setLocalConfig} />
+
+      <Card title="LLM Providers" collapsible>
+        <div className="space-y-3">
+          {localConfig.llm.map((p, i) => (
+            <div key={p.id}>
+              <ProviderEditor
+                provider={p}
+                onChange={(updated) => {
+                  const llm = [...localConfig.llm];
+                  llm[i] = updated;
+                  setLocalConfig({ ...localConfig, llm });
+                }}
+                onDelete={() => {
+                  setLocalConfig({ ...localConfig, llm: localConfig.llm.filter((_, j) => j !== i) });
+                }}
+              />
+              {p.type === "docker" && <DockerRunPreview imageName={p.image} providerId={p.id} />}
+            </div>
+          ))}
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" onClick={addProvider}>Add Provider</Button>
+            <TestLLMButton />
           </div>
-        ))}
-        <div className="flex gap-2">
-          <Button variant="secondary" size="sm" onClick={addProvider}>Add Provider</Button>
-          <TestLLMButton />
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

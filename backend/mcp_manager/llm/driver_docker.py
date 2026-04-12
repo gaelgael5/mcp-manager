@@ -52,13 +52,29 @@ _IMAGE_MODEL_ENV = {
 }
 
 
+class LLMProviderDead(Exception):
+    """Raised when a Docker LLM provider has failed too many times in a row —
+    signals that the entire pipeline should abort (e.g. expired auth token)."""
+
+
+FAILURE_THRESHOLD = 5  # consecutive failures before a driver is declared dead
+
+
 class DockerDriver:
-    def __init__(self, provider_id: int, args: dict, image: str = "claude", batch_id: str = ""):
+    def __init__(
+        self,
+        provider_id: int,
+        args: dict,
+        image: str = "claude",
+        batch_id: str = "",
+        instance_idx: int = 0,
+    ):
         self.provider_id = provider_id
+        self.instance_idx = instance_idx
         self.image = image
         self._args = args
         suffix = f"-{batch_id}" if batch_id else ""
-        self.container_name = f"mcp-llm-worker-{provider_id}{suffix}"
+        self.container_name = f"mcp-llm-worker-{provider_id}-{instance_idx}{suffix}"
         self.api_key = _resolve_env_var(args.get("API_KEY", ""))
         self.workspace = _resolve_env_var(args.get("WORKSPACE_PATH", "./workspace"))
         self.codex_auth_path = _resolve_env_var(args.get("CODEX_AUTH_PATH", "/root/.codex/auth.json"))
@@ -70,9 +86,7 @@ class DockerDriver:
         self._rate_limit = 1.0  # seconds between calls
         self._last_call = 0.0
         self.request_count = 0
-
-    def set_rate_limit(self, rps: float):
-        self._rate_limit = 1.0 / rps if rps > 0 else 1.0
+        self._consecutive_failures = 0
 
     def _build_run_cmd(self) -> list[str]:
         cmd = [
@@ -205,7 +219,15 @@ class DockerDriver:
             return ""
 
         if event.get("status") == "success":
+            self._consecutive_failures = 0
             return event.get("data", "") or ""
+
+        self._consecutive_failures += 1
+        if self._consecutive_failures >= FAILURE_THRESHOLD:
+            raise LLMProviderDead(
+                f"{self.container_name} failed {self._consecutive_failures} "
+                f"consecutive tasks — aborting pipeline (check auth token / logs)"
+            )
         return ""
 
     async def embed(self, text: str) -> list[float] | None:

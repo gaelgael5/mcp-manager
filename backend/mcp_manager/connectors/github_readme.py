@@ -28,9 +28,9 @@ def _parse_owner_repo(source_url: str) -> tuple[str, str] | None:
 async def fetch_branch_sha(source_url: str) -> str | None:
     """Return the SHA of the HEAD commit on the default branch.
 
-    Two GitHub API calls:
-      1. GET /repos/{owner}/{repo}        → default_branch
-      2. GET /repos/{owner}/{repo}/branches/{default_branch} → commit.sha
+    Single GitHub API call to /repos/{owner}/{repo}/commits?per_page=1 which
+    returns the latest commit on the default branch without needing to know
+    the branch name.
 
     Returns None on any failure (non-github URL, 404, network error).
     """
@@ -42,20 +42,17 @@ async def fetch_branch_sha(source_url: str) -> str | None:
     headers = await get_github_headers_async()
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
-            repo_resp = await client.get(
-                f"https://api.github.com/repos/{owner}/{repo}", headers=headers
-            )
-            if repo_resp.status_code != 200:
-                return None
-            default_branch = repo_resp.json().get("default_branch") or "main"
-
-            branch_resp = await client.get(
-                f"https://api.github.com/repos/{owner}/{repo}/branches/{default_branch}",
+            resp = await client.get(
+                f"https://api.github.com/repos/{owner}/{repo}/commits",
+                params={"per_page": 1},
                 headers=headers,
             )
-            if branch_resp.status_code != 200:
+            if resp.status_code != 200:
                 return None
-            return branch_resp.json().get("commit", {}).get("sha")
+            commits = resp.json()
+            if not isinstance(commits, list) or not commits:
+                return None
+            return commits[0].get("sha")
     except Exception:
         logger.debug("fetch_branch_sha failed for %s", source_url, exc_info=True)
         return None

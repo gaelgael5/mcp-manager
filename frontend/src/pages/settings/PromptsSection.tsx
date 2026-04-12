@@ -35,7 +35,7 @@ export function PromptsSection() {
   const hasPlaceholder = draft.includes("{content}");
 
   return (
-    <Card title="Prompts">
+    <Card title="Prompts" collapsible>
       <div className="space-y-3">
         <div className="flex flex-wrap gap-3">
           <label className="flex items-center gap-2 text-sm">

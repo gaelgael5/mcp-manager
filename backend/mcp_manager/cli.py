@@ -300,6 +300,98 @@ async def _run_enrich(pass_name: str | None = None) -> None:
         typer.echo("\nEnrichment complete.")
 
 
+@app.command("fetch-branch-shas")
+def fetch_branch_shas(
+    concurrency: int = typer.Option(10, help="Max parallel GitHub API calls"),
+):
+    """Batch: fetch HEAD SHA of default branch for each service with
+    needs_reindex=true and store it in mcp_services.branch_hash. Does not
+    touch any other column, does not reset needs_reindex."""
+    logging.basicConfig(level=logging.INFO)
+    asyncio.run(_fetch_branch_shas(concurrency=concurrency))
+
+
+async def _fetch_branch_shas(concurrency: int):
+    """Fetch branch SHAs for flagged services, deduplicating by source_url so
+    repos shared by multiple services are only queried once."""
+    from collections import defaultdict
+    from sqlalchemy import select, update as sa_update
+    from mcp_manager.db.session import SessionLocal
+    from mcp_manager.db.models import McpService
+    from mcp_manager.connectors.github_readme import fetch_branch_sha
+    from mcp_manager.connectors.token_pool import load_tokens
+
+    await load_tokens()
+
+    async with SessionLocal() as db:
+        result = await db.execute(
+            select(McpService.id, McpService.source_url, McpService.branch_hash)
+            .where(McpService.needs_reindex == True)
+            .where(McpService.source_url.ilike("%github.com%"))
+        )
+        rows = result.all()
+
+    total_services = len(rows)
+
+    # Group services by source_url so one HTTP call covers all duplicates.
+    by_url: dict[str, list[tuple]] = defaultdict(list)
+    for svc_id, source_url, current_hash in rows:
+        by_url[source_url].append((svc_id, current_hash))
+
+    unique_urls = list(by_url.keys())
+    total_urls = len(unique_urls)
+    typer.echo(
+        f"Fetching branch SHAs for {total_services} services "
+        f"across {total_urls} unique repos (concurrency={concurrency})"
+    )
+
+    stats = {
+        "processed_urls": 0,
+        "services_updated": 0,
+        "services_unchanged": 0,
+        "services_failed": 0,
+    }
+    semaphore = asyncio.Semaphore(concurrency)
+
+    async def _one(url: str) -> tuple[str, str | None]:
+        async with semaphore:
+            sha = await fetch_branch_sha(url)
+            return url, sha
+
+    chunk_size = 100
+    for i in range(0, total_urls, chunk_size):
+        chunk = unique_urls[i:i + chunk_size]
+        results = await asyncio.gather(*(_one(u) for u in chunk))
+
+        async with SessionLocal() as db:
+            for url, new_hash in results:
+                stats["processed_urls"] += 1
+                services_for_url = by_url[url]
+                if new_hash is None:
+                    stats["services_failed"] += len(services_for_url)
+                    continue
+                for svc_id, current_hash in services_for_url:
+                    if new_hash == current_hash:
+                        stats["services_unchanged"] += 1
+                        continue
+                    await db.execute(
+                        sa_update(McpService)
+                        .where(McpService.id == svc_id)
+                        .values(branch_hash=new_hash)
+                    )
+                    stats["services_updated"] += 1
+            await db.commit()
+
+        typer.echo(
+            f"  [urls={stats['processed_urls']}/{total_urls}] "
+            f"updated={stats['services_updated']} "
+            f"unchanged={stats['services_unchanged']} "
+            f"failed={stats['services_failed']}"
+        )
+
+    typer.echo(f"Done: {stats}")
+
+
 @app.command()
 def index(
     limit: int = typer.Option(100, help="Max number of services to index per run"),
@@ -312,14 +404,14 @@ def index(
 
 async def _run_index(limit: int) -> dict:
     from mcp_manager.indexer.pipeline import run_index
-    from mcp_manager.summarizer.ollama_client import get_llm_manager
+    from mcp_manager.llm.manager import LLMManager
 
-    manager = get_llm_manager()
+    manager = LLMManager(batch_id="mcp", pipeline="mcp")
     manager.load()
     typer.echo(f"LLM providers: {len(manager.drivers)} loaded")
     await manager.start_all()
     try:
-        return await run_index(limit=limit)
+        return await run_index(limit=limit, manager=manager)
     finally:
         await manager.stop_all()
         typer.echo("LLM providers stopped")

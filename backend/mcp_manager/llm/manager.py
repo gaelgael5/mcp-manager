@@ -13,20 +13,32 @@ DRIVER_TYPES = {
     "docker": DockerDriver,
 }
 
+# Valid pipeline keys for the concurrency config block.
+PIPELINES = ("mcp", "skill_sources", "skills")
+
 
 class LLMManager:
-    def __init__(self, batch_id: str = ""):
+    def __init__(self, batch_id: str = "", pipeline: str = ""):
         self.drivers: list = []
         self._current = 0
         self._config = {}
         self._batch_id = batch_id
+        self._pipeline = pipeline
 
     def load(self):
-        """Load config and instantiate drivers."""
+        """Load config and instantiate drivers.
+
+        When `pipeline` is set, reads `config["concurrency"][pipeline]` as a
+        mapping of `{provider_id (str): count}` and spawns `count` DockerDriver
+        instances per configured docker provider. Ollama providers always get
+        exactly one driver (reserved for RAG/embeddings) regardless of pipeline.
+        """
         self._config = load_config()
         self.drivers = []
 
-        rate_limit = self._config.get("claude_rate_limit_per_second", 1)
+        concurrency = {}
+        if self._pipeline:
+            concurrency = self._config.get("concurrency", {}).get(self._pipeline, {}) or {}
 
         for provider in self._config.get("llm", []):
             ptype = provider.get("type")
@@ -38,13 +50,27 @@ class LLMManager:
                 self.drivers.append(driver)
             elif ptype == "docker":
                 image = provider.get("image", "claude")
-                driver = DockerDriver(pid, args, image, batch_id=self._batch_id)
-                driver.set_rate_limit(rate_limit)
-                self.drivers.append(driver)
+                count = 1
+                if self._pipeline:
+                    try:
+                        count = int(concurrency.get(str(pid), 1))
+                    except (TypeError, ValueError):
+                        count = 1
+                count = max(0, count)
+                for i in range(count):
+                    driver = DockerDriver(
+                        pid, args, image,
+                        batch_id=self._batch_id,
+                        instance_idx=i,
+                    )
+                    self.drivers.append(driver)
             else:
                 logger.warning("Unknown LLM provider type: %s", ptype)
 
-        logger.info("LLM Manager loaded %d providers", len(self.drivers))
+        logger.info(
+            "LLM Manager loaded %d drivers (pipeline=%r)",
+            len(self.drivers), self._pipeline or "default",
+        )
 
     async def start_all(self):
         """Start containers for Docker providers."""
@@ -69,8 +95,17 @@ class LLMManager:
         return driver
 
     def get_generate_driver(self):
-        """Get a driver that can generate text."""
-        return self.get_driver()
+        """Get a driver that can generate text.
+
+        Only Docker drivers are used for generation — ollama is reserved for
+        embeddings (RAG). Returns None if no docker provider is configured.
+        """
+        docker_drivers = [d for d in self.drivers if isinstance(d, DockerDriver)]
+        if not docker_drivers:
+            return None
+        driver = docker_drivers[self._current % len(docker_drivers)]
+        self._current += 1
+        return driver
 
     def get_embed_driver(self):
         """Get a driver that can embed (prefer Ollama)."""
@@ -86,9 +121,10 @@ class LLMManager:
             if isinstance(d, OllamaDriver):
                 stats.append({"type": "ollama", "name": "ollama", "requests": d.request_count})
             elif isinstance(d, DockerDriver):
-                stats.append({"type": "docker", "name": d.image, "container": d.container_name, "requests": d.request_count})
+                stats.append({
+                    "type": "docker",
+                    "name": d.image,
+                    "container": d.container_name,
+                    "requests": d.request_count,
+                })
         return stats
-
-    @property
-    def worker_count(self) -> int:
-        return self._config.get("workers", 1)

@@ -30,6 +30,28 @@ function Throughput({ value }: { value?: number }) {
   return <span className="text-xs text-yellow-600 font-normal">{value}/h</span>;
 }
 
+function formatEta(remaining: number, throughputPerHour: number): string | null {
+  if (throughputPerHour <= 0 || remaining <= 0) return null;
+  let totalMin = Math.ceil((remaining / throughputPerHour) * 60);
+  const days = Math.floor(totalMin / 1440);
+  totalMin -= days * 1440;
+  const hours = Math.floor(totalMin / 60);
+  const min = totalMin - hours * 60;
+  const parts: string[] = [];
+  if (days > 0) parts.push(`${days}j`);
+  if (hours > 0) parts.push(`${hours}h`);
+  parts.push(`${min}min`);
+  return parts.join(" ");
+}
+
+function ETA({ processed, total, throughput }: { processed?: number; total?: number; throughput?: number }) {
+  if (!throughput || !total || processed == null) return null;
+  const remaining = total - processed;
+  const eta = formatEta(remaining, throughput);
+  if (!eta) return null;
+  return <span className="text-xs text-gray-400 font-normal">~ {eta}</span>;
+}
+
 interface TranslationsProgress {
   languages: { code: string; name: string; is_baseline: boolean }[];
   mcp: Record<string, number>;
@@ -110,6 +132,7 @@ export function DashboardPage() {
           {((syncStatus as any)?.running || (syncStatus as any)?.indexing) && (<>
             <span className="text-yellow-500 animate-pulse">⚡</span>
             <Throughput value={(syncStatus as any)?.indexing_throughput} />
+            <ETA processed={(syncStatus as any)?.indexing_progress?.processed} total={(syncStatus as any)?.indexing_progress?.total} throughput={(syncStatus as any)?.indexing_throughput} />
           </>)}
         </span>
       }>
@@ -137,6 +160,7 @@ export function DashboardPage() {
           {(syncStatus as any)?.enriching && (<>
             <span className="text-yellow-500 animate-pulse">⚡</span>
             <Throughput value={(syncStatus as any)?.enriching_throughput} />
+            <ETA processed={(syncStatus as any)?.enrich_progress?.done} total={(syncStatus as any)?.enrich_progress?.total} throughput={(syncStatus as any)?.enriching_throughput} />
           </>)}
         </span>
       }>
@@ -166,6 +190,7 @@ export function DashboardPage() {
           {(syncStatus as any)?.indexing_skills && (<>
             <span className="text-yellow-500 animate-pulse">⚡</span>
             <Throughput value={(syncStatus as any)?.indexing_skills_throughput} />
+            <ETA processed={(syncStatus as any)?.index_skills_progress?.done} total={(syncStatus as any)?.index_skills_progress?.total} throughput={(syncStatus as any)?.indexing_skills_throughput} />
           </>)}
         </span>
       }>

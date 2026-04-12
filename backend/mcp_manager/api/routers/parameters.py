@@ -119,8 +119,11 @@ async def detect_parameters_for_service(
                 doc_content = None
 
     if doc_content:
+        from mcp_manager.llm.driver_docker import LLMProviderDead
         try:
             ai_params = await _detect_params_with_ai(doc_content)
+        except LLMProviderDead:
+            raise
         except Exception:
             logger.exception("Param detection: AI analysis failed for %s", service.name)
             ai_params = []
@@ -168,6 +171,72 @@ async def detect_parameters(service_id: uuid.UUID, db: AsyncSession = Depends(ge
     return {"status": "done", **stats}
 
 
+import re as _re
+
+_JSON_ARRAY_RE = _re.compile(r"\[\s*(?:\{[^]]*\}[\s,]*)*\]", _re.DOTALL)
+
+
+def _extract_json_array(raw: str) -> list | None:
+    """Extract the first JSON array from raw LLM output, tolerating prose
+    before/after and markdown fences. Returns None if nothing parseable is
+    found."""
+    if not raw:
+        return None
+    raw = raw.strip()
+    if not raw:
+        return None
+
+    # Strip markdown fences if the whole thing is fenced.
+    if raw.startswith("```"):
+        first_nl = raw.find("\n")
+        if first_nl != -1:
+            raw = raw[first_nl + 1:]
+        if raw.endswith("```"):
+            raw = raw[:-3]
+        raw = raw.strip()
+
+    # Try direct parse first.
+    try:
+        parsed = json.loads(raw)
+        return parsed if isinstance(parsed, list) else None
+    except (json.JSONDecodeError, ValueError):
+        pass
+
+    # Bracket scan: find the first '[' then the matching ']' respecting nesting.
+    start = raw.find("[")
+    while start != -1:
+        depth = 0
+        in_str = False
+        esc = False
+        for i in range(start, len(raw)):
+            ch = raw[i]
+            if in_str:
+                if esc:
+                    esc = False
+                elif ch == "\\":
+                    esc = True
+                elif ch == '"':
+                    in_str = False
+                continue
+            if ch == '"':
+                in_str = True
+            elif ch == "[":
+                depth += 1
+            elif ch == "]":
+                depth -= 1
+                if depth == 0:
+                    candidate = raw[start:i + 1]
+                    try:
+                        parsed = json.loads(candidate)
+                        if isinstance(parsed, list):
+                            return parsed
+                    except (json.JSONDecodeError, ValueError):
+                        pass
+                    break
+        start = raw.find("[", start + 1)
+    return None
+
+
 async def _detect_params_with_ai(doc_content: str) -> list[dict]:
     from mcp_manager.summarizer.ollama_client import ollama_generate
 
@@ -191,30 +260,30 @@ Documentation:
 
 JSON array:"""
 
+    from mcp_manager.llm.driver_docker import LLMProviderDead
     try:
         response = await ollama_generate(prompt)
-        # Extract JSON from response
-        response = response.strip()
-        if response.startswith("```"):
-            response = response.split("\n", 1)[1].rsplit("```", 1)[0]
-        params = json.loads(response)
-        if not isinstance(params, list):
-            return []
-        # Validate and clean
-        result = []
-        for p in params:
-            if isinstance(p, dict) and "name" in p:
-                result.append({
-                    "name": p["name"],
-                    "description": p.get("description", ""),
-                    "is_required": bool(p.get("is_required", False)),
-                    "is_secret": bool(p.get("is_secret", False)),
-                    "source": "ai",
-                })
-        return result
+    except LLMProviderDead:
+        raise
     except Exception:
-        logger.exception("AI parameter detection failed")
+        logger.exception("LLM call failed during param detection")
         return []
+
+    params = _extract_json_array(response)
+    if params is None:
+        return []
+
+    result = []
+    for p in params:
+        if isinstance(p, dict) and "name" in p:
+            result.append({
+                "name": p["name"],
+                "description": p.get("description", ""),
+                "is_required": bool(p.get("is_required", False)),
+                "is_secret": bool(p.get("is_secret", False)),
+                "source": "ai",
+            })
+    return result
 
 
 def _serialize(p: McpParameter) -> dict:

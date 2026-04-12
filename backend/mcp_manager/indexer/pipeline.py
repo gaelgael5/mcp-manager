@@ -1,14 +1,21 @@
 """Indexation pipeline: fetch doc, summarize, detect params, generate recipes.
 
-Uses hash-based short-circuits to skip work when nothing has changed upstream:
-  - branch_hash (HEAD SHA of the default branch) governs params + installations.
-    If the branch SHA is unchanged, params and installations are left alone.
-  - doc_hash (sha256 of the cleaned README content) governs summaries. If the
-    README content is unchanged, summaries are left alone.
+Uses a fast-path short-circuit based on GitHub branch SHA:
+  - If branch_hash matches DB value AND all expected outputs exist in DB
+    (summaries per active culture, at least one param, at least one
+    installation), the service is skipped with ZERO LLM calls and no README
+    fetch. Only cost: 1 GitHub API call (branch SHA) + 3 small DB queries.
+  - Otherwise the README is fetched and the pipeline generates whatever is
+    missing (missing cultures) or stale (if branch moved, params and
+    installations are regenerated; if the README content hash differs from
+    what's stored in existing summaries' source_hash, summaries are
+    regenerated too).
 
-Both checks are independent: a code-only commit bumps branch_hash but not
-doc_hash, so params/installations get re-evaluated while summaries stay.
+`service.doc_hash` is NEVER written by this pipeline — it's owned by the
+connectors (each stores sha256 of its own source metadata). The README
+content hash is stored per-summary in `mcp_summaries.source_hash`.
 """
+import asyncio
 import hashlib
 import logging
 
@@ -32,8 +39,22 @@ import mcp_manager.connectors  # noqa: F401
 logger = logging.getLogger(__name__)
 
 
-async def run_index(limit: int = 100, progress_callback=None, cancel_check=None) -> dict[str, int]:
-    """Process up to `limit` services that need reindexing."""
+async def run_index(
+    limit: int = 100,
+    progress_callback=None,
+    cancel_check=None,
+    manager=None,
+) -> dict[str, int]:
+    """Process up to `limit` services that need reindexing.
+
+    Uses a Queue + N workers pattern. N is `max(1, len(manager.drivers))` —
+    each worker owns one LLM driver (a Docker container instance or the
+    shared Ollama endpoint) via a context-local single-driver sub-manager.
+    """
+    from mcp_manager.summarizer.ollama_client import get_llm_manager, set_llm_manager
+    from mcp_manager.llm.manager import LLMManager
+    from mcp_manager.llm.driver_docker import DockerDriver, LLMProviderDead
+
     stats = {
         "processed": 0,
         "skipped_no_doc": 0,
@@ -44,7 +65,6 @@ async def run_index(limit: int = 100, progress_callback=None, cancel_check=None)
         "recipes": 0,
     }
 
-    # Count total to index
     async with SessionLocal() as db:
         total_result = await db.execute(
             select(func.count()).select_from(McpService).where(McpService.needs_reindex == True)
@@ -55,77 +75,180 @@ async def run_index(limit: int = 100, progress_callback=None, cancel_check=None)
     if progress_callback:
         progress_callback(stats)
 
-    batch_size = 10
-    processed = 0
+    if total == 0:
+        return stats
 
-    while processed < limit:
-        async with SessionLocal() as db:
-            result = await db.execute(
-                select(McpService)
-                .where(McpService.needs_reindex == True)
-                .order_by(McpService.updated_at.desc())
-                .limit(min(batch_size, limit - processed))
-            )
-            services = result.scalars().all()
-            if not services:
+    async with SessionLocal() as db:
+        id_result = await db.execute(
+            select(McpService.id)
+            .where(McpService.needs_reindex == True)
+            .order_by(McpService.updated_at.desc())
+            .limit(limit)
+        )
+        service_ids = [row[0] for row in id_result.all()]
+
+    queue: asyncio.Queue = asyncio.Queue()
+    for sid in service_ids:
+        queue.put_nowait(sid)
+
+    if manager is None:
+        manager = get_llm_manager()
+    gen_drivers = [d for d in manager.drivers if isinstance(d, DockerDriver)]
+    if not gen_drivers:
+        logger.error(
+            "run_index: no docker LLM provider configured — ollama is reserved "
+            "for RAG. Configure at least one docker provider in /settings."
+        )
+        return stats
+    num_workers = len(gen_drivers)
+    abort_event = asyncio.Event()
+
+    async def _worker(worker_id: int, driver):
+        worker_mgr = LLMManager.__new__(LLMManager)
+        worker_mgr.drivers = [driver]
+        worker_mgr._current = 0
+        worker_mgr._config = {}
+        worker_mgr._batch_id = f"mcp-w{worker_id}"
+        worker_mgr._pipeline = "mcp"
+        set_llm_manager(worker_mgr)
+
+        driver_name = getattr(driver, "container_name", None) or type(driver).__name__
+        logger.info("mcp index worker %d started with driver %s", worker_id, driver_name)
+
+        while True:
+            if abort_event.is_set():
+                break
+            if cancel_check and cancel_check():
+                break
+            try:
+                sid = queue.get_nowait()
+            except asyncio.QueueEmpty:
                 break
 
-            for service in services:
-                if cancel_check and cancel_check():
-                    logger.info("Index cancelled at %d processed", processed)
-                    return stats
+            async with SessionLocal() as wdb:
+                result = await wdb.execute(select(McpService).where(McpService.id == sid))
+                service = result.scalar_one_or_none()
+                if not service:
+                    continue
 
                 indexed = False
                 try:
-                    indexed = await _index_one(db, service, stats)
+                    indexed = await _index_one(wdb, service, stats)
+                except LLMProviderDead as e:
+                    logger.error(
+                        "mcp index worker %d: LLM provider dead — aborting pipeline: %s",
+                        worker_id, e,
+                    )
+                    abort_event.set()
+                    try:
+                        await wdb.rollback()
+                    except Exception:
+                        pass
+                    break
                 except Exception:
                     logger.exception("Failed to index %s", service.name)
+                    service.repo_status = "index_failed"
 
                 service.needs_reindex = False
-                if not indexed:
-                    service.repo_status = "index_failed"
-                processed += 1
+
                 stats["processed"] += 1
+                processed = stats["processed"]
+
+                try:
+                    await wdb.commit()
+                except Exception:
+                    logger.exception("Commit failed for %s", service.name)
+                    await wdb.rollback()
 
                 if progress_callback:
                     progress_callback(stats)
 
-            await db.commit()
+                if processed % 10 == 0:
+                    logger.info(
+                        "Index progress: %d processed (summaries: %d, params: %d, recipes: %d, unchanged: %d)",
+                        processed, stats["summaries"], stats["params"],
+                        stats["recipes"], stats["skipped_unchanged"],
+                    )
 
-        logger.info(
-            "Index progress: %d processed (summaries: %d, params: %d, recipes: %d, unchanged: %d)",
+    workers = [
+        asyncio.create_task(_worker(i, gen_drivers[i]))
+        for i in range(num_workers)
+    ]
+    await asyncio.gather(*workers)
+
+    if abort_event.is_set():
+        stats["aborted"] = "llm_provider_dead"
+        logger.error(
+            "Index aborted: %d processed before LLM provider failure "
+            "(summaries: %d, params: %d, recipes: %d, unchanged: %d)",
             stats["processed"], stats["summaries"], stats["params"],
             stats["recipes"], stats["skipped_unchanged"],
         )
-
+    else:
+        logger.info(
+            "Index done: %d processed (summaries: %d, params: %d, recipes: %d, unchanged: %d)",
+            stats["processed"], stats["summaries"], stats["params"],
+            stats["recipes"], stats["skipped_unchanged"],
+        )
     return stats
 
 
 async def _index_one(db, service: McpService, stats: dict) -> bool:
-    """Index a single service with hash-based short-circuits.
+    """Index a single service with fast-path short-circuit.
 
     Flow:
-      1. Fetch the branch SHA from GitHub → branch_changed?
-      2. Fetch the README and compute its sha256 → doc_changed?
-      3. If doc_changed: regenerate summaries (overwrite via on_conflict_do_update)
-      4. If branch_changed: re-run param detection and installation generation
-      5. Update search_vector from the EN summary
-      6. Persist new branch_hash and doc_hash on the service row
-
-    Returns True if the service was processed (even if nothing was regenerated
-    because everything was up-to-date). Returns False only if the service is
-    inaccessible (no doc could be fetched).
+      1. Fetch branch SHA. Compare to service.branch_hash → branch_changed?
+      2. Check DB state: missing cultures, has_params, has_installs
+      3. Fast path: if branch unchanged AND everything present → return (skip)
+      4. Else: fetch README, compute new_doc_hash
+      5. Generate missing cultures (always)
+      6. If branch_changed and content_changed (per summary.source_hash), regen all cultures
+      7. If branch_changed or missing params: re-run param detection
+      8. If branch_changed or missing installations: regen installations
+      9. Update service.branch_hash (do NOT touch service.doc_hash — connector-owned)
     """
     from mcp_manager.connectors.github_readme import fetch_github_readme, fetch_branch_sha
 
     # --- Step 1: branch SHA ---------------------------------------------------
     new_branch_hash = await fetch_branch_sha(service.source_url)
-    # If we can't fetch a SHA (non-github or 404), force re-evaluation so the
-    # service still gets processed — the fetch_github_readme below will tell
-    # us if the repo is really dead.
     branch_changed = new_branch_hash is None or service.branch_hash != new_branch_hash
 
-    # --- Step 2: fetch README and compute doc_hash ----------------------------
+    # --- Step 2: inspect current DB state ------------------------------------
+    cultures = await get_active_language_codes(db)
+
+    existing_cultures_q = await db.execute(
+        select(McpSummary.culture).where(
+            McpSummary.mcp_service_id == service.id,
+            McpSummary.culture.in_(cultures),
+        )
+    )
+    existing_cultures_set = {row[0] for row in existing_cultures_q.all()}
+    missing_cultures = [c for c in cultures if c not in existing_cultures_set]
+
+    has_params_q = await db.execute(
+        select(func.count()).select_from(McpParameter).where(
+            McpParameter.mcp_service_id == service.id
+        )
+    )
+    has_params = (has_params_q.scalar() or 0) > 0
+
+    has_installs_q = await db.execute(
+        select(func.count()).select_from(McpInstallation).where(
+            McpInstallation.mcp_service_id == service.id
+        )
+    )
+    has_installs = (has_installs_q.scalar() or 0) > 0
+
+    # --- Step 3: fast-path short-circuit -------------------------------------
+    if not branch_changed and not missing_cultures and has_params and has_installs:
+        stats["skipped_unchanged"] += 1
+        # Persist branch_hash in case it was NULL (first observation).
+        if new_branch_hash is not None and service.branch_hash != new_branch_hash:
+            service.branch_hash = new_branch_hash
+        service.repo_status = "ok"
+        return True
+
+    # --- Step 4: fetch README (only reached when there's real work) ----------
     doc_content = None
     if service.doc_url:
         doc_content = await fetch_github_readme(service.doc_url)
@@ -134,33 +257,38 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
 
     if not doc_content:
         stats["skipped_no_doc"] += 1
+        if service.repo_status not in ("404",):
+            service.repo_status = "no_doc"
         return False
 
     cleaned = clean_markdown(doc_content)
     if not cleaned:
         stats["skipped_no_doc"] += 1
+        if service.repo_status not in ("404",):
+            service.repo_status = "no_doc"
         return False
 
     new_doc_hash = hashlib.sha256(cleaned.encode("utf-8")).hexdigest()
-    doc_changed = service.doc_hash != new_doc_hash
 
-    # --- Step 3: summaries ----------------------------------------------------
-    # Rules:
-    #   - If doc_hash changed → regenerate ALL active cultures (overwrite stale)
-    #   - Else → generate only the cultures that are missing in the DB
-    #     (catches newly activated languages and previous-run gaps)
-    cultures = await get_active_language_codes(db)
-    if doc_changed:
-        cultures_to_generate = list(cultures)
-    else:
-        existing_q = await db.execute(
-            select(McpSummary.culture).where(
+    # --- Step 5: summaries ----------------------------------------------------
+    # Decide which cultures need regeneration:
+    #   - missing_cultures: always generate
+    #   - if branch_changed: compare new_doc_hash to existing summary.source_hash
+    #     (not service.doc_hash, which is connector-owned). If different, README
+    #     content actually changed → regenerate all cultures that have a stale
+    #     source_hash. If same, README unchanged, only fill gaps.
+    cultures_to_generate = list(missing_cultures)
+
+    if branch_changed and len(existing_cultures_set) > 0:
+        existing_hashes_q = await db.execute(
+            select(McpSummary.culture, McpSummary.source_hash).where(
                 McpSummary.mcp_service_id == service.id,
                 McpSummary.culture.in_(cultures),
             )
         )
-        existing_cultures = {row[0] for row in existing_q.all()}
-        cultures_to_generate = [c for c in cultures if c not in existing_cultures]
+        for culture, stored_hash in existing_hashes_q.all():
+            if stored_hash != new_doc_hash and culture not in cultures_to_generate:
+                cultures_to_generate.append(culture)
 
     for culture in cultures_to_generate:
         summary_text = await generate_summary(doc_content, culture)
@@ -183,20 +311,22 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
         await db.execute(stmt)
         stats["summaries"] += 1
 
-    # Track whether any real work was done (summaries, params, installations).
     did_work = bool(cultures_to_generate)
 
-    # --- Step 4: re-detect params if branch moved -----------------------------
-    if branch_changed:
+    # --- Step 6: params -------------------------------------------------------
+    if branch_changed or not has_params:
+        from mcp_manager.llm.driver_docker import LLMProviderDead
         try:
             param_stats = await detect_parameters_for_service(db, service, cleaned)
             stats["params"] += param_stats["added"]
             did_work = True
+        except LLMProviderDead:
+            raise
         except Exception:
             logger.exception("Param detection failed for %s", service.name)
 
-    # --- Step 5: regenerate installations if branch moved ---------------------
-    if branch_changed:
+    # --- Step 7: installations -----------------------------------------------
+    if branch_changed or not has_installs:
         targets_result = await db.execute(select(InstallTarget))
         targets = targets_result.scalars().all()
         pkg = service.package_info or {}
@@ -234,7 +364,7 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
     if not did_work:
         stats["skipped_unchanged"] += 1
 
-    # --- Step 6: refresh search vector from the EN summary -------------------
+    # --- Step 8: refresh search vector from the EN summary -------------------
     en_summary = await db.execute(
         select(McpSummary.summary).where(
             McpSummary.mcp_service_id == service.id,
@@ -253,9 +383,8 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
             {"summary": en_summary_text, "sid": service.id},
         )
 
-    # --- Step 7: persist the new hashes --------------------------------------
+    # --- Step 9: persist branch_hash only (leave doc_hash alone) --------------
     if new_branch_hash is not None:
         service.branch_hash = new_branch_hash
-    service.doc_hash = new_doc_hash
     service.repo_status = "ok"
     return True
