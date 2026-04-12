@@ -26,7 +26,7 @@ async def list_summaries(
     summaries = result.scalars().all()
 
     return {
-        "items": [{"id": str(s.id), "mcp_service_id": str(s.mcp_service_id),
+        "items": [{"id": s._id, "service_id": s.parent_id,
                     "culture": s.culture, "summary": s.summary,
                     "source_hash": s.source_hash,
                     "created_at": s.created_at.isoformat() if s.created_at else None,

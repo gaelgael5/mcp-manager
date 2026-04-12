@@ -291,8 +291,8 @@ JSON array:"""
 
 def _serialize(p: McpParameter) -> dict:
     return {
-        "id": str(p.id),
-        "mcp_service_id": str(p.mcp_service_id),
+        "id": p._id,
+        "service_id": p.parent_id,
         "name": p.name,
         "description": p.description,
         "is_required": p.is_required,

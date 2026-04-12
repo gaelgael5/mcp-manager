@@ -124,7 +124,7 @@ async def generate_installations(service_id: int, db: AsyncSession = Depends(get
 
 def _serialize_installation(i: McpInstallation) -> dict:
     return {
-        "id": str(i.id), "mcp_service_id": str(i.mcp_service_id),
+        "id": i._id, "service_id": i.parent_id,
         "install_target_id": str(i.install_target_id),
         "action_type": i.action_type, "data": i.data,
         "env_vars": i.env_vars or {},
