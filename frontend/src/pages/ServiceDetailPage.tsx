@@ -6,6 +6,7 @@ import { useInstallations, useGenerateInstallations } from "../api/installations
 import { useTargets } from "../api/targets";
 import { useParameters, useDetectParameters, useAddParameter, useDeleteParameter } from "../api/parameters";
 import { useCurrentUser } from "../api/auth";
+import { usePreferenceGroups, useCreateGroup, useAddServiceToGroup, useRemoveServiceFromGroup, useServiceGroups } from "../api/preference-groups";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -13,6 +14,7 @@ import { StatusBadge } from "../components/ui/StatusBadge";
 import { SummaryView } from "../components/domain/SummaryView";
 import { InstallCommand } from "../components/domain/InstallCommand";
 import { ParametersBlock } from "../components/domain/ParametersBlock";
+import { GroupPicker } from "../components/domain/GroupPicker";
 
 export function ServiceDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +32,12 @@ export function ServiceDetailPage() {
 
   const { data: user } = useCurrentUser();
   const isAdmin = user?.is_admin === true;
+
+  const { data: serviceGroups = [] } = useServiceGroups(id);
+  const { data: allGroups = [] } = usePreferenceGroups();
+  const createGroup = useCreateGroup();
+  const addToGroup = useAddServiceToGroup();
+  const removeFromGroup = useRemoveServiceFromGroup();
 
   const [editingUrl, setEditingUrl] = useState(false);
   const [urlInput, setUrlInput] = useState("");
@@ -84,6 +92,16 @@ export function ServiceDetailPage() {
           {service.category && <Badge>{service.category}</Badge>}
           {service.tags.map((t) => <Badge key={t}>{t}</Badge>)}
         </div>
+
+        {user?.authenticated && (
+          <GroupPicker
+            groups={serviceGroups}
+            allGroups={allGroups}
+            onAdd={(groupId) => addToGroup.mutate({ groupId, serviceId: id! })}
+            onRemove={(groupId) => removeFromGroup.mutate({ groupId, serviceId: id! })}
+            onCreate={(name) => createGroup.mutateAsync({ name }).then((g) => addToGroup.mutate({ groupId: g.id, serviceId: id! }))}
+          />
+        )}
 
         {editingUrl ? (
           <div className="mt-2 flex items-center gap-2">

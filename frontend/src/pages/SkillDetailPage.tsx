@@ -4,10 +4,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Markdown from "react-markdown";
 import { apiFetch } from "../api/client";
 import { useCurrentUser } from "../api/auth";
+import { usePreferenceGroups, useCreateGroup, useAddSkillToGroup, useRemoveSkillFromGroup, useSkillGroups } from "../api/preference-groups";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { Tabs } from "../components/ui/Tabs";
+import { GroupPicker } from "../components/domain/GroupPicker";
 import type { SkillTranslation } from "../types";
 
 interface SkillDetail {
@@ -45,6 +47,12 @@ export function SkillDetailPage() {
   const { data: user } = useCurrentUser();
   const isAdmin = user?.is_admin === true;
   const qc = useQueryClient();
+
+  const { data: skillGroups = [] } = useSkillGroups(id);
+  const { data: allGroups = [] } = usePreferenceGroups();
+  const createGroup = useCreateGroup();
+  const addToGroup = useAddSkillToGroup();
+  const removeFromGroup = useRemoveSkillFromGroup();
   const [contentTab, setContentTab] = useState("en");
   const [collapsed, setCollapsed] = useState(false);
 
@@ -76,6 +84,15 @@ export function SkillDetailPage() {
           {skill.licence && <Badge color={licence?.color || "gray"}>{skill.licence}</Badge>}
           {skill.category && <Badge>{skill.category}</Badge>}
         </div>
+        {user?.authenticated && (
+          <GroupPicker
+            groups={skillGroups}
+            allGroups={allGroups}
+            onAdd={(groupId) => addToGroup.mutate({ groupId, skillId: id! })}
+            onRemove={(groupId) => removeFromGroup.mutate({ groupId, skillId: id! })}
+            onCreate={(name) => createGroup.mutateAsync({ name }).then((g) => addToGroup.mutate({ groupId: g.id, skillId: id! }))}
+          />
+        )}
         {skill.source_url && (
           <a href={skill.source_url} target="_blank" rel="noopener noreferrer" className="mt-2 block text-sm text-blue-600 hover:underline">
             {skill.source_url}

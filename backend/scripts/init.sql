@@ -78,3 +78,36 @@ ON CONFLICT (name) DO NOTHING;
 INSERT INTO install_targets (name, description) VALUES
     ('claude_desktop', 'Claude Desktop app config')
 ON CONFLICT (name) DO NOTHING;
+
+-- Users
+CREATE TABLE IF NOT EXISTS users (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email           VARCHAR(255) NOT NULL UNIQUE,
+    name            VARCHAR(255),
+    picture         TEXT,
+    created_at      TIMESTAMPTZ DEFAULT now()
+);
+
+-- Preference groups
+CREATE TABLE IF NOT EXISTS preference_groups (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name            VARCHAR(255) NOT NULL,
+    description     TEXT,
+    created_at      TIMESTAMPTZ DEFAULT now(),
+    updated_at      TIMESTAMPTZ DEFAULT now()
+);
+
+-- Junction: preference groups <-> MCP services
+CREATE TABLE IF NOT EXISTS preference_group_services (
+    group_id        UUID NOT NULL REFERENCES preference_groups(id) ON DELETE CASCADE,
+    mcp_service_id  UUID NOT NULL REFERENCES mcp_services(id) ON DELETE CASCADE,
+    PRIMARY KEY (group_id, mcp_service_id)
+);
+
+-- Junction: preference groups <-> skills
+CREATE TABLE IF NOT EXISTS preference_group_skills (
+    group_id        UUID NOT NULL REFERENCES preference_groups(id) ON DELETE CASCADE,
+    skill_id        UUID NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
+    PRIMARY KEY (group_id, skill_id)
+);

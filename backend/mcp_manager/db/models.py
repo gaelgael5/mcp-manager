@@ -413,6 +413,59 @@ class ApiKey(Base):
     )
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    name: Mapped[str | None] = mapped_column(String(255))
+    picture: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+preference_group_services = Table(
+    "preference_group_services",
+    Base.metadata,
+    Column("group_id", UUID(as_uuid=True), ForeignKey("preference_groups.id", ondelete="CASCADE"), primary_key=True),
+    Column("mcp_service_id", UUID(as_uuid=True), ForeignKey("mcp_services.id", ondelete="CASCADE"), primary_key=True),
+)
+
+
+preference_group_skills = Table(
+    "preference_group_skills",
+    Base.metadata,
+    Column("group_id", UUID(as_uuid=True), ForeignKey("preference_groups.id", ondelete="CASCADE"), primary_key=True),
+    Column("skill_id", UUID(as_uuid=True), ForeignKey("skills.id", ondelete="CASCADE"), primary_key=True),
+)
+
+
+class PreferenceGroup(Base):
+    __tablename__ = "preference_groups"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    services: Mapped[list["McpService"]] = relationship(secondary=preference_group_services)
+    skills: Mapped[list["Skill"]] = relationship(secondary=preference_group_skills)
+    user: Mapped["User"] = relationship()
+
+
 class Language(Base):
     __tablename__ = "languages"
 

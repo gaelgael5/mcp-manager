@@ -20,6 +20,25 @@ JWT_ALGORITHM = "HS256"
 JWT_EXPIRY_HOURS = 24 * 180  # 6 mois
 
 
+async def _upsert_user(email: str, name: str, picture: str) -> str:
+    """Create or update user in DB. Returns user_id as string."""
+    from mcp_manager.db.session import SessionLocal
+    from mcp_manager.db.models import User
+    from sqlalchemy.dialects.postgresql import insert as pg_insert
+
+    async with SessionLocal() as db:
+        stmt = pg_insert(User.__table__).values(
+            email=email, name=name, picture=picture,
+        ).on_conflict_do_update(
+            index_elements=["email"],
+            set_={"name": name, "picture": picture},
+        ).returning(User.__table__.c.id)
+        result = await db.execute(stmt)
+        user_id = str(result.scalar_one())
+        await db.commit()
+        return user_id
+
+
 def _get_callback_url(request: Request) -> str:
     """Build callback URL preserving the original host from the request."""
     host = request.headers.get("x-forwarded-host") or request.headers.get("host", "localhost")
@@ -76,12 +95,16 @@ async def auth_callback(code: str, request: Request):
     picture = user_info.get("picture", "")
     is_admin = email.lower() == settings.admin_email.lower()
 
+    # Persist user in DB
+    user_id = await _upsert_user(email, name, picture)
+
     # Create JWT
     payload = {
         "email": email,
         "name": name,
         "picture": picture,
         "is_admin": is_admin,
+        "user_id": user_id,
         "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRY_HOURS),
     }
     token = jwt.encode(payload, settings.jwt_secret, algorithm=JWT_ALGORITHM)
@@ -105,6 +128,7 @@ async def get_current_user(request: Request):
         "name": user.get("name"),
         "picture": user.get("picture"),
         "is_admin": user.get("is_admin", False),
+        "user_id": user.get("user_id"),
     }
 
 
@@ -131,6 +155,14 @@ def _get_user_from_request(request: Request) -> dict | None:
         return {"email": "api_key", "is_admin": False, "is_api_key": True, "pending_validation": True}
 
     return None
+
+
+def require_authenticated(request: Request) -> dict:
+    """Dependency: require any authenticated user."""
+    user = _get_user_from_request(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return user
 
 
 def require_admin(request: Request) -> dict:
