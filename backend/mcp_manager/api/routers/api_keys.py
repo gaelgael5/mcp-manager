@@ -109,9 +109,10 @@ async def validate_api_key(key: str, db: AsyncSession) -> dict | None:
         return None
     if api_key.expires_at and api_key.expires_at < datetime.now(timezone.utc):
         return None
+    from mcp_manager.config import settings
     return {
         "email": api_key.owner_email,
         "name": api_key.name,
-        "is_admin": False,
+        "is_admin": api_key.owner_email.lower() == settings.admin_email.lower(),
         "is_api_key": True,
     }
