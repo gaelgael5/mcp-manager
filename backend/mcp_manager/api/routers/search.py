@@ -327,16 +327,16 @@ async def search_skill_sources(
     sources = result.scalars().all()
 
     # Count skills per source
-    source_ids = [s.id for s in sources]
-    skills_count_map: dict[uuid.UUID, int] = {}
-    if source_ids:
+    source_pids = [s._id for s in sources]
+    skills_count_map: dict[int, int] = {}
+    if source_pids:
         count_result = await db.execute(
             select(
-                skill_source_skills.c.skill_source_id,
-                func.count(skill_source_skills.c.skill_id),
+                skill_source_skills.c.source_pid,
+                func.count(skill_source_skills.c.skill_pid),
             )
-            .where(skill_source_skills.c.skill_source_id.in_(source_ids))
-            .group_by(skill_source_skills.c.skill_source_id)
+            .where(skill_source_skills.c.source_pid.in_(source_pids))
+            .group_by(skill_source_skills.c.source_pid)
         )
         skills_count_map = {row[0]: row[1] for row in count_result}
 
@@ -358,7 +358,7 @@ async def search_skill_sources(
             "has_summary": has_en,
             "repo_status": s.repo_status,
             "stars": s.stars,
-            "skills_count": skills_count_map.get(s.id, 0),
+            "skills_count": skills_count_map.get(s._id, 0),
             "last_sync": s.last_sync.isoformat() if s.last_sync else None,
         })
 
@@ -439,8 +439,9 @@ async def search_skills(
         else:
             query = query.where(~exists(has_en))
     if source_id:
-        query = query.join(skill_source_skills, skill_source_skills.c.skill_id == Skill.id).where(
-            skill_source_skills.c.skill_source_id == source_id
+        source_pid_sq = select(SkillSource._id).where(SkillSource.id == source_id).scalar_subquery()
+        query = query.join(skill_source_skills, skill_source_skills.c.skill_pid == Skill._id).where(
+            skill_source_skills.c.source_pid == source_pid_sq
         )
 
     count_query = select(func.count()).select_from(query.subquery())

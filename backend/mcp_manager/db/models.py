@@ -182,8 +182,8 @@ class McpParameter(Base):
 skill_source_skills = Table(
     "skill_source_skills",
     Base.metadata,
-    Column("skill_source_id", UUID(as_uuid=True), ForeignKey("skill_sources.id", ondelete="CASCADE"), primary_key=True),
-    Column("skill_id", UUID(as_uuid=True), ForeignKey("skills.id", ondelete="CASCADE"), primary_key=True),
+    Column("source_pid", BigInteger, ForeignKey("skill_sources._id", ondelete="CASCADE"), primary_key=True),
+    Column("skill_pid", BigInteger, ForeignKey("skills._id", ondelete="CASCADE"), primary_key=True),
 )
 
 

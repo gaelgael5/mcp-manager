@@ -158,11 +158,11 @@ async def scrape_skills_sh(limit: int | None = None, skip_summaries: bool = Fals
                     stats["skills_updated"] += 1
 
                 # Link skill ↔ source
-                link_key = (source.id, skill.id)
+                link_key = (source._id, skill._id)
                 if link_key not in existing_links:
                     await db.execute(
                         skill_source_skills.insert().values(
-                            skill_source_id=source.id, skill_id=skill.id
+                            source_pid=source._id, skill_pid=skill._id
                         )
                     )
                     existing_links.add(link_key)

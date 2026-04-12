@@ -172,8 +172,9 @@ async def list_skills(
 ):
     query = select(Skill)
     if source_id:
-        query = query.join(skill_source_skills, skill_source_skills.c.skill_id == Skill.id).where(
-            skill_source_skills.c.skill_source_id == source_id
+        source_pid_sq = select(SkillSource._id).where(SkillSource.id == source_id).scalar_subquery()
+        query = query.join(skill_source_skills, skill_source_skills.c.skill_pid == Skill._id).where(
+            skill_source_skills.c.source_pid == source_pid_sq
         )
     if target_type:
         query = query.where(Skill.target_type == target_type)
@@ -212,8 +213,8 @@ async def generate_skill_summary(
     # Get the source for repo_url (via junction table)
     src_result = await db.execute(
         select(SkillSource)
-        .join(skill_source_skills, skill_source_skills.c.skill_source_id == SkillSource.id)
-        .where(skill_source_skills.c.skill_id == skill.id)
+        .join(skill_source_skills, skill_source_skills.c.source_pid == SkillSource._id)
+        .where(skill_source_skills.c.skill_pid == skill._id)
         .limit(1)
     )
     source = src_result.scalar_one_or_none()
@@ -426,9 +427,9 @@ async def sync_skill_source(
         # Find existing skill linked to this source by name
         existing = await db.execute(
             select(Skill)
-            .join(skill_source_skills, skill_source_skills.c.skill_id == Skill.id)
+            .join(skill_source_skills, skill_source_skills.c.skill_pid == Skill._id)
             .where(
-                skill_source_skills.c.skill_source_id == source_id,
+                skill_source_skills.c.source_pid == source._id,
                 Skill.name == raw["name"],
             )
         )
@@ -452,10 +453,10 @@ async def sync_skill_source(
                 needs_summary=True,
             )
             db.add(new_skill)
-            await db.flush()  # get new_skill.id
+            await db.flush()  # get new_skill._id
             await db.execute(
                 skill_source_skills.insert().values(
-                    skill_source_id=source_id, skill_id=new_skill.id
+                    source_pid=source._id, skill_pid=new_skill._id
                 )
             )
             added += 1
@@ -468,7 +469,7 @@ async def sync_skill_source(
     return {"status": "done", "added": added, "updated": updated}
 
 
-async def _generate_skill_summaries(db: AsyncSession, source_id, raw_skills: list[dict]) -> int:
+async def _generate_skill_summaries(db: AsyncSession, source_pid: int, raw_skills: list[dict]) -> int:
     """Generate summaries for skills that need it."""
     from mcp_manager.summarizer.ollama_client import ollama_generate
     from mcp_manager.summarizer.cleaner import clean_markdown
@@ -481,8 +482,8 @@ async def _generate_skill_summaries(db: AsyncSession, source_id, raw_skills: lis
 
     result = await db.execute(
         select(Skill)
-        .join(skill_source_skills, skill_source_skills.c.skill_id == Skill.id)
-        .where(skill_source_skills.c.skill_source_id == source_id, Skill.needs_summary == True)
+        .join(skill_source_skills, skill_source_skills.c.skill_pid == Skill._id)
+        .where(skill_source_skills.c.source_pid == source_pid, Skill.needs_summary == True)
     )
     skills = result.scalars().all()
 
@@ -544,9 +545,9 @@ async def sync_all_skill_sources(
         for raw in raw_skills:
             existing = await db.execute(
                 select(Skill)
-                .join(skill_source_skills, skill_source_skills.c.skill_id == Skill.id)
+                .join(skill_source_skills, skill_source_skills.c.skill_pid == Skill._id)
                 .where(
-                    skill_source_skills.c.skill_source_id == source.id,
+                    skill_source_skills.c.source_pid == source._id,
                     Skill.name == raw["name"],
                 )
             )
@@ -568,7 +569,7 @@ async def sync_all_skill_sources(
                 await db.flush()
                 await db.execute(
                     skill_source_skills.insert().values(
-                        skill_source_id=source.id, skill_id=new_skill.id
+                        source_pid=source._id, skill_pid=new_skill._id
                     )
                 )
                 total_added += 1
@@ -687,9 +688,9 @@ async def _enrich_sync_skills(source: SkillSource, db: AsyncSession) -> int:
     for raw in raw_skills:
         existing = await db.execute(
             select(Skill)
-            .join(skill_source_skills, skill_source_skills.c.skill_id == Skill.id)
+            .join(skill_source_skills, skill_source_skills.c.skill_pid == Skill._id)
             .where(
-                skill_source_skills.c.skill_source_id == source.id,
+                skill_source_skills.c.source_pid == source._id,
                 Skill.name == raw["name"],
             )
         )
@@ -712,7 +713,7 @@ async def _enrich_sync_skills(source: SkillSource, db: AsyncSession) -> int:
             await db.flush()
             await db.execute(
                 skill_source_skills.insert().values(
-                    skill_source_id=source.id, skill_id=new_skill.id
+                    source_pid=source._id, skill_pid=new_skill._id
                 )
             )
             added += 1
@@ -732,8 +733,8 @@ async def _enrich_one_skill(skill: Skill, db: AsyncSession) -> bool:
     # Get the parent source for repo_url and branch_hash
     src_result = await db.execute(
         select(SkillSource)
-        .join(skill_source_skills, skill_source_skills.c.skill_source_id == SkillSource.id)
-        .where(skill_source_skills.c.skill_id == skill.id)
+        .join(skill_source_skills, skill_source_skills.c.source_pid == SkillSource._id)
+        .where(skill_source_skills.c.skill_pid == skill._id)
         .limit(1)
     )
     source = src_result.scalar_one_or_none()
