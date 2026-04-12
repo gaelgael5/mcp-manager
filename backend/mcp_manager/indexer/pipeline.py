@@ -53,7 +53,7 @@ async def run_index(
     """
     from mcp_manager.summarizer.ollama_client import get_llm_manager, set_llm_manager
     from mcp_manager.llm.manager import LLMManager
-    from mcp_manager.llm.driver_docker import DockerDriver, LLMProviderDead
+    from mcp_manager.llm.driver_docker import LLMProviderDead
 
     stats = {
         "processed": 0,
@@ -93,14 +93,10 @@ async def run_index(
 
     if manager is None:
         manager = get_llm_manager()
-    gen_drivers = [d for d in manager.drivers if isinstance(d, DockerDriver)]
-    if not gen_drivers:
-        logger.error(
-            "run_index: no docker LLM provider configured — ollama is reserved "
-            "for RAG. Configure at least one docker provider in /settings."
-        )
+    if not manager.drivers:
+        logger.error("run_index: no LLM provider configured in /settings.")
         return stats
-    num_workers = len(gen_drivers)
+    num_workers = len(manager.drivers)
     abort_event = asyncio.Event()
 
     async def _worker(worker_id: int, driver):
@@ -171,7 +167,7 @@ async def run_index(
                     )
 
     workers = [
-        asyncio.create_task(_worker(i, gen_drivers[i]))
+        asyncio.create_task(_worker(i, manager.drivers[i]))
         for i in range(num_workers)
     ]
     await asyncio.gather(*workers)

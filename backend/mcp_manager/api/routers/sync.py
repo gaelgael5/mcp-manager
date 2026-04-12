@@ -458,16 +458,11 @@ async def _run_enrich_skills_bg():
 
         total = len(source_ids)
 
-        from mcp_manager.llm.driver_docker import DockerDriver
-        gen_drivers = [d for d in manager.drivers if isinstance(d, DockerDriver)]
-        if not gen_drivers:
-            enrich_logger.error(
-                "enrich-pipeline: no docker LLM provider configured — "
-                "ollama is reserved for RAG. Aborting."
-            )
+        if not manager.drivers:
+            enrich_logger.error("enrich-pipeline: no LLM provider configured. Aborting.")
             return
 
-        enrich_logger.info("enrich-pipeline: %d sources to process with %d workers", total, len(gen_drivers))
+        enrich_logger.info("enrich-pipeline: %d sources to process with %d workers", total, len(manager.drivers))
 
         stats = {"total": total, "done": 0, "repos_filled": 0, "summaries": 0, "syncs": 0, "failed": 0}
         _sync_status["enrich_progress"] = stats
@@ -476,7 +471,7 @@ async def _run_enrich_skills_bg():
         for sid in source_ids:
             queue.put_nowait(sid)
 
-        num_workers = len(gen_drivers)
+        num_workers = len(manager.drivers)
         enrich_abort_event = asyncio.Event()
 
         async def _worker(worker_id: int, driver):
@@ -579,7 +574,7 @@ async def _run_enrich_skills_bg():
                         enrich_logger.info("enrich-pipeline: %d/%d done", done, total)
                         _sync_status["enrich_progress"] = dict(stats)
 
-        workers = [asyncio.create_task(_worker(i, gen_drivers[i])) for i in range(num_workers)]
+        workers = [asyncio.create_task(_worker(i, manager.drivers[i])) for i in range(num_workers)]
         await asyncio.gather(*workers)
 
         _sync_status["enrich_progress"] = dict(stats)
@@ -631,16 +626,11 @@ async def _run_index_skills_bg():
 
         total = len(skill_ids)
 
-        from mcp_manager.llm.driver_docker import DockerDriver
-        gen_drivers = [d for d in manager.drivers if isinstance(d, DockerDriver)]
-        if not gen_drivers:
-            skills_logger.error(
-                "index-skills: no docker LLM provider configured — "
-                "ollama is reserved for RAG. Aborting."
-            )
+        if not manager.drivers:
+            skills_logger.error("index-skills: no LLM provider configured. Aborting.")
             return
 
-        skills_logger.info("index-skills: %d skills to process with %d workers", total, len(gen_drivers))
+        skills_logger.info("index-skills: %d skills to process with %d workers", total, len(manager.drivers))
 
         stats = {"total": total, "done": 0, "summaries": 0, "unchanged": 0, "failed": 0}
         _sync_status["index_skills_progress"] = stats
@@ -649,7 +639,7 @@ async def _run_index_skills_bg():
         for sid in skill_ids:
             queue.put_nowait(sid)
 
-        num_workers = len(gen_drivers)
+        num_workers = len(manager.drivers)
         skills_abort_event = asyncio.Event()
 
         async def _worker(worker_id: int, driver):
@@ -718,7 +708,7 @@ async def _run_index_skills_bg():
                         skills_logger.info("index-skills: %d/%d done", done, total)
                         _sync_status["index_skills_progress"] = dict(stats)
 
-        workers = [asyncio.create_task(_worker(i, gen_drivers[i])) for i in range(num_workers)]
+        workers = [asyncio.create_task(_worker(i, manager.drivers[i])) for i in range(num_workers)]
         await asyncio.gather(*workers)
 
         _sync_status["index_skills_progress"] = dict(stats)

@@ -46,8 +46,15 @@ class LLMManager:
             pid = provider.get("id", 0)
 
             if ptype == "ollama":
-                driver = OllamaDriver(args)
-                self.drivers.append(driver)
+                count = 1
+                if self._pipeline:
+                    try:
+                        count = int(concurrency.get(str(pid), 1))
+                    except (TypeError, ValueError):
+                        count = 1
+                count = max(0, count)
+                for _ in range(count):
+                    self.drivers.append(OllamaDriver(args))
             elif ptype == "docker":
                 image = provider.get("image", "claude")
                 count = 1
@@ -95,15 +102,10 @@ class LLMManager:
         return driver
 
     def get_generate_driver(self):
-        """Get a driver that can generate text.
-
-        Only Docker drivers are used for generation — ollama is reserved for
-        embeddings (RAG). Returns None if no docker provider is configured.
-        """
-        docker_drivers = [d for d in self.drivers if isinstance(d, DockerDriver)]
-        if not docker_drivers:
+        """Get a driver that can generate text (round-robin across all drivers)."""
+        if not self.drivers:
             return None
-        driver = docker_drivers[self._current % len(docker_drivers)]
+        driver = self.drivers[self._current % len(self.drivers)]
         self._current += 1
         return driver
 

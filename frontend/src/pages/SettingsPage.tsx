@@ -545,7 +545,7 @@ function ConcurrencyBlock({
   localConfig: LLMConfig;
   setLocalConfig: (c: LLMConfig) => void;
 }) {
-  const dockerProviders = localConfig.llm.filter((p) => p.type === "docker");
+  const providers = localConfig.llm;
   const concurrency: ConcurrencyMap = localConfig.concurrency || {};
 
   const getCount = (pipeline: string, providerId: number): number => {
@@ -561,9 +561,9 @@ function ConcurrencyBlock({
 
   return (
     <Card title="Concurrency" collapsible>
-      {dockerProviders.length === 0 ? (
+      {providers.length === 0 ? (
         <p className="text-sm text-gray-500">
-          No docker providers configured. Add one in LLM Providers below to enable per-pipeline concurrency.
+          No LLM providers configured. Add one in LLM Providers below.
         </p>
       ) : (
         <div className="space-y-5">
@@ -571,9 +571,9 @@ function ConcurrencyBlock({
             <div key={p.key}>
               <div className="text-sm font-medium mb-2">{p.label}</div>
               <div className="space-y-2">
-                {dockerProviders.map((dp) => (
+                {providers.map((dp) => (
                   <div key={dp.id} className="flex items-center gap-3">
-                    <Badge color="purple">{dp.image || "docker"}</Badge>
+                    <Badge color={dp.type === "ollama" ? "blue" : "purple"}>{dp.image || dp.type}</Badge>
                     <span className="text-xs text-gray-500">Provider #{dp.id}</span>
                     <input
                       type="number"
