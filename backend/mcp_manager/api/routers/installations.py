@@ -17,14 +17,14 @@ class InstallationUpdate(BaseModel):
 async def list_installations(
     page: int = Query(1, ge=1), per_page: int = Query(50, ge=1, le=200),
     install_target_id: uuid.UUID | None = None,
-    mcp_service_id: uuid.UUID | None = None,
+    service_id: int | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     query = select(McpInstallation)
     if install_target_id:
         query = query.where(McpInstallation.install_target_id == install_target_id)
-    if mcp_service_id:
-        query = query.where(McpInstallation.mcp_service_id == mcp_service_id)
+    if service_id:
+        query = query.join(McpService, McpInstallation.mcp_service_id == McpService.id).where(McpService._id == service_id)
 
     count_query = select(func.count()).select_from(query.subquery())
     total = (await db.execute(count_query)).scalar() or 0
@@ -61,11 +61,11 @@ async def update_installation(installation_id: uuid.UUID, body: InstallationUpda
     return _serialize_installation(inst)
 
 @router.post("/installations/generate/{service_id}")
-async def generate_installations(service_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def generate_installations(service_id: int, db: AsyncSession = Depends(get_db)):
     """Generate installation recipes for all targets for a single service."""
     from mcp_manager.exporters.engine import generate_from_modes, generate_installation_data
 
-    result = await db.execute(select(McpService).where(McpService.id == service_id))
+    result = await db.execute(select(McpService).where(McpService._id == service_id))
     service = result.scalar_one_or_none()
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")

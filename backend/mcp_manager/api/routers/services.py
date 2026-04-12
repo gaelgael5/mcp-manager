@@ -78,19 +78,19 @@ async def list_services(
     }
 
 @router.get("/services/{service_id}")
-async def get_service(service_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(McpService).where(McpService.id == service_id))
+async def get_service(service_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(McpService).where(McpService._id == service_id))
     service = result.scalar_one_or_none()
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
     sc = await db.execute(
-        select(func.count()).select_from(McpSummary).where(McpSummary.mcp_service_id == service_id)
+        select(func.count()).select_from(McpSummary).where(McpSummary.mcp_service_id == service.id)
     )
     return _serialize_service(service, sc.scalar() or 0)
 
 @router.patch("/services/{service_id}")
-async def update_service(service_id: uuid.UUID, body: ServiceUpdate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(McpService).where(McpService.id == service_id))
+async def update_service(service_id: int, body: ServiceUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(McpService).where(McpService._id == service_id))
     service = result.scalar_one_or_none()
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
@@ -112,7 +112,7 @@ async def update_service(service_id: uuid.UUID, body: ServiceUpdate, db: AsyncSe
 
 def _serialize_service(s: McpService, summary_count: int = 0) -> dict:
     return {
-        "id": str(s.id), "name": s.name, "source_url": s.source_url,
+        "id": s._id, "name": s.name, "source_url": s.source_url,
         "doc_url": s.doc_url, "doc_hash": s.doc_hash, "branch_hash": s.branch_hash,
         "source_type": s.source_type, "transport": s.transport,
         "category": s.category, "tags": s.tags or [],

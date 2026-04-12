@@ -168,8 +168,9 @@ async def _semantic_search(
     items = await _build_response_items(db, services, targets)
 
     # Add similarity score to each item
+    _id_to_similarity = {s._id: similarity_scores.get(s.id, 0) for s in services}
     for item in items:
-        item["similarity"] = round(similarity_scores.get(uuid.UUID(item["id"]), 0), 4)
+        item["similarity"] = round(_id_to_similarity.get(item["id"], 0), 4)
 
     return {"items": items, "total": total, "page": page, "per_page": per_page}
 
@@ -254,7 +255,7 @@ async def _build_response_items(
     items = []
     for svc in services:
         items.append({
-            "id": str(svc.id),
+            "id": svc._id,
             "name": svc.name,
             "description": summaries_map.get(svc.id),
             "source_url": svc.source_url or None,
@@ -347,7 +348,7 @@ async def search_skill_sources(
         ]
         has_en = any(t["culture"] == "en" for t in translations)
         items.append({
-            "id": str(s.id),
+            "id": s._id,
             "name": s.name,
             "url": s.url,
             "repo_url": s.repo_url,
@@ -383,7 +384,7 @@ async def search_skills(
             for t in sorted(s.translations, key=lambda t: t.culture)
         ]
         return {
-            "id": str(s.id),
+            "id": s._id,
             "name": s.name,
             "description": s.description,
             "translations": translations,

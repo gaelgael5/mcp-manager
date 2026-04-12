@@ -100,6 +100,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 api_user = await validate_api_key(api_key_header, db)
             if api_user:
                 user = api_user
+                request.state.validated_api_user = api_user
             else:
                 return JSONResponse(
                     status_code=401,

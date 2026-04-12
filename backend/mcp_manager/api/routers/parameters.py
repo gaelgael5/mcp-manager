@@ -23,23 +23,26 @@ class ParameterCreate(BaseModel):
 
 
 @router.get("/parameters/{service_id}")
-async def list_parameters(service_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def list_parameters(service_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(McpParameter).where(McpParameter.mcp_service_id == service_id).order_by(McpParameter.name)
+        select(McpParameter)
+        .join(McpService, McpParameter.mcp_service_id == McpService.id)
+        .where(McpService._id == service_id)
+        .order_by(McpParameter.name)
     )
     params = result.scalars().all()
     return [_serialize(p) for p in params]
 
 
 @router.post("/parameters/{service_id}")
-async def add_parameter(service_id: uuid.UUID, body: ParameterCreate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(McpService).where(McpService.id == service_id))
+async def add_parameter(service_id: int, body: ParameterCreate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(McpService).where(McpService._id == service_id))
     service = result.scalar_one_or_none()
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
 
     param = McpParameter(
-        mcp_service_id=service_id,
+        mcp_service_id=service.id,
         parent_id=service._id,
         name=body.name,
         description=body.description,
@@ -159,9 +162,9 @@ async def detect_parameters_for_service(
 
 
 @router.post("/parameters/{service_id}/detect")
-async def detect_parameters(service_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def detect_parameters(service_id: int, db: AsyncSession = Depends(get_db)):
     """Detect parameters from sources + AI analysis of documentation."""
-    result = await db.execute(select(McpService).where(McpService.id == service_id))
+    result = await db.execute(select(McpService).where(McpService._id == service_id))
     service = result.scalar_one_or_none()
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")

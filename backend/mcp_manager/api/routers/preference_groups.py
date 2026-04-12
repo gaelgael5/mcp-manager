@@ -32,11 +32,15 @@ class GroupUpdate(BaseModel):
     description: Optional[str] = None
 
 
-def _require_user_id(user: dict) -> str:
+async def _require_user_id(user: dict) -> str:
     uid = user.get("user_id")
-    if not uid:
+    if uid:
+        return uid
+    email = user.get("email")
+    if not email or email == "api_key":
         raise HTTPException(status_code=403, detail="Preference groups require Google login (API keys not supported)")
-    return uid
+    from mcp_manager.api.routers.auth import _upsert_user
+    return await _upsert_user(email, user.get("name", ""), user.get("picture", ""))
 
 
 async def _get_user_group(
@@ -57,7 +61,7 @@ async def list_groups(
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(require_authenticated),
 ):
-    user_id = _require_user_id(user)
+    user_id = await _require_user_id(user)
 
     service_count_sq = (
         select(func.count())
@@ -106,7 +110,7 @@ async def create_group(
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(require_authenticated),
 ):
-    user_id = _require_user_id(user)
+    user_id = await _require_user_id(user)
     group = PreferenceGroup(
         user_id=user_id,
         name=body.name,
@@ -128,7 +132,7 @@ async def get_group(
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(require_authenticated),
 ):
-    user_id = _require_user_id(user)
+    user_id = await _require_user_id(user)
     group = await _get_user_group(db, group_id, user_id)
 
     # Eagerly load services and skills
@@ -170,7 +174,7 @@ async def update_group(
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(require_authenticated),
 ):
-    user_id = _require_user_id(user)
+    user_id = await _require_user_id(user)
     group = await _get_user_group(db, group_id, user_id)
 
     if body.name is not None:
@@ -193,7 +197,7 @@ async def delete_group(
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(require_authenticated),
 ):
-    user_id = _require_user_id(user)
+    user_id = await _require_user_id(user)
     group = await _get_user_group(db, group_id, user_id)
     await db.delete(group)
     await db.commit()
@@ -207,7 +211,7 @@ async def add_service_to_group(
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(require_authenticated),
 ):
-    user_id = _require_user_id(user)
+    user_id = await _require_user_id(user)
     await _get_user_group(db, group_id, user_id)
 
     stmt = pg_insert(preference_group_services).values(
@@ -225,7 +229,7 @@ async def remove_service_from_group(
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(require_authenticated),
 ):
-    user_id = _require_user_id(user)
+    user_id = await _require_user_id(user)
     await _get_user_group(db, group_id, user_id)
 
     await db.execute(
@@ -245,7 +249,7 @@ async def add_skill_to_group(
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(require_authenticated),
 ):
-    user_id = _require_user_id(user)
+    user_id = await _require_user_id(user)
     await _get_user_group(db, group_id, user_id)
 
     stmt = pg_insert(preference_group_skills).values(
@@ -263,7 +267,7 @@ async def remove_skill_from_group(
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(require_authenticated),
 ):
-    user_id = _require_user_id(user)
+    user_id = await _require_user_id(user)
     await _get_user_group(db, group_id, user_id)
 
     await db.execute(
@@ -282,7 +286,7 @@ async def list_groups_for_service(
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(require_authenticated),
 ):
-    user_id = _require_user_id(user)
+    user_id = await _require_user_id(user)
     result = await db.execute(
         select(PreferenceGroup.id, PreferenceGroup.name)
         .join(preference_group_services, preference_group_services.c.group_id == PreferenceGroup.id)
@@ -300,7 +304,7 @@ async def list_groups_for_skill(
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(require_authenticated),
 ):
-    user_id = _require_user_id(user)
+    user_id = await _require_user_id(user)
     result = await db.execute(
         select(PreferenceGroup.id, PreferenceGroup.name)
         .join(preference_group_skills, preference_group_skills.c.group_id == PreferenceGroup.id)

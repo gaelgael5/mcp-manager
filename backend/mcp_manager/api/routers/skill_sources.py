@@ -801,7 +801,7 @@ def _serialize_source(s: SkillSource) -> dict:
     translations = sorted(s.translations, key=lambda t: t.culture)
     has_en = any(t.culture == "en" and t.summary for t in translations)
     return {
-        "id": str(s.id),
+        "id": s._id,
         "name": s.name,
         "url": s.url,
         "repo_url": s.repo_url,
@@ -825,7 +825,7 @@ def _serialize_skill(s: Skill) -> dict:
     translations = sorted(s.translations, key=lambda t: t.culture)
     has_en = any(t.culture == "en" and t.summary for t in translations)
     return {
-        "id": str(s.id),
+        "id": s._id,
         "name": s.name,
         "description": s.description,
         "translations": [_serialize_translation(t) for t in translations],

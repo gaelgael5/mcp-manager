@@ -10,14 +10,14 @@ router = APIRouter(tags=["summaries"])
 @router.get("/summaries")
 async def list_summaries(
     page: int = Query(1, ge=1), per_page: int = Query(50, ge=1, le=200),
-    culture: str | None = None, mcp_service_id: uuid.UUID | None = None,
+    culture: str | None = None, service_id: int | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     query = select(McpSummary)
     if culture:
         query = query.where(McpSummary.culture == culture)
-    if mcp_service_id:
-        query = query.where(McpSummary.mcp_service_id == mcp_service_id)
+    if service_id:
+        query = query.join(McpService, McpSummary.mcp_service_id == McpService.id).where(McpService._id == service_id)
 
     count_query = select(func.count()).select_from(query.subquery())
     total = (await db.execute(count_query)).scalar() or 0
@@ -58,7 +58,7 @@ async def summaries_stats(db: AsyncSession = Depends(get_db)):
 
 @router.post("/summaries/generate/{service_id}")
 async def generate_for_service(
-    service_id: uuid.UUID,
+    service_id: int,
     db: AsyncSession = Depends(get_db),
 ):
     """Generate summaries (en + fr) for a single service. Synchronous — waits for Ollama."""
@@ -71,7 +71,7 @@ async def generate_for_service(
 
     logger = logging.getLogger(__name__)
 
-    result = await db.execute(select(McpService).where(McpService.id == service_id))
+    result = await db.execute(select(McpService).where(McpService._id == service_id))
     service = result.scalar_one_or_none()
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")

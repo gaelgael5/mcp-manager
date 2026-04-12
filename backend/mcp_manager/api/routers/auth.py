@@ -149,9 +149,10 @@ def _get_user_from_request(request: Request) -> dict | None:
     if not api_key and auth.startswith("Bearer mcp_"):
         api_key = auth[7:]
     if api_key:
-        # Store for async validation in middleware — sync check here via cache
+        validated = getattr(request.state, "validated_api_user", None)
+        if validated:
+            return validated
         request.state.api_key = api_key
-        # Return a placeholder; actual validation is async in rate_limit middleware
         return {"email": "api_key", "is_admin": False, "is_api_key": True, "pending_validation": True}
 
     return None
