@@ -7,11 +7,12 @@ router = APIRouter()
 SEARCH_OPENAPI_SPEC = {
     "openapi": "3.1.0",
     "info": {
-        "title": "MCP Manager — Public API",
-        "description": "Search MCP servers, list install targets, and retrieve installation recipes for any target (Claude Code, VS Code, Cursor, etc.)",
-        "version": "1.0.0",
+        "title": "MCP Manager — API",
+        "description": "Search MCP servers, list install targets, retrieve installation recipes, and manage preference groups. Authentication via Google OAuth (JWT) or API key.",
+        "version": "1.1.0",
     },
     "servers": [{"url": "/api/v1"}],
+    "security": [{"bearerAuth": []}],
     "paths": {
         "/targets": {
             "get": {
@@ -168,7 +169,129 @@ SEARCH_OPENAPI_SPEC = {
                     }
                 },
             }
-        }
+        },
+        "/preference-groups": {
+            "get": {
+                "summary": "List my preference groups",
+                "description": "Returns all preference groups for the authenticated user, with service and skill counts. Requires Google login (JWT).",
+                "operationId": "listPreferenceGroups",
+                "tags": ["Preference Groups"],
+                "responses": {
+                    "200": {
+                        "description": "List of groups",
+                        "content": {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/PreferenceGroup"}}}},
+                    },
+                    "403": {"description": "API keys not supported — requires Google login"},
+                },
+            },
+            "post": {
+                "summary": "Create a preference group",
+                "description": "Create a new preference group for the authenticated user. Requires Google login (JWT).",
+                "operationId": "createPreferenceGroup",
+                "tags": ["Preference Groups"],
+                "requestBody": {
+                    "required": True,
+                    "content": {"application/json": {"schema": {"type": "object", "required": ["name"], "properties": {"name": {"type": "string"}, "description": {"type": "string", "nullable": True}}}}},
+                },
+                "responses": {
+                    "200": {"description": "Created group", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/GroupRef"}}}},
+                },
+            },
+        },
+        "/preference-groups/{group_id}": {
+            "get": {
+                "summary": "Get preference group detail",
+                "description": "Returns group with its associated services and skills.",
+                "operationId": "getPreferenceGroup",
+                "tags": ["Preference Groups"],
+                "parameters": [{"name": "group_id", "in": "path", "required": True, "schema": {"type": "string", "format": "uuid"}}],
+                "responses": {
+                    "200": {"description": "Group detail", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/PreferenceGroupDetail"}}}},
+                    "404": {"description": "Group not found or not owned by user"},
+                },
+            },
+            "put": {
+                "summary": "Update a preference group",
+                "operationId": "updatePreferenceGroup",
+                "tags": ["Preference Groups"],
+                "parameters": [{"name": "group_id", "in": "path", "required": True, "schema": {"type": "string", "format": "uuid"}}],
+                "requestBody": {
+                    "content": {"application/json": {"schema": {"type": "object", "properties": {"name": {"type": "string"}, "description": {"type": "string", "nullable": True}}}}},
+                },
+                "responses": {"200": {"description": "Updated"}},
+            },
+            "delete": {
+                "summary": "Delete a preference group",
+                "operationId": "deletePreferenceGroup",
+                "tags": ["Preference Groups"],
+                "parameters": [{"name": "group_id", "in": "path", "required": True, "schema": {"type": "string", "format": "uuid"}}],
+                "responses": {"200": {"description": "Deleted"}},
+            },
+        },
+        "/preference-groups/{group_id}/services/{service_id}": {
+            "post": {
+                "summary": "Add a service to a group",
+                "operationId": "addServiceToGroup",
+                "tags": ["Preference Groups"],
+                "parameters": [
+                    {"name": "group_id", "in": "path", "required": True, "schema": {"type": "string", "format": "uuid"}},
+                    {"name": "service_id", "in": "path", "required": True, "schema": {"type": "string", "format": "uuid"}},
+                ],
+                "responses": {"200": {"description": "Added"}},
+            },
+            "delete": {
+                "summary": "Remove a service from a group",
+                "operationId": "removeServiceFromGroup",
+                "tags": ["Preference Groups"],
+                "parameters": [
+                    {"name": "group_id", "in": "path", "required": True, "schema": {"type": "string", "format": "uuid"}},
+                    {"name": "service_id", "in": "path", "required": True, "schema": {"type": "string", "format": "uuid"}},
+                ],
+                "responses": {"200": {"description": "Removed"}},
+            },
+        },
+        "/preference-groups/{group_id}/skills/{skill_id}": {
+            "post": {
+                "summary": "Add a skill to a group",
+                "operationId": "addSkillToGroup",
+                "tags": ["Preference Groups"],
+                "parameters": [
+                    {"name": "group_id", "in": "path", "required": True, "schema": {"type": "string", "format": "uuid"}},
+                    {"name": "skill_id", "in": "path", "required": True, "schema": {"type": "string", "format": "uuid"}},
+                ],
+                "responses": {"200": {"description": "Added"}},
+            },
+            "delete": {
+                "summary": "Remove a skill from a group",
+                "operationId": "removeSkillFromGroup",
+                "tags": ["Preference Groups"],
+                "parameters": [
+                    {"name": "group_id", "in": "path", "required": True, "schema": {"type": "string", "format": "uuid"}},
+                    {"name": "skill_id", "in": "path", "required": True, "schema": {"type": "string", "format": "uuid"}},
+                ],
+                "responses": {"200": {"description": "Removed"}},
+            },
+        },
+        "/services/{service_id}/groups": {
+            "get": {
+                "summary": "List groups containing a service",
+                "description": "Returns the current user's groups that contain this service.",
+                "operationId": "getServiceGroups",
+                "tags": ["Preference Groups"],
+                "parameters": [{"name": "service_id", "in": "path", "required": True, "schema": {"type": "string", "format": "uuid"}}],
+                "responses": {"200": {"description": "List of groups", "content": {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/GroupRef"}}}}}},
+            },
+        },
+        "/skills/{skill_id}/groups": {
+            "get": {
+                "summary": "List groups containing a skill",
+                "description": "Returns the current user's groups that contain this skill.",
+                "operationId": "getSkillGroups",
+                "tags": ["Preference Groups"],
+                "parameters": [{"name": "skill_id", "in": "path", "required": True, "schema": {"type": "string", "format": "uuid"}}],
+                "responses": {"200": {"description": "List of groups", "content": {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/GroupRef"}}}}}},
+            },
+        },
     },
     "components": {
         "schemas": {
@@ -294,7 +417,67 @@ SEARCH_OPENAPI_SPEC = {
                     "data": {"type": "string", "description": "The command or config snippet to install the MCP server"},
                 },
             },
-        }
+            "PreferenceGroup": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string", "format": "uuid"},
+                    "name": {"type": "string"},
+                    "description": {"type": "string", "nullable": True},
+                    "service_count": {"type": "integer"},
+                    "skill_count": {"type": "integer"},
+                    "created_at": {"type": "string", "format": "date-time"},
+                },
+            },
+            "PreferenceGroupDetail": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string", "format": "uuid"},
+                    "name": {"type": "string"},
+                    "description": {"type": "string", "nullable": True},
+                    "created_at": {"type": "string", "format": "date-time"},
+                    "updated_at": {"type": "string", "format": "date-time"},
+                    "services": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {"type": "string", "format": "uuid"},
+                                "name": {"type": "string"},
+                                "source_type": {"type": "string"},
+                                "category": {"type": "string", "nullable": True},
+                            },
+                        },
+                    },
+                    "skills": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {"type": "string", "format": "uuid"},
+                                "name": {"type": "string"},
+                                "target_type": {"type": "string"},
+                                "category": {"type": "string", "nullable": True},
+                            },
+                        },
+                    },
+                },
+            },
+            "GroupRef": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string", "format": "uuid"},
+                    "name": {"type": "string"},
+                },
+            },
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT or API key (mcp_...)",
+                "description": "JWT from Google OAuth login, or API key (prefix mcp_). Preference groups require JWT (Google login).",
+            },
+        },
     },
 }
 
