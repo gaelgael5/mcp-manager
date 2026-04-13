@@ -33,16 +33,19 @@ async def _upsert_source_translation(
     culture: str,
     summary: str,
 ) -> None:
+    from mcp_manager.summarizer.ollama_client import get_current_llm_name
+    llm_name = get_current_llm_name()
     stmt = (
         pg_insert(SkillSourceTranslation)
         .values(
             parent_id=source_pid,
             culture=culture,
             summary=summary,
+            llm=llm_name,
         )
         .on_conflict_do_update(
             index_elements=["parent_id", "culture"],
-            set_={"summary": summary, "updated_at": func.now()},
+            set_={"summary": summary, "llm": llm_name, "updated_at": func.now()},
         )
     )
     await db.execute(stmt)
@@ -54,16 +57,19 @@ async def _upsert_skill_translation(
     culture: str,
     summary: str,
 ) -> None:
+    from mcp_manager.summarizer.ollama_client import get_current_llm_name
+    llm_name = get_current_llm_name()
     stmt = (
         pg_insert(SkillTranslation)
         .values(
             parent_id=skill_pid,
             culture=culture,
             summary=summary,
+            llm=llm_name,
         )
         .on_conflict_do_update(
             index_elements=["parent_id", "culture"],
-            set_={"summary": summary, "updated_at": func.now()},
+            set_={"summary": summary, "llm": llm_name, "updated_at": func.now()},
         )
     )
     await db.execute(stmt)

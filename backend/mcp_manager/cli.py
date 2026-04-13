@@ -156,14 +156,18 @@ async def _run_summarize(force: bool = False) -> int:
                         McpSummary.culture == culture,
                     )
                 )
+                from mcp_manager.summarizer.ollama_client import get_current_llm_name
+                llm_name = get_current_llm_name()
                 summary_row = existing.scalar_one_or_none()
                 if summary_row:
                     summary_row.summary = summary_text
                     summary_row.source_hash = service.doc_hash
+                    summary_row.llm = llm_name
                 else:
                     db.add(McpSummary(
                         parent_id=service._id, culture=culture,
                         summary=summary_text, source_hash=service.doc_hash,
+                        llm=llm_name,
                     ))
                 count += 1
         await db.commit()

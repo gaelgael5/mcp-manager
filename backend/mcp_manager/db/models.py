@@ -80,6 +80,7 @@ class McpSummary(Base):
     culture: Mapped[str] = mapped_column(String(5), nullable=False)
     summary: Mapped[str] = mapped_column(Text, nullable=False)
     source_hash: Mapped[str | None] = mapped_column(String(64))
+    llm: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -302,6 +303,7 @@ class SkillSourceTranslation(Base):
     culture: Mapped[str] = mapped_column(String(5), nullable=False)
     summary: Mapped[str] = mapped_column(Text, nullable=False)
     source_hash: Mapped[str | None] = mapped_column(String(64))
+    llm: Mapped[str | None] = mapped_column(Text)
     heuristic_quality: Mapped[int | None] = mapped_column(nullable=True)
     llm_quality: Mapped[int | None] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(
@@ -341,6 +343,7 @@ class SkillTranslation(Base):
     culture: Mapped[str] = mapped_column(String(5), nullable=False)
     summary: Mapped[str] = mapped_column(Text, nullable=False)
     source_hash: Mapped[str | None] = mapped_column(String(64))
+    llm: Mapped[str | None] = mapped_column(Text)
     heuristic_quality: Mapped[int | None] = mapped_column(nullable=True)
     llm_quality: Mapped[int | None] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(

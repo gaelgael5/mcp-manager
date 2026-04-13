@@ -296,20 +296,24 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
             if stored_hash != new_doc_hash and culture not in cultures_to_generate:
                 cultures_to_generate.append(culture)
 
+    from mcp_manager.summarizer.ollama_client import get_current_llm_name
     for culture in cultures_to_generate:
         summary_text = await generate_summary(doc_content, culture)
         if not summary_text:
             continue
+        llm_name = get_current_llm_name()
         stmt = pg_insert(McpSummary.__table__).values(
             parent_id=service._id,
             culture=culture,
             summary=summary_text,
             source_hash=new_doc_hash,
+            llm=llm_name,
         ).on_conflict_do_update(
             index_elements=["parent_id", "culture"],
             set_={
                 "summary": summary_text,
                 "source_hash": new_doc_hash,
+                "llm": llm_name,
                 "updated_at": func.now(),
             },
         )

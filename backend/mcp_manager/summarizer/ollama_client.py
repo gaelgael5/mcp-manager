@@ -31,6 +31,21 @@ def set_llm_manager(manager: LLMManager | None):
     _manager_var.set(manager)
 
 
+def get_current_llm_name() -> str:
+    """Return the name of the current generate LLM driver."""
+    manager = get_llm_manager()
+    driver = manager.get_generate_driver()
+    if not driver:
+        return "unknown"
+    from mcp_manager.llm.driver_docker import DockerDriver
+    from mcp_manager.llm.driver_ollama import OllamaDriver
+    if isinstance(driver, DockerDriver):
+        return f"docker:{driver.image}"
+    if isinstance(driver, OllamaDriver):
+        return f"ollama:{driver.model}"
+    return type(driver).__name__
+
+
 async def ollama_generate(prompt: str) -> str:
     """Generate text via the configured LLM provider."""
     manager = get_llm_manager()
