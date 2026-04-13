@@ -148,6 +148,7 @@ async def get_current_user(request: Request):
             if row:
                 result["pseudo"] = row.pseudo
                 result["avatar_url"] = row.avatar_url
+                result["language"] = row.language
                 result["user_id"] = str(row.id)
 
     return result
@@ -200,6 +201,7 @@ def require_admin(request: Request) -> dict:
 class ProfileUpdate(BaseModel):
     pseudo: str | None = None
     avatar_url: str | None = None
+    language: str | None = None
 
 
 @router.put("/auth/profile")
@@ -231,6 +233,8 @@ async def update_profile(
             u.pseudo = body.pseudo
         if body.avatar_url is not None:
             u.avatar_url = body.avatar_url
+        if body.language is not None:
+            u.language = body.language
         await db.commit()
         await db.refresh(u)
-        return {"pseudo": u.pseudo, "avatar_url": u.avatar_url}
+        return {"pseudo": u.pseudo, "avatar_url": u.avatar_url, "language": u.language}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useCurrentUser } from "../api/auth";
+import { useLanguages } from "../api/languages";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../api/client";
 import { Card } from "../components/ui/Card";
@@ -16,8 +17,8 @@ const AVATAR_PLATFORMS = [
 function useUpdateProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { pseudo?: string; avatar_url?: string }) =>
-      apiFetch<{ pseudo: string; avatar_url: string }>("/auth/profile", {
+    mutationFn: (body: { pseudo?: string; avatar_url?: string; language?: string }) =>
+      apiFetch<{ pseudo: string; avatar_url: string; language: string }>("/auth/profile", {
         method: "PUT",
         body: JSON.stringify(body),
       }),
@@ -27,10 +28,12 @@ function useUpdateProfile() {
 
 export function ProfilePage() {
   const { data: user } = useCurrentUser();
+  const { data: languages = [] } = useLanguages();
   const updateProfile = useUpdateProfile();
 
   const [pseudo, setPseudo] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [language, setLanguage] = useState("en");
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -42,6 +45,10 @@ export function ProfilePage() {
     if (user?.avatar_url) setAvatarUrl(user.avatar_url);
   }, [user?.avatar_url]);
 
+  useEffect(() => {
+    if (user?.language) setLanguage(user.language);
+  }, [user?.language]);
+
   if (!user?.authenticated) {
     return <div className="text-center py-16 text-gray-500">Connectez-vous pour acceder a votre profil.</div>;
   }
@@ -49,7 +56,7 @@ export function ProfilePage() {
   const handleSave = () => {
     setSaved(false);
     updateProfile.mutate(
-      { pseudo: pseudo.trim() || undefined, avatar_url: avatarUrl.trim() || undefined },
+      { pseudo: pseudo.trim() || undefined, avatar_url: avatarUrl.trim() || undefined, language },
       { onSuccess: () => setSaved(true) },
     );
   };
@@ -117,6 +124,19 @@ export function ProfilePage() {
             </div>
           </div>
         </div>
+      </Card>
+
+      <Card title="Langue">
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+          className="w-full max-w-xs rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+        >
+          {languages.filter((l) => l.is_active).map((l) => (
+            <option key={l.code} value={l.code}>{l.name} ({l.code})</option>
+          ))}
+        </select>
+        <p className="text-xs text-gray-400 mt-2">Les descriptions et summaries seront affiches dans cette langue quand disponible.</p>
       </Card>
 
       <div className="flex items-center gap-3">

@@ -7,6 +7,7 @@ export interface User {
   pseudo?: string;
   picture?: string;
   avatar_url?: string;
+  language?: string;
   is_admin?: boolean;
   user_id?: string;
 }

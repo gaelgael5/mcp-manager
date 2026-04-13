@@ -420,6 +420,7 @@ class User(Base):
     pseudo: Mapped[str | None] = mapped_column(String(255))
     picture: Mapped[str | None] = mapped_column(Text)
     avatar_url: Mapped[str | None] = mapped_column(Text)
+    language: Mapped[str] = mapped_column(String(5), default="en", server_default="en")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
