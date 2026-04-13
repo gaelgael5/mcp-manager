@@ -253,6 +253,7 @@ async def sync_status():
 @router.get("/services/sync/recent/{scope}")
 async def sync_recent(scope: str, db: AsyncSession = Depends(get_db)):
     """Return the 5 most recently updated items for a given pipeline scope."""
+    from sqlalchemy import select
     from mcp_manager.db.models import McpService, SkillSource, Skill
 
     if scope == "mcp":
