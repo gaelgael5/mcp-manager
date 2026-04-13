@@ -26,6 +26,7 @@ async def search_mcp(
     repo_status: str | None = Query(None, description="Filter by repo status: ok, 404"),
     has_summaries: bool | None = Query(None, description="Filter by summary availability"),
     targets: str | None = Query(None, description="Comma-separated target names to include recipes for"),
+    group_id: str | None = Query(None, description="Filter by preference group ID"),
     updated_since: str | None = Query(None, description="ISO timestamp — only services updated after this date (e.g. 2026-04-01T00:00:00Z)"),
     page: int = Query(1, ge=1, le=1000),
     per_page: int = Query(10, ge=1, le=50),
@@ -69,6 +70,12 @@ async def search_mcp(
         )
 
     query = _apply_filters(query, transport, category, source_type, repo_status, has_summaries)
+    if group_id:
+        from mcp_manager.db.models import preference_group_services
+        query = query.join(
+            preference_group_services,
+            preference_group_services.c.mcp_service_id == McpService.id,
+        ).where(preference_group_services.c.group_id == group_id)
     if since_dt:
         query = query.where(McpService.updated_at >= since_dt)
 
@@ -252,6 +259,19 @@ async def _build_response_items(
             "data": inst.data,
         }
 
+    # Public groups
+    from mcp_manager.db.models import PreferenceGroup, preference_group_services as pgs
+    svc_uuids = [s.id for s in services]
+    groups_map: dict[str, list] = {}
+    if svc_uuids:
+        grp_result = await db.execute(
+            select(pgs.c.mcp_service_id, PreferenceGroup.id, PreferenceGroup.name)
+            .join(PreferenceGroup, pgs.c.group_id == PreferenceGroup.id)
+            .where(pgs.c.mcp_service_id.in_(svc_uuids), PreferenceGroup.is_public == True)
+        )
+        for svc_uuid, grp_id, grp_name in grp_result.all():
+            groups_map.setdefault(str(svc_uuid), []).append({"id": str(grp_id), "name": grp_name})
+
     items = []
     for svc in services:
         items.append({
@@ -267,6 +287,7 @@ async def _build_response_items(
             "canonical_id": svc.canonical_id,
             "parameters": params_map.get(svc._id, []),
             "recipes": installs_map.get(svc._id, {}),
+            "groups": groups_map.get(str(svc.id), []),
         })
 
     return items

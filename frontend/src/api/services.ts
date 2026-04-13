@@ -12,6 +12,7 @@ interface ServiceFilters {
   has_summaries?: string;
   search?: string;
   is_deprecated?: boolean;
+  group_id?: string;
 }
 
 export function useServices(filters: ServiceFilters = {}) {
@@ -34,6 +35,7 @@ interface SearchFilters {
   source_type?: string;
   repo_status?: string;
   has_summaries?: string;
+  group_id?: string;
   page?: number;
   per_page?: number;
 }

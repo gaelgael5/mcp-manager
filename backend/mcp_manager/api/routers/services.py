@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from mcp_manager.api.deps import get_db
-from mcp_manager.db.models import McpService, McpSummary
+from mcp_manager.db.models import McpService, McpSummary, PreferenceGroup, preference_group_services
 
 
 class ServiceUpdate(BaseModel):
@@ -22,9 +22,15 @@ async def list_services(
     transport: str | None = None, repo_status: str | None = None,
     has_summaries: bool | None = None,
     search: str | None = None, is_deprecated: bool | None = None,
+    group_id: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     query = select(McpService)
+    if group_id:
+        query = query.join(
+            preference_group_services,
+            preference_group_services.c.mcp_service_id == McpService.id,
+        ).where(preference_group_services.c.group_id == group_id)
     if source_type:
         query = query.where(McpService.source_type == source_type)
     if category:
@@ -72,8 +78,30 @@ async def list_services(
         )
         summary_counts = {row[0]: row[1] for row in sc_result}
 
+    # Batch fetch public groups for these services
+    groups_map: dict[str, list] = {}
+    if service_ids:
+        svc_uuids = [s.id for s in services]
+        grp_result = await db.execute(
+            select(
+                preference_group_services.c.mcp_service_id,
+                PreferenceGroup.id,
+                PreferenceGroup.name,
+            )
+            .join(PreferenceGroup, preference_group_services.c.group_id == PreferenceGroup.id)
+            .where(
+                preference_group_services.c.mcp_service_id.in_(svc_uuids),
+                PreferenceGroup.is_public == True,
+            )
+        )
+        for svc_uuid, grp_id, grp_name in grp_result.all():
+            groups_map.setdefault(str(svc_uuid), []).append({"id": str(grp_id), "name": grp_name})
+
     return {
-        "items": [_serialize_service(s, summary_counts.get(s._id, 0)) for s in services],
+        "items": [
+            {**_serialize_service(s, summary_counts.get(s._id, 0)), "groups": groups_map.get(str(s.id), [])}
+            for s in services
+        ],
         "total": total, "page": page, "per_page": per_page,
     }
 

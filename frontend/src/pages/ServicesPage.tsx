@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useServices, useSearchServices } from "../api/services";
+import { usePreferenceGroups } from "../api/preference-groups";
 import { ServiceCard } from "../components/domain/ServiceCard";
 import { FilterPanel } from "../components/domain/FilterPanel";
 import { Button } from "../components/ui/Button";
@@ -14,6 +15,8 @@ export function ServicesPage() {
   const [repoStatus, setRepoStatus] = useState("");
   const [hasSummaries, setHasSummaries] = useState("");
   const [category, setCategory] = useState("");
+  const [groupId, setGroupId] = useState("");
+  const { data: groups } = usePreferenceGroups();
 
   // Use search API when semantic is on and there's a query
   const useSemanticMode = semantic && search.length > 0;
@@ -25,6 +28,7 @@ export function ServicesPage() {
     repo_status: repoStatus || undefined,
     has_summaries: hasSummaries || undefined,
     category: category || undefined,
+    group_id: groupId || undefined,
   });
 
   const searchQuery = useSearchServices({
@@ -37,6 +41,7 @@ export function ServicesPage() {
     source_type: sourceType || undefined,
     repo_status: repoStatus || undefined,
     has_summaries: hasSummaries || undefined,
+    group_id: groupId || undefined,
   });
 
   const data = useSemanticMode ? searchQuery.data : servicesQuery.data;
@@ -65,7 +70,19 @@ export function ServicesPage() {
           hasSummaries={hasSummaries} onHasSummariesChange={handleFilterChange(setHasSummaries)}
           category={category} onCategoryChange={handleFilterChange(setCategory)}
         />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {groups && groups.length > 0 && (
+            <select
+              value={groupId}
+              onChange={(e) => { setGroupId(e.target.value); setPage(1); }}
+              className="rounded border border-gray-300 px-2 py-1 text-sm"
+            >
+              <option value="">Tous les groupes</option>
+              {groups.map((g) => (
+                <option key={g.id} value={g.id}>{g.name}{!g.is_owner && g.owner_pseudo ? ` (${g.owner_pseudo})` : ""}</option>
+              ))}
+            </select>
+          )}
           <label className="flex items-center gap-2 text-sm cursor-pointer">
             <input
               type="checkbox"

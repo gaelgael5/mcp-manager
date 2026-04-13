@@ -24,6 +24,9 @@ export function ServiceCard({ service }: { service: McpService }) {
             {service.stars != null && <Badge color="yellow">&#9733; {service.stars.toLocaleString()}</Badge>}
             {service.repo_status === "404" && <Badge color="red">404</Badge>}
             {!service.has_summaries && <Badge color="yellow">no summary</Badge>}
+            {(service as any).groups?.map((g: { id: string; name: string }) => (
+              <Badge key={g.id} color="green">{g.name}</Badge>
+            ))}
           </div>
         </div>
         <StatusBadge isDeprecated={service.is_deprecated} />
