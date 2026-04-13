@@ -4,7 +4,7 @@ import type { McpSummary, PaginatedResponse } from "../types";
 
 export function useSummaries(mcp_service_id?: string) {
   const params = new URLSearchParams();
-  if (mcp_service_id) params.set("mcp_service_id", mcp_service_id);
+  if (mcp_service_id) params.set("service_id", mcp_service_id);
   const qs = params.toString();
   return useQuery({
     queryKey: ["summaries", qs],

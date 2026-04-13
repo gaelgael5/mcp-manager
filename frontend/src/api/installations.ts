@@ -4,7 +4,7 @@ import type { McpInstallation, PaginatedResponse } from "../types";
 
 export function useInstallations(mcp_service_id?: string) {
   const params = new URLSearchParams();
-  if (mcp_service_id) params.set("mcp_service_id", mcp_service_id);
+  if (mcp_service_id) params.set("service_id", mcp_service_id);
   const qs = params.toString();
   return useQuery({
     queryKey: ["installations", qs],
