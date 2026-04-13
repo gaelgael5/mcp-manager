@@ -1,9 +1,55 @@
+import { useState } from "react";
 import { useSyncStatus, useTriggerSync, useTriggerIndex, useStopIndex, useTriggerScrapeSkills, useEnrichSkills, useStopEnrichSkills, useIndexSkills, useStopIndexSkills, useRagIndex, useStopRagIndex, useStartAgents, useStopAgents, useEvalHeuristic, useStopEvalHeuristic, useEvalLLM, useStopEvalLLM, useEvalStats } from "../api/sync";
 import { useCurrentUser } from "../api/auth";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import { SyncStatusBar } from "../components/domain/SyncStatusBar";
+import { apiFetch } from "../api/client";
+
+function RecentItems({ scope }: { scope: "mcp" | "enrich" | "skills" }) {
+  const [items, setItems] = useState<{ id: number; name: string; url: string }[] | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetch = async () => {
+    setLoading(true);
+    try {
+      const data = await apiFetch<{ id: number; name: string; url: string }[]>(`/services/sync/recent/${scope}`);
+      setItems(data);
+    } catch {
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="mt-3 flex items-start gap-3">
+      <Button size="sm" variant="secondary" onClick={fetch} loading={loading}>
+        5 derniers
+      </Button>
+      {items && items.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {items.map((item) => (
+            <a
+              key={item.id}
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-blue-600 hover:underline bg-blue-50 px-2 py-1 rounded"
+              title={item.name}
+            >
+              {item.name.length > 30 ? item.name.slice(0, 30) + "…" : item.name}
+            </a>
+          ))}
+        </div>
+      )}
+      {items && items.length === 0 && (
+        <span className="text-xs text-gray-400">Aucun item traité</span>
+      )}
+    </div>
+  );
+}
 
 function p20Color(value: number | null | undefined): string {
   if (value == null) return "text-gray-400";
@@ -233,6 +279,7 @@ export function SyncPage() {
             {" "}{(status as any).last_enrich.syncs} syncs — {(status as any).last_enrich.time}
           </div>
         )}
+        <RecentItems scope="enrich" />
         <DockerAgents batchId="enrich" status={status} />
         <QualityEval scope="sources" evalStats={evalStats} />
       </Card>
@@ -283,6 +330,7 @@ export function SyncPage() {
             {" "}{(status as any).last_index_skills.failed} failed — {(status as any).last_index_skills.time}
           </div>
         )}
+        <RecentItems scope="skills" />
         <DockerAgents batchId="skills" status={status} />
         <QualityEval scope="skills" evalStats={evalStats} />
       </Card>
@@ -345,6 +393,7 @@ export function SyncPage() {
             {" "}{(status as any).last_rag.skills} skills, {(status as any).last_rag.failed} failed — {(status as any).last_rag.time}
           </div>
         )}
+        <RecentItems scope="mcp" />
         <DockerAgents batchId="mcp" status={status} />
         <QualityEval scope="mcp" evalStats={evalStats} />
       </Card>

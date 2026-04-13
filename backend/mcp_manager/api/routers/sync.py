@@ -250,6 +250,41 @@ async def sync_status():
     return result
 
 
+@router.get("/services/sync/recent/{scope}")
+async def sync_recent(scope: str, db: AsyncSession = Depends(get_db)):
+    """Return the 5 most recently updated items for a given pipeline scope."""
+    from mcp_manager.db.models import McpService, SkillSource, Skill
+
+    if scope == "mcp":
+        result = await db.execute(
+            select(McpService._id, McpService.name)
+            .where(McpService.needs_reindex == False)
+            .order_by(McpService.updated_at.desc())
+            .limit(5)
+        )
+        return [{"id": r[0], "name": r[1], "url": f"/services/{r[0]}"} for r in result.all()]
+
+    if scope == "enrich":
+        result = await db.execute(
+            select(SkillSource._id, SkillSource.name)
+            .where(SkillSource.enrichment_status == "done")
+            .order_by(SkillSource.updated_at.desc())
+            .limit(5)
+        )
+        return [{"id": r[0], "name": r[1], "url": f"/skills/{r[0]}"} for r in result.all()]
+
+    if scope == "skills":
+        result = await db.execute(
+            select(Skill._id, Skill.name)
+            .where(Skill.needs_summary == False)
+            .order_by(Skill.updated_at.desc())
+            .limit(5)
+        )
+        return [{"id": r[0], "name": r[1], "url": f"/skills-catalog/{r[0]}"} for r in result.all()]
+
+    return []
+
+
 def _get_docker_agents_status() -> dict:
     """Check which Docker agent containers are running for each batch."""
     import subprocess
