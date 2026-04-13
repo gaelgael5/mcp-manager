@@ -771,6 +771,7 @@ async def _enrich_one_skill(skill: Skill, db: AsyncSession) -> bool:
     if len(cleaned) > 8000:
         cleaned = cleaned[:8000]
 
+    generated = False
     for culture in cultures:
         try:
             template = load_prompt("skill_summary", culture)
@@ -782,8 +783,9 @@ async def _enrich_one_skill(skill: Skill, db: AsyncSession) -> bool:
             summary = await ollama_generate(prompt)
         if summary:
             await _upsert_skill_translation(db, skill._id, culture, summary)
+            generated = True
 
-    return True
+    return generated
 
 
 def _serialize_translation(t) -> dict:
