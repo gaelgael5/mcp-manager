@@ -1,0 +1,334 @@
+{
+  "common": {
+    "appName": "MCP Manager",
+    "buttons": {
+      "save": "Salva",
+      "saved": "Salvato!",
+      "create": "Crea",
+      "cancel": "Annulla",
+      "delete": "Elimina",
+      "add": "Aggiungi",
+      "remove": "Rimuovi",
+      "copy": "Copia",
+      "copied": "Copiato!",
+      "expand": "Espandi",
+      "collapse": "Comprimi",
+      "next": "Avanti",
+      "previous": "Indietro",
+      "reset": "Reimposta",
+      "sync": "Sincronizza",
+      "activate": "Attiva",
+      "deactivate": "Disattiva",
+      "logout": "Esci",
+      "loginGoogle": "Accedi con Google",
+      "edit": "modifica"
+    },
+    "status": {
+      "active": "Attivo",
+      "inactive": "inattivo",
+      "loading": "Caricamento...",
+      "failed": "Fallito",
+      "public": "pubblico",
+      "private": "privato",
+      "required": "obbligatorio",
+      "secret": "segreto",
+      "missing": "mancante",
+      "admin": "admin",
+      "deprecated": "Deprecato"
+    },
+    "filters": {
+      "allSources": "Tutte le fonti",
+      "allTypes": "Tutti i tipi",
+      "allTargets": "Tutti i target",
+      "allCategories": "Tutte le categorie",
+      "allTransports": "Tutti i trasporti",
+      "allGroups": "Tutti i gruppi"
+    },
+    "labels": {
+      "name": "Nome",
+      "url": "URL",
+      "description": "Descrizione"
+    }
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "services": "Servizi MCP",
+    "skills": "Skills",
+    "groups": "Gruppi",
+    "targets": "Target",
+    "api": "API",
+    "sync": "Sincronizzazione",
+    "skillSources": "Fonti Skills",
+    "apiKeys": "Chiavi",
+    "community": "Comunità",
+    "settings": "Impostazioni"
+  },
+  "pages": {
+    "dashboard": {
+      "title": "Dashboard",
+      "mcpIndexationTitle": "Progresso indicizzazione servizi MCP",
+      "skillSourcesEnrichmentTitle": "Progresso arricchimento fonti Skills",
+      "skillsIndexationTitle": "Progresso indicizzazione Skills",
+      "overallProcessing": "Elaborazione complessiva",
+      "summaries": "Riassunti",
+      "installations": "Installazioni",
+      "parameters": "Parametri",
+      "ragIndexed": "Indicizzati RAG",
+      "synced": "Sincronizzati",
+      "totalEmbeddings": "vettori embedding totali",
+      "outdatedSummaries": "riassunti obsoleti",
+      "ragPending": "RAG in attesa",
+      "mcpTranslations": "Traduzioni servizi MCP",
+      "skillSourcesTranslations": "Traduzioni fonti Skills",
+      "skillsTranslations": "Traduzioni Skills",
+      "diskLabel": "Disco:",
+      "repositoryStatusTitle": "Stato dei repository"
+    },
+    "services": {
+      "title": "Servizi MCP",
+      "resultsCount": "{total} risultati",
+      "semanticSearchLabel": "Ricerca semantica",
+      "semanticSearchHint": "Digita una query in linguaggio naturale per la ricerca semantica"
+    },
+    "serviceDetail": {
+      "noTransport": "nessun trasporto",
+      "transportStdioNote": "richiede runtime locale (npx/uvx/docker)",
+      "transportRemoteNote": "endpoint remoto — nessun runtime locale necessario",
+      "noRepositoryUrl": "Nessun URL del repository",
+      "addUrlButton": "Aggiungi URL",
+      "summaryTitle": "Riassunto",
+      "generateSummaryButton": "Genera riassunto",
+      "regenerateSummaryButton": "Rigenera riassunto",
+      "summariesGenerated": "Riassunti generati",
+      "failedToGenerateSummary": "Generazione riassunto fallita",
+      "installationTitle": "Installazione",
+      "noInstallationRecipes": "Nessuna ricetta di installazione disponibile.",
+      "generateRecipesButton": "Genera ricette",
+      "regenerateRecipesButton": "Rigenera ricette",
+      "recipesGenerated": "Ricette generate",
+      "failedToGenerateRecipes": "Generazione ricette fallita"
+    },
+    "skillDetail": {
+      "noSummaryGenerated": "Nessun riassunto generato.",
+      "generateSummaryButton": "Genera riassunto",
+      "regenerateSummaryButton": "Rigenera riassunto",
+      "summariesGenerated": "Riassunti generati",
+      "licenseTitle": "Licenza",
+      "viewLicenseFile": "Visualizza file LICENSE",
+      "descriptionTitle": "Descrizione trigger"
+    },
+    "skillSourceDetail": {
+      "breadcrumbSkillSources": "Fonti Skills",
+      "noSummaryGenerated": "Nessun riassunto generato.",
+      "generateSummaryButton": "Genera riassunto",
+      "regenerateSummaryButton": "Rigenera riassunto",
+      "summaryGenerated": "Riassunto generato",
+      "skillsTitle": "Skills",
+      "syncCompleted": "Sincronizzazione completata: {added} aggiunti, {updated} aggiornati",
+      "syncFailed": "Sincronizzazione fallita",
+      "noSkillsFound": "Nessun skill trovato. Esegui una sincronizzazione per analizzare il repository."
+    },
+    "skills": {
+      "title": "Skills & Prompt",
+      "skillSourcesTab": "Fonti Skills",
+      "searchPlaceholder": "Cerca fonti...",
+      "sortByStars": "★ Stelle",
+      "sortByName": "A-Z",
+      "sortByRecent": "Recenti",
+      "filterSummarized": "con riassunto",
+      "filterNoSummary": "senza riassunto",
+      "filterSynced": "sincronizzati",
+      "filterNeverSynced": "mai sincronizzati",
+      "filterHasStars": "★ con stelle",
+      "neverSynced": "Mai sincronizzato",
+      "noSearchResults": "Nessuna fonte corrisponde alla ricerca.",
+      "noSourcesConfigured": "Nessuna fonte di skill configurata.",
+      "syncAllButton": "Sincronizza tutte le fonti",
+      "confirmDelete": "Eliminare \"{name}\"?"
+    },
+    "skillsCatalog": {
+      "title": "Catalogo Skills",
+      "skillsCount": "{count} skills",
+      "searchPlaceholder": "Cerca skills...",
+      "noSkillsIndexed": "Nessun skill ancora indicizzato.",
+      "noSearchResults": "Nessun skill corrisponde alla ricerca."
+    },
+    "groups": {
+      "title": "Gruppi",
+      "loginRequiredMessage": "Accedi per vedere i tuoi gruppi.",
+      "groupNamePlaceholder": "Nome del gruppo",
+      "noGroupsMessage": "Nessun gruppo. Crea il tuo primo gruppo qui sopra.",
+      "servicesCount": "{count} servizio/i",
+      "skillsCount": "{count} skill(s)"
+    },
+    "groupDetail": {
+      "notFoundMessage": "Gruppo non trovato.",
+      "backToGroupsLink": "← Torna ai gruppi",
+      "makePublicButton": "Rendi pubblico",
+      "makePrivateButton": "Rendi privato",
+      "servicesTitle": "Servizi MCP",
+      "noServicesMessage": "Nessun servizio in questo gruppo.",
+      "skillsTitle": "Skills",
+      "noSkillsMessage": "Nessun skill in questo gruppo.",
+      "removeFromGroupTitle": "Rimuovi dal gruppo",
+      "deleteGroupButton": "Elimina questo gruppo"
+    },
+    "profile": {
+      "title": "Profilo",
+      "loginRequiredMessage": "Accedi per vedere il tuo profilo.",
+      "pseudoLabel": "Pseudonimo",
+      "pseudoPlaceholder": "Il tuo pseudonimo",
+      "languageLabel": "Lingua",
+      "languageHint": "Le descrizioni e i riassunti saranno visualizzati in questa lingua quando disponibili.",
+      "avatarTitle": "Avatar",
+      "avatarUrlLabel": "URL del tuo avatar",
+      "avatarUrlHint": "Incolla un URL avatar ottenuto da una delle piattaforme qui sotto",
+      "avatarPlatformsTitle": "Piattaforme per creare il tuo avatar:"
+    },
+    "apiDocs": {
+      "title": "Documentazione API",
+      "openApiSpec": "Specifica OpenAPI (JSON)"
+    },
+    "apiKeys": {
+      "title": "Chiavi API",
+      "newKeyMessage": "Nuova chiave API creata — copiala adesso, non verrà più mostrata:",
+      "noKeysYet": "Nessuna chiave API.",
+      "createTitle": "Crea chiave API",
+      "keyNameLabel": "Nome della chiave",
+      "keyNamePlaceholder": "es. claude-code-agent",
+      "usageHint": "Utilizzo: curl -H \"X-API-Key: mcp_xxx\" https://mcp.yoops.org/api/v1/search_mcp?q=playwright"
+    },
+    "targets": {
+      "title": "Target di installazione",
+      "addTargetButton": "Aggiungi target",
+      "compatibleModes": "Modalità compatibili:",
+      "noModesConfigured": "Nessuna modalità configurata — valori predefiniti in uso",
+      "addModeButton": "Aggiungi modalità"
+    },
+    "instances": {
+      "title": "Istanze MCP Manager",
+      "description": "Connettiti ad altre istanze MCP Manager per sincronizzare il loro catalogo.",
+      "neverSynced": "Mai sincronizzato",
+      "lastSync": "Ultima sincronizzazione: {date} ({count} servizi)",
+      "noInstancesConfigured": "Nessuna istanza configurata. Aggiungine una per iniziare la federazione.",
+      "addInstanceTitle": "Aggiungi istanza",
+      "namePlaceholder": "MCP Community Hub",
+      "urlPlaceholder": "https://mcp.other-org.com",
+      "apiKeyLabel": "Chiave API (opzionale)",
+      "apiKeyPlaceholder": "mcp_xxx...",
+      "addInstanceButton": "Aggiungi istanza"
+    },
+    "sync": {
+      "title": "Sincronizzazione e indicizzazione",
+      "syncSourcesTitle": "Sincronizza fonti",
+      "syncAllButton": "Sincronizza tutte le fonti",
+      "skillsEnrichmentTitle": "Arricchimento Skills.sh",
+      "skillsEnrichmentDescription": "Arricchisce le fonti Skills: URL del repository, riassunti EN/FR, sincronizzazione skills da GitHub.",
+      "scrapeAllButton": "Scrape tutto",
+      "stopEnrichButton": "Ferma arricchimento",
+      "enrichSkillsButton": "Arricchisci Skills",
+      "ragIndexButton": "Indicizzazione RAG",
+      "stopRagButton": "Ferma RAG",
+      "enrichmentProgress": "Arricchimento: {done}/{total}",
+      "scrapingInProgress": "Scraping in corso...",
+      "ragIndexProgress": "Indicizzazione RAG: {done}/{total}",
+      "indexSkillsTitle": "Indicizza Skills (Riassunto)",
+      "indexSkillsDescription": "Genera riassunti EN/FR per gli skills con needs_summary=true.",
+      "stopIndexSkillsButton": "Ferma indicizzazione Skills",
+      "indexSkillsButton": "Indicizza Skills",
+      "indexMcpTitle": "Indicizza MCP (Riassunto + Parametri + Ricette)",
+      "indexMcpDescription": "Indicizza i servizi MCP (riassunti, parametri, ricette) e genera embedding RAG.",
+      "stopIndexMcpButton": "Ferma indicizzazione MCP",
+      "indexAllButton": "Indicizza tutto",
+      "statsNew": "Nuovi",
+      "statsUpdated": "Aggiornati",
+      "statsUnchanged": "Invariati"
+    },
+    "settings": {
+      "title": "Impostazioni",
+      "languagesTitle": "Lingue",
+      "languagesHint": "L'attivazione di una lingua richiede l'esistenza dei tre file di prompt (summarize, skill_summary, source_summary) in backend/prompts/<code>/.",
+      "promptsTitle": "Prompt",
+      "promptKindLabel": "Tipo:",
+      "promptLanguageLabel": "Lingua:",
+      "noPromptFile": "(nessun file di prompt)",
+      "promptMissingPlaceholder": "Il template deve contenere il segnaposto {content}.",
+      "environmentKeysTitle": "Chiavi d'ambiente",
+      "saveKeysButton": "Salva chiavi",
+      "authFilesTitle": "File di autenticazione",
+      "authFilesPlaceholder": "Incolla il contenuto {label} qui...",
+      "apiTokensTitle": "Token API (pool con limite di frequenza)",
+      "concurrencyTitle": "Concorrenza",
+      "noLlmProvidersConfigured": "Nessun provider LLM configurato. Aggiungine uno in Provider LLM qui sotto.",
+      "instancesLabel": "istanze",
+      "launchCommandLabel": "Comando di avvio",
+      "llmProvidersTitle": "Provider LLM",
+      "addProviderButton": "Aggiungi provider",
+      "testProvidersButton": "Testa provider",
+      "llmProviderTestsTitle": "Test provider LLM",
+      "providerLabel": "Provider #{id}"
+    },
+    "landing": {
+      "openSource": "Open Source",
+      "title": "MCP Manager",
+      "subtitle": "Un registro unificato di {total} server MCP.\nAggrega, cerca e installa da {sources} fonti.",
+      "githubButton": "★ GitHub",
+      "getStartedButton": "Inizia ↓",
+      "statsMcpServers": "Server MCP",
+      "statsSources": "Fonti",
+      "statsSkillSources": "Fonti Skills",
+      "statsSkills": "Skills",
+      "statsSemanticSearch": "Ricerca semantica",
+      "installationTitle": "Installazione",
+      "installStepClone": "Clona",
+      "installStepConfigure": "Configura",
+      "installStepBuild": "Compila e avvia",
+      "footer": "Realizzato con FastAPI + PostgreSQL + React"
+    }
+  },
+  "components": {
+    "syncStatusBar": {
+      "syncing": "Sincronizzazione...",
+      "idle": "Inattivo",
+      "lastRun": "Ultimo: {date}",
+      "stats": "{new} nuovi, {updated} aggiornati"
+    },
+    "summaryView": {
+      "noSummaries": "Nessun riassunto disponibile.",
+      "selectLanguage": "Seleziona una lingua."
+    },
+    "filterPanel": {
+      "searchPlaceholder": "Cerca servizi...",
+      "repoOk": "Repository OK",
+      "repo404": "Repository 404",
+      "notChecked": "Non verificato",
+      "hasSummary": "Con riassunto",
+      "noSummary": "Senza riassunto"
+    },
+    "parametersBlock": {
+      "title": "Parametri",
+      "noParameters": "Nessun parametro identificato.",
+      "variableNamePlaceholder": "NOME_VARIABILE",
+      "descriptionPlaceholder": "Descrizione",
+      "requiredLabel": "Obbligatorio",
+      "secretLabel": "Segreto",
+      "detectButton": "Rileva parametri",
+      "addManuallyButton": "Aggiungi manualmente"
+    },
+    "groupPicker": {
+      "addGroupButton": "+ Gruppo",
+      "noGroupsAvailable": "Nessun gruppo disponibile",
+      "groupNamePlaceholder": "Nome del gruppo",
+      "createGroupButton": "+ Crea un gruppo"
+    },
+    "serviceCard": {
+      "noRepo": "nessun repository",
+      "noSummary": "nessun riassunto"
+    },
+    "statusBadge": {
+      "deprecated": "Deprecato",
+      "active": "Attivo"
+    }
+  }
+}

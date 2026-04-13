@@ -1,0 +1,334 @@
+{
+  "common": {
+    "appName": "MCP Manager",
+    "buttons": {
+      "save": "保存",
+      "saved": "已保存！",
+      "create": "创建",
+      "cancel": "取消",
+      "delete": "删除",
+      "add": "添加",
+      "remove": "移除",
+      "copy": "复制",
+      "copied": "已复制！",
+      "expand": "展开",
+      "collapse": "折叠",
+      "next": "下一步",
+      "previous": "上一步",
+      "reset": "重置",
+      "sync": "同步",
+      "activate": "启用",
+      "deactivate": "停用",
+      "logout": "退出登录",
+      "loginGoogle": "使用 Google 登录",
+      "edit": "编辑"
+    },
+    "status": {
+      "active": "活跃",
+      "inactive": "未激活",
+      "loading": "加载中...",
+      "failed": "失败",
+      "public": "公开",
+      "private": "私有",
+      "required": "必填",
+      "secret": "密钥",
+      "missing": "缺失",
+      "admin": "管理员",
+      "deprecated": "已弃用"
+    },
+    "filters": {
+      "allSources": "所有来源",
+      "allTypes": "所有类型",
+      "allTargets": "所有目标",
+      "allCategories": "所有分类",
+      "allTransports": "所有传输方式",
+      "allGroups": "所有分组"
+    },
+    "labels": {
+      "name": "名称",
+      "url": "URL",
+      "description": "描述"
+    }
+  },
+  "navigation": {
+    "home": "首页",
+    "dashboard": "仪表盘",
+    "services": "MCP 服务",
+    "skills": "Skills",
+    "groups": "分组",
+    "targets": "目标",
+    "api": "API",
+    "sync": "同步",
+    "skillSources": "Skills 来源",
+    "apiKeys": "密钥",
+    "community": "社区",
+    "settings": "设置"
+  },
+  "pages": {
+    "dashboard": {
+      "title": "仪表盘",
+      "mcpIndexationTitle": "MCP 服务索引进度",
+      "skillSourcesEnrichmentTitle": "Skills 来源丰富进度",
+      "skillsIndexationTitle": "Skills 索引进度",
+      "overallProcessing": "整体处理",
+      "summaries": "摘要",
+      "installations": "安装",
+      "parameters": "参数",
+      "ragIndexed": "RAG 已索引",
+      "synced": "已同步",
+      "totalEmbeddings": "总嵌入向量数",
+      "outdatedSummaries": "过时的摘要",
+      "ragPending": "RAG 待处理",
+      "mcpTranslations": "MCP 服务翻译",
+      "skillSourcesTranslations": "Skills 来源翻译",
+      "skillsTranslations": "Skills 翻译",
+      "diskLabel": "磁盘：",
+      "repositoryStatusTitle": "仓库状态"
+    },
+    "services": {
+      "title": "MCP 服务",
+      "resultsCount": "{total} 个结果",
+      "semanticSearchLabel": "语义搜索",
+      "semanticSearchHint": "输入自然语言查询以使用语义搜索"
+    },
+    "serviceDetail": {
+      "noTransport": "无传输方式",
+      "transportStdioNote": "需要本地运行时（npx/uvx/docker）",
+      "transportRemoteNote": "远程端点 — 无需本地运行时",
+      "noRepositoryUrl": "无仓库 URL",
+      "addUrlButton": "添加 URL",
+      "summaryTitle": "摘要",
+      "generateSummaryButton": "生成摘要",
+      "regenerateSummaryButton": "重新生成摘要",
+      "summariesGenerated": "摘要已生成",
+      "failedToGenerateSummary": "生成摘要失败",
+      "installationTitle": "安装",
+      "noInstallationRecipes": "暂无安装配方。",
+      "generateRecipesButton": "生成配方",
+      "regenerateRecipesButton": "重新生成配方",
+      "recipesGenerated": "配方已生成",
+      "failedToGenerateRecipes": "生成配方失败"
+    },
+    "skillDetail": {
+      "noSummaryGenerated": "尚未生成摘要。",
+      "generateSummaryButton": "生成摘要",
+      "regenerateSummaryButton": "重新生成摘要",
+      "summariesGenerated": "摘要已生成",
+      "licenseTitle": "许可证",
+      "viewLicenseFile": "查看 LICENSE 文件",
+      "descriptionTitle": "触发器描述"
+    },
+    "skillSourceDetail": {
+      "breadcrumbSkillSources": "Skills 来源",
+      "noSummaryGenerated": "尚未生成摘要。",
+      "generateSummaryButton": "生成摘要",
+      "regenerateSummaryButton": "重新生成摘要",
+      "summaryGenerated": "摘要已生成",
+      "skillsTitle": "Skills",
+      "syncCompleted": "同步完成：{added} 个新增，{updated} 个更新",
+      "syncFailed": "同步失败",
+      "noSkillsFound": "未找到 Skills。请运行同步以扫描仓库。"
+    },
+    "skills": {
+      "title": "Skills 与提示词",
+      "skillSourcesTab": "Skills 来源",
+      "searchPlaceholder": "搜索来源...",
+      "sortByStars": "★ 星标",
+      "sortByName": "A-Z",
+      "sortByRecent": "最近",
+      "filterSummarized": "有摘要",
+      "filterNoSummary": "无摘要",
+      "filterSynced": "已同步",
+      "filterNeverSynced": "从未同步",
+      "filterHasStars": "★ 有星标",
+      "neverSynced": "从未同步",
+      "noSearchResults": "没有匹配搜索的来源。",
+      "noSourcesConfigured": "未配置 Skills 来源。",
+      "syncAllButton": "同步所有来源",
+      "confirmDelete": "删除 \"{name}\"？"
+    },
+    "skillsCatalog": {
+      "title": "Skills 目录",
+      "skillsCount": "{count} 个 skills",
+      "searchPlaceholder": "搜索 skills...",
+      "noSkillsIndexed": "尚未索引任何 Skills。",
+      "noSearchResults": "没有匹配搜索的 Skills。"
+    },
+    "groups": {
+      "title": "分组",
+      "loginRequiredMessage": "请登录以访问您的分组。",
+      "groupNamePlaceholder": "分组名称",
+      "noGroupsMessage": "暂无分组。在上方创建您的第一个分组。",
+      "servicesCount": "{count} 个服务",
+      "skillsCount": "{count} 个 skill(s)"
+    },
+    "groupDetail": {
+      "notFoundMessage": "未找到分组。",
+      "backToGroupsLink": "← 返回分组",
+      "makePublicButton": "设为公开",
+      "makePrivateButton": "设为私有",
+      "servicesTitle": "MCP 服务",
+      "noServicesMessage": "此分组中没有服务。",
+      "skillsTitle": "Skills",
+      "noSkillsMessage": "此分组中没有 Skills。",
+      "removeFromGroupTitle": "从分组中移除",
+      "deleteGroupButton": "删除此分组"
+    },
+    "profile": {
+      "title": "个人资料",
+      "loginRequiredMessage": "请登录以访问您的个人资料。",
+      "pseudoLabel": "昵称",
+      "pseudoPlaceholder": "您的昵称",
+      "languageLabel": "语言",
+      "languageHint": "描述和摘要将在可用时以此语言显示。",
+      "avatarTitle": "头像",
+      "avatarUrlLabel": "您的头像 URL",
+      "avatarUrlHint": "粘贴从以下平台获取的头像 URL",
+      "avatarPlatformsTitle": "创建头像的平台："
+    },
+    "apiDocs": {
+      "title": "API 文档",
+      "openApiSpec": "OpenAPI 规范 (JSON)"
+    },
+    "apiKeys": {
+      "title": "API 密钥",
+      "newKeyMessage": "已创建新 API 密钥 — 请立即复制，之后将不再显示：",
+      "noKeysYet": "暂无 API 密钥。",
+      "createTitle": "创建 API 密钥",
+      "keyNameLabel": "密钥名称",
+      "keyNamePlaceholder": "例如 claude-code-agent",
+      "usageHint": "用法：curl -H \"X-API-Key: mcp_xxx\" https://mcp.yoops.org/api/v1/search_mcp?q=playwright"
+    },
+    "targets": {
+      "title": "安装目标",
+      "addTargetButton": "添加目标",
+      "compatibleModes": "兼容模式：",
+      "noModesConfigured": "未配置模式 — 使用默认值",
+      "addModeButton": "添加模式"
+    },
+    "instances": {
+      "title": "MCP Manager 实例",
+      "description": "连接到其他 MCP Manager 实例以同步其目录。",
+      "neverSynced": "从未同步",
+      "lastSync": "上次同步：{date}（{count} 个服务）",
+      "noInstancesConfigured": "未配置实例。添加一个以开始联合。",
+      "addInstanceTitle": "添加实例",
+      "namePlaceholder": "MCP Community Hub",
+      "urlPlaceholder": "https://mcp.other-org.com",
+      "apiKeyLabel": "API 密钥（可选）",
+      "apiKeyPlaceholder": "mcp_xxx...",
+      "addInstanceButton": "添加实例"
+    },
+    "sync": {
+      "title": "同步与索引",
+      "syncSourcesTitle": "同步来源",
+      "syncAllButton": "同步所有来源",
+      "skillsEnrichmentTitle": "Skills.sh 丰富",
+      "skillsEnrichmentDescription": "丰富 Skills 来源：仓库 URL、EN/FR 摘要、从 GitHub 同步 skills。",
+      "scrapeAllButton": "全部抓取",
+      "stopEnrichButton": "停止丰富",
+      "enrichSkillsButton": "丰富 Skills",
+      "ragIndexButton": "RAG 索引",
+      "stopRagButton": "停止 RAG",
+      "enrichmentProgress": "丰富进度：{done}/{total}",
+      "scrapingInProgress": "正在抓取...",
+      "ragIndexProgress": "RAG 索引：{done}/{total}",
+      "indexSkillsTitle": "索引 Skills（摘要）",
+      "indexSkillsDescription": "为 needs_summary=true 的 skills 生成 EN/FR 摘要。",
+      "stopIndexSkillsButton": "停止索引 Skills",
+      "indexSkillsButton": "索引 Skills",
+      "indexMcpTitle": "索引 MCP（摘要 + 参数 + 配方）",
+      "indexMcpDescription": "索引 MCP 服务（摘要、参数、配方）并生成 RAG 嵌入。",
+      "stopIndexMcpButton": "停止索引 MCP",
+      "indexAllButton": "全部索引",
+      "statsNew": "新增",
+      "statsUpdated": "已更新",
+      "statsUnchanged": "未变更"
+    },
+    "settings": {
+      "title": "设置",
+      "languagesTitle": "语言",
+      "languagesHint": "启用一种语言需要在 backend/prompts/<code>/ 下存在三个提示词文件（summarize、skill_summary、source_summary）。",
+      "promptsTitle": "提示词",
+      "promptKindLabel": "类型：",
+      "promptLanguageLabel": "语言：",
+      "noPromptFile": "（无提示词文件）",
+      "promptMissingPlaceholder": "模板必须包含 {content} 占位符。",
+      "environmentKeysTitle": "环境密钥",
+      "saveKeysButton": "保存密钥",
+      "authFilesTitle": "认证文件",
+      "authFilesPlaceholder": "在此粘贴 {label} 内容...",
+      "apiTokensTitle": "API 令牌（限速池）",
+      "concurrencyTitle": "并发",
+      "noLlmProvidersConfigured": "未配置 LLM 提供商。请在下方的 LLM 提供商中添加一个。",
+      "instancesLabel": "实例",
+      "launchCommandLabel": "启动命令",
+      "llmProvidersTitle": "LLM 提供商",
+      "addProviderButton": "添加提供商",
+      "testProvidersButton": "测试提供商",
+      "llmProviderTestsTitle": "LLM 提供商测试",
+      "providerLabel": "提供商 #{id}"
+    },
+    "landing": {
+      "openSource": "开源",
+      "title": "MCP Manager",
+      "subtitle": "一个统一的 {total} 个 MCP 服务器注册表。\n从 {sources} 个来源聚合、搜索和安装。",
+      "githubButton": "★ GitHub",
+      "getStartedButton": "开始使用 ↓",
+      "statsMcpServers": "MCP 服务器",
+      "statsSources": "来源",
+      "statsSkillSources": "Skills 来源",
+      "statsSkills": "Skills",
+      "statsSemanticSearch": "语义搜索",
+      "installationTitle": "安装",
+      "installStepClone": "克隆",
+      "installStepConfigure": "配置",
+      "installStepBuild": "构建并启动",
+      "footer": "基于 FastAPI + PostgreSQL + React 构建"
+    }
+  },
+  "components": {
+    "syncStatusBar": {
+      "syncing": "同步中...",
+      "idle": "空闲",
+      "lastRun": "上次：{date}",
+      "stats": "{new} 个新增，{updated} 个更新"
+    },
+    "summaryView": {
+      "noSummaries": "暂无可用摘要。",
+      "selectLanguage": "请选择语言。"
+    },
+    "filterPanel": {
+      "searchPlaceholder": "搜索服务...",
+      "repoOk": "仓库正常",
+      "repo404": "仓库 404",
+      "notChecked": "未检查",
+      "hasSummary": "有摘要",
+      "noSummary": "无摘要"
+    },
+    "parametersBlock": {
+      "title": "参数",
+      "noParameters": "未识别到参数。",
+      "variableNamePlaceholder": "变量名称",
+      "descriptionPlaceholder": "描述",
+      "requiredLabel": "必填",
+      "secretLabel": "密钥",
+      "detectButton": "检测参数",
+      "addManuallyButton": "手动添加"
+    },
+    "groupPicker": {
+      "addGroupButton": "+ 分组",
+      "noGroupsAvailable": "无可用分组",
+      "groupNamePlaceholder": "分组名称",
+      "createGroupButton": "+ 创建分组"
+    },
+    "serviceCard": {
+      "noRepo": "无仓库",
+      "noSummary": "无摘要"
+    },
+    "statusBadge": {
+      "deprecated": "已弃用",
+      "active": "活跃"
+    }
+  }
+}

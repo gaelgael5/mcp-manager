@@ -1,0 +1,334 @@
+{
+  "common": {
+    "appName": "MCP Manager",
+    "buttons": {
+      "save": "حفظ",
+      "saved": "تم الحفظ!",
+      "create": "إنشاء",
+      "cancel": "إلغاء",
+      "delete": "حذف",
+      "add": "إضافة",
+      "remove": "إزالة",
+      "copy": "نسخ",
+      "copied": "تم النسخ!",
+      "expand": "توسيع",
+      "collapse": "طي",
+      "next": "التالي",
+      "previous": "السابق",
+      "reset": "إعادة تعيين",
+      "sync": "مزامنة",
+      "activate": "تفعيل",
+      "deactivate": "تعطيل",
+      "logout": "تسجيل الخروج",
+      "loginGoogle": "تسجيل الدخول عبر Google",
+      "edit": "تعديل"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "loading": "جارٍ التحميل...",
+      "failed": "فشل",
+      "public": "عام",
+      "private": "خاص",
+      "required": "مطلوب",
+      "secret": "سري",
+      "missing": "مفقود",
+      "admin": "مسؤول",
+      "deprecated": "مهمل"
+    },
+    "filters": {
+      "allSources": "جميع المصادر",
+      "allTypes": "جميع الأنواع",
+      "allTargets": "جميع الأهداف",
+      "allCategories": "جميع الفئات",
+      "allTransports": "جميع وسائل النقل",
+      "allGroups": "جميع المجموعات"
+    },
+    "labels": {
+      "name": "الاسم",
+      "url": "URL",
+      "description": "الوصف"
+    }
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "dashboard": "لوحة التحكم",
+    "services": "خدمات MCP",
+    "skills": "Skills",
+    "groups": "المجموعات",
+    "targets": "الأهداف",
+    "api": "API",
+    "sync": "المزامنة",
+    "skillSources": "مصادر Skills",
+    "apiKeys": "المفاتيح",
+    "community": "المجتمع",
+    "settings": "الإعدادات"
+  },
+  "pages": {
+    "dashboard": {
+      "title": "لوحة التحكم",
+      "mcpIndexationTitle": "تقدم فهرسة خدمات MCP",
+      "skillSourcesEnrichmentTitle": "تقدم إثراء مصادر Skills",
+      "skillsIndexationTitle": "تقدم فهرسة Skills",
+      "overallProcessing": "المعالجة الإجمالية",
+      "summaries": "الملخصات",
+      "installations": "التثبيتات",
+      "parameters": "المعاملات",
+      "ragIndexed": "مفهرس RAG",
+      "synced": "متزامن",
+      "totalEmbeddings": "إجمالي متجهات التضمين",
+      "outdatedSummaries": "ملخصات قديمة",
+      "ragPending": "RAG قيد الانتظار",
+      "mcpTranslations": "ترجمات خدمات MCP",
+      "skillSourcesTranslations": "ترجمات مصادر Skills",
+      "skillsTranslations": "ترجمات Skills",
+      "diskLabel": "القرص:",
+      "repositoryStatusTitle": "حالة المستودعات"
+    },
+    "services": {
+      "title": "خدمات MCP",
+      "resultsCount": "{total} نتيجة",
+      "semanticSearchLabel": "البحث الدلالي",
+      "semanticSearchHint": "اكتب استعلامًا بلغة طبيعية لاستخدام البحث الدلالي"
+    },
+    "serviceDetail": {
+      "noTransport": "لا يوجد نقل",
+      "transportStdioNote": "يتطلب بيئة تشغيل محلية (npx/uvx/docker)",
+      "transportRemoteNote": "نقطة نهاية بعيدة — لا حاجة لبيئة تشغيل محلية",
+      "noRepositoryUrl": "لا يوجد URL للمستودع",
+      "addUrlButton": "إضافة URL",
+      "summaryTitle": "الملخص",
+      "generateSummaryButton": "إنشاء ملخص",
+      "regenerateSummaryButton": "إعادة إنشاء الملخص",
+      "summariesGenerated": "تم إنشاء الملخصات",
+      "failedToGenerateSummary": "فشل إنشاء الملخص",
+      "installationTitle": "التثبيت",
+      "noInstallationRecipes": "لا توجد وصفات تثبيت متاحة.",
+      "generateRecipesButton": "إنشاء وصفات",
+      "regenerateRecipesButton": "إعادة إنشاء الوصفات",
+      "recipesGenerated": "تم إنشاء الوصفات",
+      "failedToGenerateRecipes": "فشل إنشاء الوصفات"
+    },
+    "skillDetail": {
+      "noSummaryGenerated": "لم يتم إنشاء ملخص بعد.",
+      "generateSummaryButton": "إنشاء ملخص",
+      "regenerateSummaryButton": "إعادة إنشاء الملخص",
+      "summariesGenerated": "تم إنشاء الملخصات",
+      "licenseTitle": "الترخيص",
+      "viewLicenseFile": "عرض ملف LICENSE",
+      "descriptionTitle": "وصف المشغّل"
+    },
+    "skillSourceDetail": {
+      "breadcrumbSkillSources": "مصادر Skills",
+      "noSummaryGenerated": "لم يتم إنشاء ملخص بعد.",
+      "generateSummaryButton": "إنشاء ملخص",
+      "regenerateSummaryButton": "إعادة إنشاء الملخص",
+      "summaryGenerated": "تم إنشاء الملخص",
+      "skillsTitle": "Skills",
+      "syncCompleted": "اكتملت المزامنة: {added} مضاف، {updated} محدّث",
+      "syncFailed": "فشلت المزامنة",
+      "noSkillsFound": "لم يتم العثور على Skills. قم بتشغيل مزامنة لفحص المستودع."
+    },
+    "skills": {
+      "title": "Skills والأوامر",
+      "skillSourcesTab": "مصادر Skills",
+      "searchPlaceholder": "البحث في المصادر...",
+      "sortByStars": "★ النجوم",
+      "sortByName": "أ-ي",
+      "sortByRecent": "الأحدث",
+      "filterSummarized": "مع ملخص",
+      "filterNoSummary": "بدون ملخص",
+      "filterSynced": "متزامن",
+      "filterNeverSynced": "لم تتم المزامنة",
+      "filterHasStars": "★ له نجوم",
+      "neverSynced": "لم تتم المزامنة",
+      "noSearchResults": "لا توجد مصادر تطابق بحثك.",
+      "noSourcesConfigured": "لا توجد مصادر Skills مهيأة.",
+      "syncAllButton": "مزامنة جميع المصادر",
+      "confirmDelete": "حذف \"{name}\"؟"
+    },
+    "skillsCatalog": {
+      "title": "كتالوج Skills",
+      "skillsCount": "{count} skills",
+      "searchPlaceholder": "البحث في Skills...",
+      "noSkillsIndexed": "لم يتم فهرسة أي Skills بعد.",
+      "noSearchResults": "لا توجد Skills تطابق بحثك."
+    },
+    "groups": {
+      "title": "المجموعات",
+      "loginRequiredMessage": "سجّل الدخول للوصول إلى مجموعاتك.",
+      "groupNamePlaceholder": "اسم المجموعة",
+      "noGroupsMessage": "لا توجد مجموعات. أنشئ مجموعتك الأولى أعلاه.",
+      "servicesCount": "{count} خدمة/خدمات",
+      "skillsCount": "{count} skill(s)"
+    },
+    "groupDetail": {
+      "notFoundMessage": "المجموعة غير موجودة.",
+      "backToGroupsLink": "→ العودة إلى المجموعات",
+      "makePublicButton": "جعلها عامة",
+      "makePrivateButton": "جعلها خاصة",
+      "servicesTitle": "خدمات MCP",
+      "noServicesMessage": "لا توجد خدمات في هذه المجموعة.",
+      "skillsTitle": "Skills",
+      "noSkillsMessage": "لا توجد Skills في هذه المجموعة.",
+      "removeFromGroupTitle": "إزالة من المجموعة",
+      "deleteGroupButton": "حذف هذه المجموعة"
+    },
+    "profile": {
+      "title": "الملف الشخصي",
+      "loginRequiredMessage": "سجّل الدخول للوصول إلى ملفك الشخصي.",
+      "pseudoLabel": "الاسم المستعار",
+      "pseudoPlaceholder": "اسمك المستعار",
+      "languageLabel": "اللغة",
+      "languageHint": "ستُعرض الأوصاف والملخصات بهذه اللغة عند توفرها.",
+      "avatarTitle": "الصورة الرمزية",
+      "avatarUrlLabel": "URL صورتك الرمزية",
+      "avatarUrlHint": "الصق URL صورة رمزية من إحدى المنصات أدناه",
+      "avatarPlatformsTitle": "منصات لإنشاء صورتك الرمزية:"
+    },
+    "apiDocs": {
+      "title": "توثيق API",
+      "openApiSpec": "مواصفات OpenAPI (JSON)"
+    },
+    "apiKeys": {
+      "title": "مفاتيح API",
+      "newKeyMessage": "تم إنشاء مفتاح API جديد — انسخه الآن، لن يُعرض مرة أخرى:",
+      "noKeysYet": "لا توجد مفاتيح API بعد.",
+      "createTitle": "إنشاء مفتاح API",
+      "keyNameLabel": "اسم المفتاح",
+      "keyNamePlaceholder": "مثال: claude-code-agent",
+      "usageHint": "الاستخدام: curl -H \"X-API-Key: mcp_xxx\" https://mcp.yoops.org/api/v1/search_mcp?q=playwright"
+    },
+    "targets": {
+      "title": "أهداف التثبيت",
+      "addTargetButton": "إضافة هدف",
+      "compatibleModes": "الأوضاع المتوافقة:",
+      "noModesConfigured": "لا توجد أوضاع مهيأة — استخدام الإعدادات الافتراضية",
+      "addModeButton": "إضافة وضع"
+    },
+    "instances": {
+      "title": "نسخ MCP Manager",
+      "description": "اتصل بنسخ MCP Manager أخرى لمزامنة كتالوجها.",
+      "neverSynced": "لم تتم المزامنة",
+      "lastSync": "آخر مزامنة: {date} ({count} خدمة)",
+      "noInstancesConfigured": "لا توجد نسخ مهيأة. أضف واحدة لبدء الاتحاد.",
+      "addInstanceTitle": "إضافة نسخة",
+      "namePlaceholder": "MCP Community Hub",
+      "urlPlaceholder": "https://mcp.other-org.com",
+      "apiKeyLabel": "مفتاح API (اختياري)",
+      "apiKeyPlaceholder": "mcp_xxx...",
+      "addInstanceButton": "إضافة نسخة"
+    },
+    "sync": {
+      "title": "المزامنة والفهرسة",
+      "syncSourcesTitle": "مزامنة المصادر",
+      "syncAllButton": "مزامنة جميع المصادر",
+      "skillsEnrichmentTitle": "إثراء Skills.sh",
+      "skillsEnrichmentDescription": "إثراء مصادر Skills: URL المستودع، ملخصات EN/FR، مزامنة Skills من GitHub.",
+      "scrapeAllButton": "جمع الكل",
+      "stopEnrichButton": "إيقاف الإثراء",
+      "enrichSkillsButton": "إثراء Skills",
+      "ragIndexButton": "فهرسة RAG",
+      "stopRagButton": "إيقاف RAG",
+      "enrichmentProgress": "الإثراء: {done}/{total}",
+      "scrapingInProgress": "جارٍ الجمع...",
+      "ragIndexProgress": "فهرسة RAG: {done}/{total}",
+      "indexSkillsTitle": "فهرسة Skills (ملخص)",
+      "indexSkillsDescription": "إنشاء ملخصات EN/FR لـ Skills التي لديها needs_summary=true.",
+      "stopIndexSkillsButton": "إيقاف فهرسة Skills",
+      "indexSkillsButton": "فهرسة Skills",
+      "indexMcpTitle": "فهرسة MCP (ملخص + معاملات + وصفات)",
+      "indexMcpDescription": "فهرسة خدمات MCP (ملخصات، معاملات، وصفات) وإنشاء تضمينات RAG.",
+      "stopIndexMcpButton": "إيقاف فهرسة MCP",
+      "indexAllButton": "فهرسة الكل",
+      "statsNew": "جديد",
+      "statsUpdated": "محدّث",
+      "statsUnchanged": "بدون تغيير"
+    },
+    "settings": {
+      "title": "الإعدادات",
+      "languagesTitle": "اللغات",
+      "languagesHint": "تفعيل لغة يتطلب وجود ملفات الأوامر الثلاثة (summarize، skill_summary، source_summary) في backend/prompts/<code>/.",
+      "promptsTitle": "الأوامر",
+      "promptKindLabel": "النوع:",
+      "promptLanguageLabel": "اللغة:",
+      "noPromptFile": "(لا يوجد ملف أوامر)",
+      "promptMissingPlaceholder": "يجب أن يحتوي القالب على العنصر النائب {content}.",
+      "environmentKeysTitle": "مفاتيح البيئة",
+      "saveKeysButton": "حفظ المفاتيح",
+      "authFilesTitle": "ملفات المصادقة",
+      "authFilesPlaceholder": "الصق محتوى {label} هنا...",
+      "apiTokensTitle": "رموز API (مجموعة محدودة المعدل)",
+      "concurrencyTitle": "التزامن",
+      "noLlmProvidersConfigured": "لا يوجد مزودو LLM مهيأون. أضف واحدًا في مزودي LLM أدناه.",
+      "instancesLabel": "نسخ",
+      "launchCommandLabel": "أمر التشغيل",
+      "llmProvidersTitle": "مزودو LLM",
+      "addProviderButton": "إضافة مزود",
+      "testProvidersButton": "اختبار المزودين",
+      "llmProviderTestsTitle": "اختبارات مزودي LLM",
+      "providerLabel": "المزود #{id}"
+    },
+    "landing": {
+      "openSource": "مفتوح المصدر",
+      "title": "MCP Manager",
+      "subtitle": "سجل موحد لـ {total} خادم MCP.\nتجميع والبحث والتثبيت من {sources} مصادر.",
+      "githubButton": "★ GitHub",
+      "getStartedButton": "ابدأ الآن ↓",
+      "statsMcpServers": "خوادم MCP",
+      "statsSources": "المصادر",
+      "statsSkillSources": "مصادر Skills",
+      "statsSkills": "Skills",
+      "statsSemanticSearch": "البحث الدلالي",
+      "installationTitle": "التثبيت",
+      "installStepClone": "استنساخ",
+      "installStepConfigure": "إعداد",
+      "installStepBuild": "بناء وتشغيل",
+      "footer": "مبني باستخدام FastAPI + PostgreSQL + React"
+    }
+  },
+  "components": {
+    "syncStatusBar": {
+      "syncing": "جارٍ المزامنة...",
+      "idle": "خامل",
+      "lastRun": "الأخير: {date}",
+      "stats": "{new} جديد، {updated} محدّث"
+    },
+    "summaryView": {
+      "noSummaries": "لا توجد ملخصات متاحة.",
+      "selectLanguage": "اختر لغة."
+    },
+    "filterPanel": {
+      "searchPlaceholder": "البحث في الخدمات...",
+      "repoOk": "المستودع متاح",
+      "repo404": "المستودع 404",
+      "notChecked": "لم يتم التحقق",
+      "hasSummary": "مع ملخص",
+      "noSummary": "بدون ملخص"
+    },
+    "parametersBlock": {
+      "title": "المعاملات",
+      "noParameters": "لم يتم تحديد معاملات.",
+      "variableNamePlaceholder": "اسم_المتغير",
+      "descriptionPlaceholder": "الوصف",
+      "requiredLabel": "مطلوب",
+      "secretLabel": "سري",
+      "detectButton": "كشف المعاملات",
+      "addManuallyButton": "إضافة يدوية"
+    },
+    "groupPicker": {
+      "addGroupButton": "+ مجموعة",
+      "noGroupsAvailable": "لا توجد مجموعات متاحة",
+      "groupNamePlaceholder": "اسم المجموعة",
+      "createGroupButton": "+ إنشاء مجموعة"
+    },
+    "serviceCard": {
+      "noRepo": "لا يوجد مستودع",
+      "noSummary": "لا يوجد ملخص"
+    },
+    "statusBadge": {
+      "deprecated": "مهمل",
+      "active": "نشط"
+    }
+  }
+}
