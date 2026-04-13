@@ -723,13 +723,12 @@ async def _run_index_skills_bg():
                         updated = await asyncio.wait_for(_enrich_one_skill(skill, wdb), timeout=120)
                         if updated:
                             stats["summaries"] += 1
+                            skill.needs_summary = False
                         else:
                             stats["unchanged"] += 1
-                        skill.needs_summary = False
                         stats["done"] += 1
                     except asyncio.TimeoutError:
                         skills_logger.warning("index-skills: timeout for %s", skill.name)
-                        skill.needs_summary = False
                         stats["failed"] += 1
                     except LLMProviderDead as e:
                         skills_logger.error(
