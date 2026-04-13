@@ -75,6 +75,19 @@ export function ProfilePage() {
         />
       </Card>
 
+      <Card title="Langue">
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+          className="w-full max-w-xs rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+        >
+          {languages.filter((l) => l.is_active).map((l) => (
+            <option key={l.code} value={l.code}>{l.name} ({l.code})</option>
+          ))}
+        </select>
+        <p className="text-xs text-gray-400 mt-2">Les descriptions et summaries seront affiches dans cette langue quand disponible.</p>
+      </Card>
+
       <Card title="Avatar">
         <div className="space-y-4">
           <div className="flex items-start gap-6">
@@ -124,19 +137,6 @@ export function ProfilePage() {
             </div>
           </div>
         </div>
-      </Card>
-
-      <Card title="Langue">
-        <select
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-          className="w-full max-w-xs rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-        >
-          {languages.filter((l) => l.is_active).map((l) => (
-            <option key={l.code} value={l.code}>{l.name} ({l.code})</option>
-          ))}
-        </select>
-        <p className="text-xs text-gray-400 mt-2">Les descriptions et summaries seront affiches dans cette langue quand disponible.</p>
       </Card>
 
       <div className="flex items-center gap-3">
