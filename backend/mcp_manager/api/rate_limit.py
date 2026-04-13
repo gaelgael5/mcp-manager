@@ -107,8 +107,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                     content={"detail": "Invalid or expired API key"},
                 )
 
-        # Require authentication on all API endpoints (except auth and docs routes)
-        if not user and "/auth/" not in path and "/openapi" not in path:
+        # Require authentication on all API endpoints (except auth, docs, and stats)
+        if not user and "/auth/" not in path and "/openapi" not in path and "/stats" not in path:
             return JSONResponse(
                 status_code=401,
                 content={"detail": "Authentication required. Use Authorization: Bearer <api_key> or Bearer <jwt>"},
