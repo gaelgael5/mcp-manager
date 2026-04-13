@@ -3,6 +3,7 @@ import { useSyncStatus } from "../api/sync";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { SyncStatusBar } from "../components/domain/SyncStatusBar";
+import { useTranslation } from "../i18n";
 
 function ProgressBar({ value, max, label, color = "blue" }: { value: number; max: number; label: string; color?: string }) {
   const pct = max > 0 ? Math.round((value / max) * 100) : 0;
@@ -112,6 +113,7 @@ function DriverChips({ batchId, syncStatus }: { batchId: string; syncStatus: any
 }
 
 export function DashboardPage() {
+  const { t } = useTranslation();
   const { data: stats } = useStats();
   const { data: syncStatus } = useSyncStatus();
   const idx = stats?.indexation;
@@ -121,14 +123,14 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-2xl font-bold">{t("pages.dashboard.title")}</h1>
         <SyncStatusBar status={syncStatus} />
       </div>
 
       {/* Indexation progress */}
       <Card title={
         <span className="flex items-center gap-2">
-          MCP Services Indexation Progress
+          {t("pages.dashboard.mcpIndexationTitle")}
           {((syncStatus as any)?.running || (syncStatus as any)?.indexing) && (<>
             <span className="text-yellow-500 animate-pulse">⚡</span>
             <Throughput value={(syncStatus as any)?.indexing_throughput} />
@@ -137,16 +139,16 @@ export function DashboardPage() {
         </span>
       }>
         <div className="space-y-3">
-          <ProgressBar value={total - (idx?.needs_reindex ?? 0)} max={total} label="Traitement global" color="green" />
-          <ProgressBar value={idx?.with_summaries ?? 0} max={total} label="Summaries" color="blue" />
-          <ProgressBar value={idx?.with_installations ?? 0} max={total} label="Installations" color="yellow" />
-          <ProgressBar value={idx?.with_params ?? 0} max={total} label="Parameters" color="yellow" />
-          <ProgressBar value={((stats as any)?.rag_pending?.mcp_total ?? 0) - ((stats as any)?.rag_pending?.mcp ?? 0)} max={(stats as any)?.rag_pending?.mcp_total ?? 0} label="RAG Indexed" color="purple" />
+          <ProgressBar value={total - (idx?.needs_reindex ?? 0)} max={total} label={t("pages.dashboard.overallProcessing")} color="green" />
+          <ProgressBar value={idx?.with_summaries ?? 0} max={total} label={t("pages.dashboard.summaries")} color="blue" />
+          <ProgressBar value={idx?.with_installations ?? 0} max={total} label={t("pages.dashboard.installations")} color="yellow" />
+          <ProgressBar value={idx?.with_params ?? 0} max={total} label={t("pages.dashboard.parameters")} color="yellow" />
+          <ProgressBar value={((stats as any)?.rag_pending?.mcp_total ?? 0) - ((stats as any)?.rag_pending?.mcp ?? 0)} max={(stats as any)?.rag_pending?.mcp_total ?? 0} label={t("pages.dashboard.ragIndexed")} color="purple" />
           <div className="flex gap-4 text-xs text-gray-400 pt-1">
-            <span>{(idx?.total_embeddings ?? 0).toLocaleString()} total embedding vectors</span>
-            <span>{(idx?.outdated_summaries ?? 0)} outdated summaries</span>
+            <span>{(idx?.total_embeddings ?? 0).toLocaleString()} {t("pages.dashboard.totalEmbeddings")}</span>
+            <span>{(idx?.outdated_summaries ?? 0)} {t("pages.dashboard.outdatedSummaries")}</span>
             {((stats as any)?.rag_pending?.total ?? 0) > 0 && (
-              <span className="text-yellow-500">{(stats as any).rag_pending.total} RAG pending</span>
+              <span className="text-yellow-500">{(stats as any).rag_pending.total} {t("pages.dashboard.ragPending")}</span>
             )}
           </div>
           <DriverChips batchId="mcp" syncStatus={syncStatus} />
@@ -156,7 +158,7 @@ export function DashboardPage() {
       {/* Skill Sources Progress */}
       <Card title={
         <span className="flex items-center gap-2">
-          Skill Sources Enrichment Progress
+          {t("pages.dashboard.skillSourcesEnrichmentTitle")}
           {(syncStatus as any)?.enriching && (<>
             <span className="text-yellow-500 animate-pulse">⚡</span>
             <Throughput value={(syncStatus as any)?.enriching_throughput} />
@@ -165,16 +167,16 @@ export function DashboardPage() {
         </span>
       }>
         <div className="space-y-3">
-          <ProgressBar value={((stats as any)?.skill_sources?.by_enrichment?.done ?? 0)} max={(stats as any)?.skill_sources?.total ?? 0} label="Traitement global" color="green" />
-          <ProgressBar value={(stats as any)?.skill_sources?.with_summary_en ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label="Summaries" color="blue" />
-          <ProgressBar value={(stats as any)?.skill_sources?.synced ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label="Synced" color="yellow" />
-          <ProgressBar value={((stats as any)?.rag_pending?.sources_total ?? 0) - ((stats as any)?.rag_pending?.sources ?? 0)} max={(stats as any)?.rag_pending?.sources_total ?? 0} label="RAG Indexed" color="purple" />
+          <ProgressBar value={((stats as any)?.skill_sources?.by_enrichment?.done ?? 0)} max={(stats as any)?.skill_sources?.total ?? 0} label={t("pages.dashboard.overallProcessing")} color="green" />
+          <ProgressBar value={(stats as any)?.skill_sources?.with_summary_en ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label={t("pages.dashboard.summaries")} color="blue" />
+          <ProgressBar value={(stats as any)?.skill_sources?.synced ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label={t("pages.dashboard.synced")} color="yellow" />
+          <ProgressBar value={((stats as any)?.rag_pending?.sources_total ?? 0) - ((stats as any)?.rag_pending?.sources ?? 0)} max={(stats as any)?.rag_pending?.sources_total ?? 0} label={t("pages.dashboard.ragIndexed")} color="purple" />
           <div className="flex gap-4 text-xs text-gray-400 pt-1">
             {(stats as any)?.skill_sources?.by_enrichment && Object.entries((stats as any).skill_sources.by_enrichment).map(([k, v]) => (
               <span key={k}>{k}: {(v as number).toLocaleString()}</span>
             ))}
             {((stats as any)?.rag_pending?.sources ?? 0) > 0 && (
-              <span className="text-yellow-500">{(stats as any).rag_pending.sources} RAG pending</span>
+              <span className="text-yellow-500">{(stats as any).rag_pending.sources} {t("pages.dashboard.ragPending")}</span>
             )}
           </div>
           <DriverChips batchId="enrich" syncStatus={syncStatus} />
@@ -184,7 +186,7 @@ export function DashboardPage() {
       {/* Skills Progress */}
       <Card title={
         <span className="flex items-center gap-2">
-          Skills Indexation Progress
+          {t("pages.dashboard.skillsIndexationTitle")}
           {(syncStatus as any)?.indexing_skills && (<>
             <span className="text-yellow-500 animate-pulse">⚡</span>
             <Throughput value={(syncStatus as any)?.indexing_skills_throughput} />
@@ -193,12 +195,12 @@ export function DashboardPage() {
         </span>
       }>
         <div className="space-y-3">
-          <ProgressBar value={((stats as any)?.skills?.total ?? 0) - ((stats as any)?.skills?.needs_summary ?? 0)} max={(stats as any)?.skills?.total ?? 0} label="Traitement global" color="green" />
-          <ProgressBar value={(stats as any)?.skills?.with_summary ?? 0} max={(stats as any)?.skills?.total ?? 0} label="Summaries" color="blue" />
-          <ProgressBar value={((stats as any)?.rag_pending?.skills_total ?? 0) - ((stats as any)?.rag_pending?.skills ?? 0)} max={(stats as any)?.rag_pending?.skills_total ?? 0} label="RAG Indexed" color="purple" />
+          <ProgressBar value={((stats as any)?.skills?.total ?? 0) - ((stats as any)?.skills?.needs_summary ?? 0)} max={(stats as any)?.skills?.total ?? 0} label={t("pages.dashboard.overallProcessing")} color="green" />
+          <ProgressBar value={(stats as any)?.skills?.with_summary ?? 0} max={(stats as any)?.skills?.total ?? 0} label={t("pages.dashboard.summaries")} color="blue" />
+          <ProgressBar value={((stats as any)?.rag_pending?.skills_total ?? 0) - ((stats as any)?.rag_pending?.skills ?? 0)} max={(stats as any)?.rag_pending?.skills_total ?? 0} label={t("pages.dashboard.ragIndexed")} color="purple" />
           <div className="flex gap-4 text-xs text-gray-400 pt-1">
             {((stats as any)?.rag_pending?.skills ?? 0) > 0 && (
-              <span className="text-yellow-500">{(stats as any).rag_pending.skills} RAG pending</span>
+              <span className="text-yellow-500">{(stats as any).rag_pending.skills} {t("pages.dashboard.ragPending")}</span>
             )}
           </div>
           <DriverChips batchId="skills" syncStatus={syncStatus} />
@@ -209,17 +211,17 @@ export function DashboardPage() {
       {progress && progress.languages.filter((l) => !l.is_baseline).length > 0 && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <LanguageProgress
-            title="MCP services translations"
+            title={t("pages.dashboard.mcpTranslations")}
             counts={progress.mcp}
             languages={progress.languages}
           />
           <LanguageProgress
-            title="Skill sources translations"
+            title={t("pages.dashboard.skillSourcesTranslations")}
             counts={progress.skill_sources}
             languages={progress.languages}
           />
           <LanguageProgress
-            title="Skills translations"
+            title={t("pages.dashboard.skillsTranslations")}
             counts={progress.skills}
             languages={progress.languages}
           />
@@ -229,7 +231,7 @@ export function DashboardPage() {
       {/* Disk usage */}
       {(stats as any)?.disk && (
         <div className="flex items-center gap-3 text-xs text-gray-500">
-          <span>Disk:</span>
+          <span>{t("pages.dashboard.diskLabel")}</span>
           <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden max-w-xs">
             <div
               className={`h-full rounded-full ${(stats as any).disk.percent > 90 ? "bg-red-500" : (stats as any).disk.percent > 75 ? "bg-yellow-500" : "bg-green-500"}`}
@@ -241,7 +243,7 @@ export function DashboardPage() {
       )}
 
       {/* Repo status */}
-      <Card title="Repository Status">
+      <Card title={t("pages.dashboard.repositoryStatusTitle")}>
         {stats?.by_repo_status ? (
           <div className="flex gap-6">
             {Object.entries(stats.by_repo_status)

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { McpParameter } from "../../types";
+import { useTranslation } from "../../i18n";
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/Button";
 
@@ -13,6 +14,7 @@ interface ParametersBlockProps {
 }
 
 export function ParametersBlock({ parameters, onDetect, onAdd, onDelete, detecting, isAdmin = false }: ParametersBlockProps) {
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
@@ -33,9 +35,9 @@ export function ParametersBlock({ parameters, onDetect, onAdd, onDelete, detecti
   return (
     <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-        <h3 className="font-medium">Parameters</h3>
+        <h3 className="font-medium">{t("components.parametersBlock.title")}</h3>
         <button onClick={() => setCollapsed(!collapsed)} className="text-xs text-gray-400 hover:text-gray-600">
-          {collapsed ? "Expand" : "Collapse"}
+          {collapsed ? t("common.buttons.expand") : t("common.buttons.collapse")}
         </button>
       </div>
       {!collapsed && (
@@ -47,8 +49,8 @@ export function ParametersBlock({ parameters, onDetect, onAdd, onDelete, detecti
                   <div>
                     <div className="flex items-center gap-2">
                       <code className="text-sm font-mono font-medium text-gray-800">{p.name}</code>
-                      {p.is_required && <Badge color="red">required</Badge>}
-                      {p.is_secret && <Badge color="yellow">secret</Badge>}
+                      {p.is_required && <Badge color="red">{t("common.status.required")}</Badge>}
+                      {p.is_secret && <Badge color="yellow">{t("common.status.secret")}</Badge>}
                       <Badge color="gray">{p.source}</Badge>
                     </div>
                     {p.description && (
@@ -60,7 +62,7 @@ export function ParametersBlock({ parameters, onDetect, onAdd, onDelete, detecti
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500">No parameters identified.</p>
+            <p className="text-sm text-gray-500">{t("components.parametersBlock.noParameters")}</p>
           )}
 
           {isAdmin && adding ? (
@@ -68,38 +70,38 @@ export function ParametersBlock({ parameters, onDetect, onAdd, onDelete, detecti
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="VARIABLE_NAME"
+                placeholder={t("components.parametersBlock.variableNamePlaceholder")}
                 className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm font-mono"
                 autoFocus
               />
               <input
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
-                placeholder="Description"
+                placeholder={t("components.parametersBlock.descriptionPlaceholder")}
                 className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm"
               />
               <div className="flex items-center gap-4 text-sm">
                 <label className="flex items-center gap-1">
                   <input type="checkbox" checked={required} onChange={(e) => setRequired(e.target.checked)} />
-                  Required
+                  {t("components.parametersBlock.requiredLabel")}
                 </label>
                 <label className="flex items-center gap-1">
                   <input type="checkbox" checked={secret} onChange={(e) => setSecret(e.target.checked)} />
-                  Secret
+                  {t("components.parametersBlock.secretLabel")}
                 </label>
               </div>
               <div className="flex gap-2">
-                <Button size="sm" onClick={handleAdd}>Add</Button>
-                <Button size="sm" variant="secondary" onClick={() => setAdding(false)}>Cancel</Button>
+                <Button size="sm" onClick={handleAdd}>{t("common.buttons.add")}</Button>
+                <Button size="sm" variant="secondary" onClick={() => setAdding(false)}>{t("common.buttons.cancel")}</Button>
               </div>
             </div>
           ) : isAdmin ? (
             <div className="flex items-center gap-3 pt-1">
               <Button size="sm" onClick={onDetect} loading={detecting}>
-                Detect Parameters
+                {t("components.parametersBlock.detectButton")}
               </Button>
               <Button size="sm" variant="secondary" onClick={() => setAdding(true)}>
-                Add Manually
+                {t("components.parametersBlock.addManuallyButton")}
               </Button>
             </div>
           ) : null}

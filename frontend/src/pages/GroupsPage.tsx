@@ -5,8 +5,10 @@ import { useCurrentUser } from "../api/auth";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
+import { useTranslation } from "../i18n";
 
 export function GroupsPage() {
+  const { t } = useTranslation();
   const { data: user } = useCurrentUser();
   const { data: groups, isLoading } = usePreferenceGroups();
   const createGroup = useCreateGroup();
@@ -16,7 +18,7 @@ export function GroupsPage() {
   if (!user?.authenticated) {
     return (
       <div className="text-center py-16 text-gray-500">
-        Connectez-vous pour acceder aux groupes.
+        {t("pages.groups.loginRequiredMessage")}
       </div>
     );
   }
@@ -33,32 +35,32 @@ export function GroupsPage() {
   const handleDelete = (e: React.MouseEvent, groupId: string, groupName: string) => {
     e.preventDefault();
     e.stopPropagation();
-    if (window.confirm(`Supprimer le groupe "${groupName}" ?`)) {
+    if (window.confirm(`${t("common.buttons.delete")} "${groupName}" ?`)) {
       deleteGroup.mutate(groupId);
     }
   };
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Groups</h1>
+      <h1 className="text-2xl font-bold mb-6">{t("pages.groups.title")}</h1>
 
       <form onSubmit={handleCreate} className="flex items-center gap-3 mb-8">
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Nom du groupe"
+          placeholder={t("pages.groups.groupNamePlaceholder")}
           className="border border-gray-300 rounded-md px-3 py-2 text-sm flex-1 max-w-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
         <Button type="submit" size="sm" loading={createGroup.isPending}>
-          Creer
+          {t("common.buttons.create")}
         </Button>
       </form>
 
-      {isLoading && <p className="text-gray-500">Chargement...</p>}
+      {isLoading && <p className="text-gray-500">{t("common.status.loading")}</p>}
 
       {!isLoading && (!groups || groups.length === 0) && (
-        <p className="text-gray-500">Aucun groupe. Creez votre premier groupe ci-dessus.</p>
+        <p className="text-gray-500">{t("pages.groups.noGroupsMessage")}</p>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -82,14 +84,14 @@ export function GroupsPage() {
                     onClick={(e) => handleDelete(e, group.id, group.name)}
                     loading={deleteGroup.isPending}
                   >
-                    Supprimer
+                    {t("common.buttons.delete")}
                   </Button>
                 )}
               </div>
               <div className="flex gap-2 mt-3">
-                <Badge color={group.is_public ? "green" : "gray"}>{group.is_public ? "public" : "prive"}</Badge>
-                <Badge color="blue">{group.service_count} service{group.service_count !== 1 ? "s" : ""}</Badge>
-                <Badge color="purple">{group.skill_count} skill{group.skill_count !== 1 ? "s" : ""}</Badge>
+                <Badge color={group.is_public ? "green" : "gray"}>{group.is_public ? t("common.status.public") : t("common.status.private")}</Badge>
+                <Badge color="blue">{t("pages.groups.servicesCount", { count: group.service_count })}</Badge>
+                <Badge color="purple">{t("pages.groups.skillsCount", { count: group.skill_count })}</Badge>
               </div>
             </Card>
           </Link>

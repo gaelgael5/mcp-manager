@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import type { McpService } from "../../types";
+import { useTranslation } from "../../i18n";
 import { Badge } from "../ui/Badge";
 import { StatusBadge } from "../ui/StatusBadge";
 
@@ -9,6 +10,7 @@ const sourceColors: Record<string, string> = {
 };
 
 export function ServiceCard({ service }: { service: McpService }) {
+  const { t } = useTranslation();
   const hasRepo = Boolean(service.source_url);
 
   return (
@@ -20,10 +22,10 @@ export function ServiceCard({ service }: { service: McpService }) {
             <Badge color={sourceColors[service.source_type] || "gray"}>{service.source_type}</Badge>
             {service.transport && <Badge color="yellow">{service.transport}</Badge>}
             {service.category && <Badge>{service.category}</Badge>}
-            {!hasRepo && <Badge color="red">no repo</Badge>}
+            {!hasRepo && <Badge color="red">{t("components.serviceCard.noRepo")}</Badge>}
             {service.stars != null && <Badge color="yellow">&#9733; {service.stars.toLocaleString()}</Badge>}
             {service.repo_status === "404" && <Badge color="red">404</Badge>}
-            {!service.has_summaries && <Badge color="yellow">no summary</Badge>}
+            {!service.has_summaries && <Badge color="yellow">{t("components.serviceCard.noSummary")}</Badge>}
             {(service as any).groups?.map((g: { id: string; name: string }) => (
               <Badge key={g.id} color="green">{g.name}</Badge>
             ))}

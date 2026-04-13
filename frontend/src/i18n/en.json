@@ -42,7 +42,9 @@
       "allTargets": "All targets",
       "allCategories": "All categories",
       "allTransports": "All transports",
-      "allGroups": "All groups"
+      "allGroups": "All groups",
+      "allRepoStatus": "All repo status",
+      "allSummaries": "All summaries"
     },
     "labels": {
       "name": "Name",

@@ -1,3 +1,4 @@
+import { useTranslation } from "../../i18n";
 import { SearchInput } from "../ui/SearchInput";
 
 interface FilterPanelProps {
@@ -23,16 +24,17 @@ export function FilterPanel({
   hasSummaries, onHasSummariesChange,
   category, onCategoryChange,
 }: FilterPanelProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-3">
       <div className="flex gap-3">
         <div className="flex-1">
-          <SearchInput value={search} onChange={onSearchChange} placeholder="Search services..." />
+          <SearchInput value={search} onChange={onSearchChange} placeholder={t("components.filterPanel.searchPlaceholder")} />
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
         <select value={sourceType} onChange={(e) => onSourceTypeChange(e.target.value)} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
-          <option value="">All sources</option>
+          <option value="">{t("common.filters.allSources")}</option>
           <option value="docker_registry">Docker Registry</option>
           <option value="mcp_registry">MCP Registry</option>
           <option value="glama">Glama</option>
@@ -40,24 +42,24 @@ export function FilterPanel({
           <option value="mcp_servers_repo">Reference</option>
         </select>
         <select value={transport} onChange={(e) => onTransportChange(e.target.value)} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
-          <option value="">All transports</option>
+          <option value="">{t("common.filters.allTransports")}</option>
           <option value="stdio">stdio</option>
           <option value="sse">sse</option>
           <option value="streamable-http">streamable-http</option>
         </select>
         <select value={repoStatus} onChange={(e) => onRepoStatusChange(e.target.value)} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
-          <option value="">All repo status</option>
-          <option value="ok">Repo OK</option>
-          <option value="404">Repo 404</option>
-          <option value="none">Not checked</option>
+          <option value="">{t("common.filters.allRepoStatus")}</option>
+          <option value="ok">{t("components.filterPanel.repoOk")}</option>
+          <option value="404">{t("components.filterPanel.repo404")}</option>
+          <option value="none">{t("components.filterPanel.notChecked")}</option>
         </select>
         <select value={hasSummaries} onChange={(e) => onHasSummariesChange(e.target.value)} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
-          <option value="">All summaries</option>
-          <option value="true">Has summary</option>
-          <option value="false">No summary</option>
+          <option value="">{t("common.filters.allSummaries")}</option>
+          <option value="true">{t("components.filterPanel.hasSummary")}</option>
+          <option value="false">{t("components.filterPanel.noSummary")}</option>
         </select>
         <select value={category} onChange={(e) => onCategoryChange(e.target.value)} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
-          <option value="">All categories</option>
+          <option value="">{t("common.filters.allCategories")}</option>
           <option value="ai">ai</option>
           <option value="ai-ml">ai-ml</option>
           <option value="analytics">analytics</option>

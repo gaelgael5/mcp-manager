@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../api/client";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
+import { useTranslation } from "../i18n";
 
 const AVATAR_PLATFORMS = [
   { name: "DiceBear Playground", url: "https://www.dicebear.com/playground/", description: "Personnalisez un avatar parmi 15+ styles, copiez l'URL API" },
@@ -27,6 +28,7 @@ function useUpdateProfile() {
 }
 
 export function ProfilePage() {
+  const { t } = useTranslation();
   const { data: user } = useCurrentUser();
   const { data: languages = [] } = useLanguages();
   const updateProfile = useUpdateProfile();
@@ -50,7 +52,7 @@ export function ProfilePage() {
   }, [user?.language]);
 
   if (!user?.authenticated) {
-    return <div className="text-center py-16 text-gray-500">Connectez-vous pour acceder a votre profil.</div>;
+    return <div className="text-center py-16 text-gray-500">{t("pages.profile.loginRequiredMessage")}</div>;
   }
 
   const handleSave = () => {
@@ -63,19 +65,19 @@ export function ProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold">Profil</h1>
+      <h1 className="text-2xl font-bold">{t("pages.profile.title")}</h1>
 
-      <Card title="Pseudo">
+      <Card title={t("pages.profile.pseudoLabel")}>
         <input
           type="text"
           value={pseudo}
           onChange={(e) => setPseudo(e.target.value)}
-          placeholder="Votre pseudo"
+          placeholder={t("pages.profile.pseudoPlaceholder")}
           className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
       </Card>
 
-      <Card title="Langue">
+      <Card title={t("pages.profile.languageLabel")}>
         <select
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
@@ -85,10 +87,10 @@ export function ProfilePage() {
             <option key={l.code} value={l.code}>{l.name} ({l.code})</option>
           ))}
         </select>
-        <p className="text-xs text-gray-400 mt-2">Les descriptions et summaries seront affiches dans cette langue quand disponible.</p>
+        <p className="text-xs text-gray-400 mt-2">{t("pages.profile.languageHint")}</p>
       </Card>
 
-      <Card title="Avatar">
+      <Card title={t("pages.profile.avatarTitle")}>
         <div className="space-y-4">
           <div className="flex items-start gap-6">
             <div className="flex-shrink-0">
@@ -106,7 +108,7 @@ export function ProfilePage() {
               )}
             </div>
             <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">URL de votre avatar</label>
+              <label className="block text-xs text-gray-500 mb-1">{t("pages.profile.avatarUrlLabel")}</label>
               <input
                 type="url"
                 value={avatarUrl}
@@ -114,12 +116,12 @@ export function ProfilePage() {
                 placeholder="https://..."
                 className="w-full rounded border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
-              <p className="text-xs text-gray-400 mt-1">Collez l'URL d'un avatar obtenu sur une des plateformes ci-dessous</p>
+              <p className="text-xs text-gray-400 mt-1">{t("pages.profile.avatarUrlHint")}</p>
             </div>
           </div>
 
           <div>
-            <p className="text-xs text-gray-500 font-medium mb-2">Plateformes pour creer votre avatar :</p>
+            <p className="text-xs text-gray-500 font-medium mb-2">{t("pages.profile.avatarPlatformsTitle")}</p>
             <div className="space-y-2">
               {AVATAR_PLATFORMS.map((p) => (
                 <a
@@ -141,7 +143,7 @@ export function ProfilePage() {
 
       <div className="flex items-center gap-3">
         <Button onClick={handleSave} loading={updateProfile.isPending}>
-          {saved ? "Enregistre !" : "Enregistrer"}
+          {saved ? t("common.buttons.saved") : t("common.buttons.save")}
         </Button>
         {updateProfile.isError && (
           <span className="text-sm text-red-500">{(updateProfile.error as Error).message}</span>

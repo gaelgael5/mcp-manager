@@ -10,8 +10,10 @@ import {
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
+import { useTranslation } from "../i18n";
 
 export function GroupDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: group, isLoading } = usePreferenceGroup(id!);
@@ -24,11 +26,11 @@ export function GroupDetailPage() {
   const [editName, setEditName] = useState("");
 
   if (isLoading) {
-    return <p className="text-gray-500">Chargement...</p>;
+    return <p className="text-gray-500">{t("common.status.loading")}</p>;
   }
 
   if (!group) {
-    return <p className="text-gray-500">Groupe introuvable.</p>;
+    return <p className="text-gray-500">{t("pages.groupDetail.notFoundMessage")}</p>;
   }
 
   const isOwner = group.is_owner;
@@ -55,7 +57,7 @@ export function GroupDetailPage() {
   };
 
   const handleDeleteGroup = () => {
-    if (window.confirm(`Supprimer le groupe "${group.name}" ?`)) {
+    if (window.confirm(`${t("common.buttons.delete")} "${group.name}" ?`)) {
       deleteGroup.mutate(group.id, {
         onSuccess: () => navigate("/groups"),
       });
@@ -65,7 +67,7 @@ export function GroupDetailPage() {
   return (
     <div>
       <Link to="/groups" className="text-sm text-blue-600 hover:text-blue-700 mb-4 inline-block">
-        &larr; Retour aux groupes
+        {t("pages.groupDetail.backToGroupsLink")}
       </Link>
 
       <div className="mb-6">
@@ -84,22 +86,22 @@ export function GroupDetailPage() {
                 }}
               />
               <Button size="sm" onClick={handleSaveName} loading={updateGroup.isPending}>
-                Enregistrer
+                {t("common.buttons.save")}
               </Button>
               <Button size="sm" variant="secondary" onClick={() => setEditing(false)}>
-                Annuler
+                {t("common.buttons.cancel")}
               </Button>
             </div>
           ) : (
             <h1
               className={`text-2xl font-bold ${isOwner ? "cursor-pointer hover:text-blue-600 transition-colors" : ""}`}
               onClick={handleStartEdit}
-              title={isOwner ? "Cliquer pour modifier" : undefined}
+              title={isOwner ? t("common.buttons.edit") : undefined}
             >
               {group.name}
             </h1>
           )}
-          <Badge color={group.is_public ? "green" : "gray"}>{group.is_public ? "public" : "prive"}</Badge>
+          <Badge color={group.is_public ? "green" : "gray"}>{group.is_public ? t("common.status.public") : t("common.status.private")}</Badge>
           {!isOwner && group.owner_pseudo && (
             <span className="text-sm text-gray-400">par {group.owner_pseudo}</span>
           )}
@@ -112,15 +114,15 @@ export function GroupDetailPage() {
             onClick={handleTogglePublic}
             className="text-xs text-blue-600 hover:underline mt-2"
           >
-            {group.is_public ? "Rendre prive" : "Rendre public"}
+            {group.is_public ? t("pages.groupDetail.makePrivateButton") : t("pages.groupDetail.makePublicButton")}
           </button>
         )}
       </div>
 
       <div className="space-y-6">
-        <Card title="MCP Services">
+        <Card title={t("pages.groupDetail.servicesTitle")}>
           {group.services.length === 0 ? (
-            <p className="text-sm text-gray-400">Aucun service dans ce groupe.</p>
+            <p className="text-sm text-gray-400">{t("pages.groupDetail.noServicesMessage")}</p>
           ) : (
             <ul className="divide-y divide-gray-100">
               {group.services.map((svc) => (
@@ -139,7 +141,7 @@ export function GroupDetailPage() {
                     <button
                       onClick={() => removeService.mutate({ groupId: group.id, serviceId: svc.id })}
                       className="text-gray-400 hover:text-red-600 text-lg leading-none ml-2 flex-shrink-0"
-                      title="Retirer du groupe"
+                      title={t("pages.groupDetail.removeFromGroupTitle")}
                     >
                       &times;
                     </button>
@@ -150,9 +152,9 @@ export function GroupDetailPage() {
           )}
         </Card>
 
-        <Card title="Skills">
+        <Card title={t("pages.groupDetail.skillsTitle")}>
           {group.skills.length === 0 ? (
-            <p className="text-sm text-gray-400">Aucun skill dans ce groupe.</p>
+            <p className="text-sm text-gray-400">{t("pages.groupDetail.noSkillsMessage")}</p>
           ) : (
             <ul className="divide-y divide-gray-100">
               {group.skills.map((skill) => (
@@ -171,7 +173,7 @@ export function GroupDetailPage() {
                     <button
                       onClick={() => removeSkill.mutate({ groupId: group.id, skillId: skill.id })}
                       className="text-gray-400 hover:text-red-600 text-lg leading-none ml-2 flex-shrink-0"
-                      title="Retirer du groupe"
+                      title={t("pages.groupDetail.removeFromGroupTitle")}
                     >
                       &times;
                     </button>
@@ -186,7 +188,7 @@ export function GroupDetailPage() {
       {isOwner && (
         <div className="mt-8">
           <Button variant="danger" onClick={handleDeleteGroup} loading={deleteGroup.isPending}>
-            Supprimer ce groupe
+            {t("pages.groupDetail.deleteGroupButton")}
           </Button>
         </div>
       )}

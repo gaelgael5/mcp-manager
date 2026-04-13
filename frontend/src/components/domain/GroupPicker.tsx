@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "../../i18n";
 import { Button } from "../ui/Button";
 
 interface GroupPickerProps {
@@ -11,6 +12,7 @@ interface GroupPickerProps {
 }
 
 export function GroupPicker({ groups, allGroups, onAdd, onRemove, onCreate, loading }: GroupPickerProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
@@ -64,7 +66,7 @@ export function GroupPicker({ groups, allGroups, onAdd, onRemove, onCreate, load
         loading={loading}
         className="!px-2 !py-0.5 !text-xs"
       >
-        + Groupe
+        {t("components.groupPicker.addGroupButton")}
       </Button>
 
       {open && (
@@ -87,7 +89,7 @@ export function GroupPicker({ groups, allGroups, onAdd, onRemove, onCreate, load
             </ul>
           )}
           {available.length === 0 && !creating && (
-            <p className="px-3 py-2 text-xs text-gray-400">Aucun groupe disponible</p>
+            <p className="px-3 py-2 text-xs text-gray-400">{t("components.groupPicker.noGroupsAvailable")}</p>
           )}
           <div className="border-t border-gray-100">
             {creating ? (
@@ -100,7 +102,7 @@ export function GroupPicker({ groups, allGroups, onAdd, onRemove, onCreate, load
                     if (e.key === "Enter") handleCreate();
                     if (e.key === "Escape") { setCreating(false); setNewName(""); }
                   }}
-                  placeholder="Nom du groupe"
+                  placeholder={t("components.groupPicker.groupNamePlaceholder")}
                   className="flex-1 rounded border border-gray-300 px-2 py-1 text-xs focus:border-blue-500 focus:outline-none"
                   autoFocus
                 />
@@ -111,7 +113,7 @@ export function GroupPicker({ groups, allGroups, onAdd, onRemove, onCreate, load
                 onClick={() => setCreating(true)}
                 className="w-full text-left px-3 py-2 text-xs text-blue-600 hover:bg-gray-50"
               >
-                + Créer un groupe
+                {t("components.groupPicker.createGroupButton")}
               </button>
             )}
           </div>

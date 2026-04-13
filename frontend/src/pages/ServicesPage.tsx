@@ -5,8 +5,10 @@ import { ServiceCard } from "../components/domain/ServiceCard";
 import { FilterPanel } from "../components/domain/FilterPanel";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
+import { useTranslation } from "../i18n";
 
 export function ServicesPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [semantic, setSemantic] = useState(false);
@@ -55,9 +57,9 @@ export function ServicesPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">MCP Services</h1>
+        <h1 className="text-2xl font-bold">{t("pages.services.title")}</h1>
         <div className="flex items-center gap-3">
-          {data && <span className="text-sm text-gray-500">{data.total.toLocaleString()} results</span>}
+          {data && <span className="text-sm text-gray-500">{t("pages.services.resultsCount", { total: data.total.toLocaleString() })}</span>}
         </div>
       </div>
 
@@ -77,7 +79,7 @@ export function ServicesPage() {
               onChange={(e) => { setGroupId(e.target.value); setPage(1); }}
               className="rounded border border-gray-300 px-2 py-1 text-sm"
             >
-              <option value="">Tous les groupes</option>
+              <option value="">{t("common.filters.allGroups")}</option>
               {groups.map((g) => (
                 <option key={g.id} value={g.id}>{g.name}{!g.is_owner && g.owner_pseudo ? ` (${g.owner_pseudo})` : ""}</option>
               ))}
@@ -90,15 +92,15 @@ export function ServicesPage() {
               onChange={(e) => { setSemantic(e.target.checked); setPage(1); }}
               className="rounded border-gray-300"
             />
-            Semantic search
+            {t("pages.services.semanticSearchLabel")}
           </label>
           {semantic && <Badge color="purple">pgvector</Badge>}
-          {semantic && !search && <span className="text-xs text-gray-400">Type a natural language query to use semantic search</span>}
+          {semantic && !search && <span className="text-xs text-gray-400">{t("pages.services.semanticSearchHint")}</span>}
         </div>
       </div>
 
       {isLoading ? (
-        <p className="text-gray-500">Loading...</p>
+        <p className="text-gray-500">{t("common.status.loading")}</p>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -115,9 +117,9 @@ export function ServicesPage() {
           </div>
           {data && data.total > (data.per_page || 20) && (
             <div className="flex gap-2 justify-center pt-4">
-              <Button variant="secondary" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button>
+              <Button variant="secondary" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>{t("common.buttons.previous")}</Button>
               <span className="text-sm text-gray-500 py-1.5">Page {page} / {Math.ceil(data.total / (data.per_page || 20))}</span>
-              <Button variant="secondary" size="sm" disabled={page * (data.per_page || 20) >= data.total} onClick={() => setPage(page + 1)}>Next</Button>
+              <Button variant="secondary" size="sm" disabled={page * (data.per_page || 20) >= data.total} onClick={() => setPage(page + 1)}>{t("common.buttons.next")}</Button>
             </div>
           )}
         </>
