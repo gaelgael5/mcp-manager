@@ -71,17 +71,23 @@ export function GroupsPage() {
                   {group.description && (
                     <p className="text-sm text-gray-500 mt-1 line-clamp-2">{group.description}</p>
                   )}
+                  {!group.is_owner && group.owner_pseudo && (
+                    <p className="text-xs text-gray-400 mt-1">par {group.owner_pseudo}</p>
+                  )}
                 </div>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={(e) => handleDelete(e, group.id, group.name)}
-                  loading={deleteGroup.isPending}
-                >
-                  Supprimer
-                </Button>
+                {group.is_owner && (
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={(e) => handleDelete(e, group.id, group.name)}
+                    loading={deleteGroup.isPending}
+                  >
+                    Supprimer
+                  </Button>
+                )}
               </div>
               <div className="flex gap-2 mt-3">
+                <Badge color={group.is_public ? "green" : "gray"}>{group.is_public ? "public" : "prive"}</Badge>
                 <Badge color="blue">{group.service_count} service{group.service_count !== 1 ? "s" : ""}</Badge>
                 <Badge color="purple">{group.skill_count} skill{group.skill_count !== 1 ? "s" : ""}</Badge>
               </div>

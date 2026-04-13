@@ -14,9 +14,11 @@ from mcp_manager.db.models import (
     McpService,
     PreferenceGroup,
     Skill,
+    User,
     preference_group_services,
     preference_group_skills,
 )
+from sqlalchemy import or_
 
 router = APIRouter(tags=["preference-groups"])
 logger = logging.getLogger(__name__)
@@ -25,11 +27,13 @@ logger = logging.getLogger(__name__)
 class GroupCreate(BaseModel):
     name: str
     description: Optional[str] = None
+    is_public: bool = False
 
 
 class GroupUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    is_public: Optional[bool] = None
 
 
 async def _require_user_id(user: dict) -> str:
@@ -83,11 +87,15 @@ async def list_groups(
             PreferenceGroup.id,
             PreferenceGroup.name,
             PreferenceGroup.description,
+            PreferenceGroup.is_public,
+            PreferenceGroup.user_id,
             PreferenceGroup.created_at,
+            User.pseudo.label("owner_pseudo"),
             service_count_sq.label("service_count"),
             skill_count_sq.label("skill_count"),
         )
-        .where(PreferenceGroup.user_id == user_id)
+        .join(User, PreferenceGroup.user_id == User.id)
+        .where(or_(PreferenceGroup.user_id == user_id, PreferenceGroup.is_public == True))
         .order_by(PreferenceGroup.created_at.desc())
     )
     rows = result.all()
@@ -96,6 +104,9 @@ async def list_groups(
             "id": str(r.id),
             "name": r.name,
             "description": r.description,
+            "is_public": r.is_public,
+            "is_owner": str(r.user_id) == user_id,
+            "owner_pseudo": r.owner_pseudo,
             "service_count": r.service_count or 0,
             "skill_count": r.skill_count or 0,
             "created_at": r.created_at.isoformat() if r.created_at else None,
@@ -115,6 +126,7 @@ async def create_group(
         user_id=user_id,
         name=body.name,
         description=body.description,
+        is_public=body.is_public,
     )
     db.add(group)
     await db.commit()
@@ -133,7 +145,13 @@ async def get_group(
     user: dict = Depends(require_authenticated),
 ):
     user_id = await _require_user_id(user)
-    group = await _get_user_group(db, group_id, user_id)
+    result = await db.execute(select(PreferenceGroup).where(PreferenceGroup.id == group_id))
+    group = result.scalar_one_or_none()
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    if str(group.user_id) != user_id and not group.is_public:
+        raise HTTPException(status_code=404, detail="Group not found")
+    is_owner = str(group.user_id) == user_id
 
     # Eagerly load services and skills
     svc_result = await db.execute(
@@ -156,10 +174,15 @@ async def get_group(
         for r in skill_result.all()
     ]
 
+    owner = (await db.execute(select(User.pseudo).where(User.id == group.user_id))).scalar_one_or_none()
+
     return {
         "id": str(group.id),
         "name": group.name,
         "description": group.description,
+        "is_public": group.is_public,
+        "is_owner": is_owner,
+        "owner_pseudo": owner,
         "created_at": group.created_at.isoformat() if group.created_at else None,
         "updated_at": group.updated_at.isoformat() if group.updated_at else None,
         "services": services,
@@ -181,6 +204,8 @@ async def update_group(
         group.name = body.name
     if body.description is not None:
         group.description = body.description
+    if body.is_public is not None:
+        group.is_public = body.is_public
 
     await db.commit()
     await db.refresh(group)

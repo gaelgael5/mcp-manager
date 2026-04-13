@@ -31,7 +31,10 @@ export function GroupDetailPage() {
     return <p className="text-gray-500">Groupe introuvable.</p>;
   }
 
+  const isOwner = group.is_owner;
+
   const handleStartEdit = () => {
+    if (!isOwner) return;
     setEditName(group.name);
     setEditing(true);
   };
@@ -47,20 +50,16 @@ export function GroupDetailPage() {
     });
   };
 
+  const handleTogglePublic = () => {
+    updateGroup.mutate({ is_public: !group.is_public });
+  };
+
   const handleDeleteGroup = () => {
     if (window.confirm(`Supprimer le groupe "${group.name}" ?`)) {
       deleteGroup.mutate(group.id, {
         onSuccess: () => navigate("/groups"),
       });
     }
-  };
-
-  const handleRemoveService = (serviceId: string) => {
-    removeService.mutate({ groupId: group.id, serviceId });
-  };
-
-  const handleRemoveSkill = (skillId: string) => {
-    removeSkill.mutate({ groupId: group.id, skillId });
   };
 
   return (
@@ -70,37 +69,51 @@ export function GroupDetailPage() {
       </Link>
 
       <div className="mb-6">
-        {editing ? (
-          <div className="flex items-center gap-3">
-            <input
-              type="text"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 text-xl font-bold focus:outline-none focus:ring-2 focus:ring-blue-400"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSaveName();
-                if (e.key === "Escape") setEditing(false);
-              }}
-            />
-            <Button size="sm" onClick={handleSaveName} loading={updateGroup.isPending}>
-              Enregistrer
-            </Button>
-            <Button size="sm" variant="secondary" onClick={() => setEditing(false)}>
-              Annuler
-            </Button>
-          </div>
-        ) : (
-          <h1
-            className="text-2xl font-bold cursor-pointer hover:text-blue-600 transition-colors"
-            onClick={handleStartEdit}
-            title="Cliquer pour modifier"
-          >
-            {group.name}
-          </h1>
-        )}
+        <div className="flex items-center gap-3 mb-1">
+          {editing ? (
+            <div className="flex items-center gap-3">
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-2 text-xl font-bold focus:outline-none focus:ring-2 focus:ring-blue-400"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSaveName();
+                  if (e.key === "Escape") setEditing(false);
+                }}
+              />
+              <Button size="sm" onClick={handleSaveName} loading={updateGroup.isPending}>
+                Enregistrer
+              </Button>
+              <Button size="sm" variant="secondary" onClick={() => setEditing(false)}>
+                Annuler
+              </Button>
+            </div>
+          ) : (
+            <h1
+              className={`text-2xl font-bold ${isOwner ? "cursor-pointer hover:text-blue-600 transition-colors" : ""}`}
+              onClick={handleStartEdit}
+              title={isOwner ? "Cliquer pour modifier" : undefined}
+            >
+              {group.name}
+            </h1>
+          )}
+          <Badge color={group.is_public ? "green" : "gray"}>{group.is_public ? "public" : "prive"}</Badge>
+          {!isOwner && group.owner_pseudo && (
+            <span className="text-sm text-gray-400">par {group.owner_pseudo}</span>
+          )}
+        </div>
         {group.description && (
           <p className="text-gray-500 mt-1">{group.description}</p>
+        )}
+        {isOwner && (
+          <button
+            onClick={handleTogglePublic}
+            className="text-xs text-blue-600 hover:underline mt-2"
+          >
+            {group.is_public ? "Rendre prive" : "Rendre public"}
+          </button>
         )}
       </div>
 
@@ -122,13 +135,15 @@ export function GroupDetailPage() {
                     <Badge color="blue">{svc.source_type}</Badge>
                     {svc.category && <Badge color="gray">{svc.category}</Badge>}
                   </div>
-                  <button
-                    onClick={() => handleRemoveService(svc.id)}
-                    className="text-gray-400 hover:text-red-600 text-lg leading-none ml-2 flex-shrink-0"
-                    title="Retirer du groupe"
-                  >
-                    &times;
-                  </button>
+                  {isOwner && (
+                    <button
+                      onClick={() => removeService.mutate({ groupId: group.id, serviceId: svc.id })}
+                      className="text-gray-400 hover:text-red-600 text-lg leading-none ml-2 flex-shrink-0"
+                      title="Retirer du groupe"
+                    >
+                      &times;
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -152,13 +167,15 @@ export function GroupDetailPage() {
                     <Badge color="purple">{skill.target_type}</Badge>
                     {skill.category && <Badge color="gray">{skill.category}</Badge>}
                   </div>
-                  <button
-                    onClick={() => handleRemoveSkill(skill.id)}
-                    className="text-gray-400 hover:text-red-600 text-lg leading-none ml-2 flex-shrink-0"
-                    title="Retirer du groupe"
-                  >
-                    &times;
-                  </button>
+                  {isOwner && (
+                    <button
+                      onClick={() => removeSkill.mutate({ groupId: group.id, skillId: skill.id })}
+                      className="text-gray-400 hover:text-red-600 text-lg leading-none ml-2 flex-shrink-0"
+                      title="Retirer du groupe"
+                    >
+                      &times;
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -166,11 +183,13 @@ export function GroupDetailPage() {
         </Card>
       </div>
 
-      <div className="mt-8">
-        <Button variant="danger" onClick={handleDeleteGroup} loading={deleteGroup.isPending}>
-          Supprimer ce groupe
-        </Button>
-      </div>
+      {isOwner && (
+        <div className="mt-8">
+          <Button variant="danger" onClick={handleDeleteGroup} loading={deleteGroup.isPending}>
+            Supprimer ce groupe
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

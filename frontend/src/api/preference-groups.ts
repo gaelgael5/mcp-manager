@@ -5,6 +5,9 @@ export interface PreferenceGroup {
   id: string;
   name: string;
   description: string | null;
+  is_public: boolean;
+  is_owner: boolean;
+  owner_pseudo: string | null;
   service_count: number;
   skill_count: number;
   created_at: string;
@@ -14,6 +17,9 @@ export interface PreferenceGroupDetail {
   id: string;
   name: string;
   description: string | null;
+  is_public: boolean;
+  is_owner: boolean;
+  owner_pseudo: string | null;
   created_at: string;
   updated_at: string;
   services: { id: string; name: string; source_type: string; category: string | null }[];
@@ -55,7 +61,7 @@ export function useCreateGroup() {
 export function useUpdateGroup(id: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { name?: string; description?: string }) =>
+    mutationFn: (body: { name?: string; description?: string; is_public?: boolean }) =>
       apiFetch(`/preference-groups/${id}`, {
         method: "PUT",
         body: JSON.stringify(body),
