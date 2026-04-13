@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet, NavLink, useSearchParams } from "react-router-dom";
+import { Outlet, NavLink, useSearchParams, Link } from "react-router-dom";
 import { useCurrentUser, setToken, clearToken } from "../api/auth";
 
 const publicLinks = [
@@ -77,8 +77,10 @@ export function MainLayout() {
           <div className="flex items-center gap-3">
             {user?.authenticated ? (
               <>
-                {user.picture && <img src={user.picture} alt="" className="w-7 h-7 rounded-full" />}
-                <span className="text-sm text-gray-600">{user.name}</span>
+                <Link to="/profile" className="flex items-center gap-2 hover:opacity-80">
+                  <img src={user.avatar_url || user.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "?")}&size=28&background=random`} alt="" className="w-7 h-7 rounded-full" />
+                  <span className="text-sm text-gray-600">{user.pseudo || user.name}</span>
+                </Link>
                 {user.is_admin && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">admin</span>}
                 <button onClick={handleLogout} className="text-xs text-gray-400 hover:text-gray-600">Logout</button>
               </>

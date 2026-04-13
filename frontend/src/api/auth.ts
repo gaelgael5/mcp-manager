@@ -4,8 +4,11 @@ export interface User {
   authenticated: boolean;
   email?: string;
   name?: string;
+  pseudo?: string;
   picture?: string;
+  avatar_url?: string;
   is_admin?: boolean;
+  user_id?: string;
 }
 
 export function getToken(): string | null {

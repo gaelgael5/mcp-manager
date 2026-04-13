@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 import httpx
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from pydantic import BaseModel
 from fastapi.responses import RedirectResponse
 
 from mcp_manager.config import settings
@@ -31,10 +32,10 @@ async def _upsert_user(email: str, name: str, picture: str) -> str:
 
     async with SessionLocal() as db:
         stmt = pg_insert(User.__table__).values(
-            email_hash=email_hash, name=name, picture=picture,
+            email_hash=email_hash, pseudo=name, picture=picture,
         ).on_conflict_do_update(
             index_elements=["email_hash"],
-            set_={"name": name, "picture": picture},
+            set_={"pseudo": name, "picture": picture},
         ).returning(User.__table__.c.id)
         result = await db.execute(stmt)
         user_id = str(result.scalar_one())
@@ -121,11 +122,12 @@ async def auth_callback(code: str, request: Request):
 
 @router.get("/auth/me")
 async def get_current_user(request: Request):
-    """Get current user from JWT in Authorization header."""
+    """Get current user from JWT in Authorization header, enriched with DB profile."""
     user = _get_user_from_request(request)
     if not user:
         return {"authenticated": False}
-    return {
+
+    result = {
         "authenticated": True,
         "email": user.get("email"),
         "name": user.get("name"),
@@ -133,6 +135,22 @@ async def get_current_user(request: Request):
         "is_admin": user.get("is_admin", False),
         "user_id": user.get("user_id"),
     }
+
+    email = user.get("email")
+    if email and email != "api_key":
+        import hashlib
+        from mcp_manager.db.session import SessionLocal
+        from mcp_manager.db.models import User
+        from sqlalchemy import select
+        email_hash = hashlib.sha256(email.lower().strip().encode()).hexdigest()
+        async with SessionLocal() as db:
+            row = (await db.execute(select(User).where(User.email_hash == email_hash))).scalar_one_or_none()
+            if row:
+                result["pseudo"] = row.pseudo
+                result["avatar_url"] = row.avatar_url
+                result["user_id"] = str(row.id)
+
+    return result
 
 
 def _get_user_from_request(request: Request) -> dict | None:
@@ -177,3 +195,42 @@ def require_admin(request: Request) -> dict:
     if not user.get("is_admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
     return user
+
+
+class ProfileUpdate(BaseModel):
+    pseudo: str | None = None
+    avatar_url: str | None = None
+
+
+@router.put("/auth/profile")
+async def update_profile(
+    body: ProfileUpdate,
+    request: Request,
+    user: dict = Depends(require_authenticated),
+):
+    """Update current user's pseudo and/or avatar_url."""
+    import hashlib
+    from mcp_manager.db.session import SessionLocal
+    from mcp_manager.db.models import User
+    from sqlalchemy import select
+
+    email = user.get("email")
+    if not email or email == "api_key":
+        from mcp_manager.api.routers.preference_groups import _require_user_id
+        await _require_user_id(user)
+        email = user.get("email")
+
+    email_hash = hashlib.sha256(email.lower().strip().encode()).hexdigest()
+
+    async with SessionLocal() as db:
+        result = await db.execute(select(User).where(User.email_hash == email_hash))
+        u = result.scalar_one_or_none()
+        if not u:
+            raise HTTPException(status_code=404, detail="User not found")
+        if body.pseudo is not None:
+            u.pseudo = body.pseudo
+        if body.avatar_url is not None:
+            u.avatar_url = body.avatar_url
+        await db.commit()
+        await db.refresh(u)
+        return {"pseudo": u.pseudo, "avatar_url": u.avatar_url}

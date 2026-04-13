@@ -16,6 +16,7 @@ import { SkillDetailPage } from "./pages/SkillDetailPage";
 import { SkillSourceDetailPage } from "./pages/SkillSourceDetailPage";
 import { GroupsPage } from "./pages/GroupsPage";
 import { GroupDetailPage } from "./pages/GroupDetailPage";
+import { ProfilePage } from "./pages/ProfilePage";
 import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/skills-catalog/:id" element={<SkillDetailPage />} />
             <Route path="/groups" element={<GroupsPage />} />
             <Route path="/groups/:id" element={<GroupDetailPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Routes>
       </BrowserRouter>
