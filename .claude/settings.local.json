@@ -127,7 +127,14 @@
       "Bash(tar --exclude='.git' --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='dist' --exclude='.env' --exclude='.playwright-mcp' --exclude='backend/config' --exclude='tmp' -czf /tmp/mcp-manager.tar.gz .)",
       "Bash(ping:*)",
       "Bash(ssh-keygen -R 192.168.10.153)",
-      "Skill(superpowers-chrome:browsing)"
+      "Skill(superpowers-chrome:browsing)",
+      "Bash(git push:*)",
+      "Bash(tar tzf:*)",
+      "Bash(git reset:*)",
+      "Bash(tar --exclude='.git' --exclude='node_modules' --exclude='.venv' --exclude='__pycache__' --exclude='dist' --exclude='.env' --exclude='.playwright-mcp' --exclude='backend/config' --exclude='tmp' -czf /tmp/mcp-manager.tar.gz ./frontend/)",
+      "Bash(ssh-keygen -lf ~/.ssh/id_shellia.pub)",
+      "Bash(ssh-keygen -R 192.168.10.154)",
+      "Bash(ssh-keygen -R 192.168.10.157)"
     ]
   }
 }
