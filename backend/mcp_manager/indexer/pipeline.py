@@ -129,7 +129,10 @@ async def run_index(
 
                 indexed = False
                 try:
-                    indexed = await _index_one(wdb, service, stats)
+                    indexed = await asyncio.wait_for(_index_one(wdb, service, stats), timeout=120)
+                except asyncio.TimeoutError:
+                    logger.warning("Timeout indexing %s after 120s", service.name)
+                    service.repo_status = "index_failed"
                 except LLMProviderDead as e:
                     logger.error(
                         "mcp index worker %d: LLM provider dead — aborting pipeline: %s",
@@ -166,11 +169,18 @@ async def run_index(
                         stats["recipes"], stats["skipped_unchanged"],
                     )
 
-    workers = [
+    worker_tasks = [
         asyncio.create_task(_worker(i, manager.drivers[i]))
         for i in range(num_workers)
     ]
-    await asyncio.gather(*workers)
+
+    while worker_tasks:
+        done, worker_tasks = await asyncio.wait(worker_tasks, timeout=5)
+        if cancel_check and cancel_check() and worker_tasks:
+            for task in worker_tasks:
+                task.cancel()
+            await asyncio.gather(*worker_tasks, return_exceptions=True)
+            break
 
     if abort_event.is_set():
         stats["aborted"] = "llm_provider_dead"

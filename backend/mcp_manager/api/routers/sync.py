@@ -511,30 +511,34 @@ async def _run_enrich_skills_bg():
                     await wdb.commit()
 
                     try:
-                        if await _enrich_repo_url(source):
+                        if await asyncio.wait_for(_enrich_repo_url(source), timeout=30):
                             stats["repos_filled"] += 1
 
-                        if _sync_status.get("enrich_cancel"):
+                        if _sync_status.get("enrich_cancel") or enrich_abort_event.is_set():
                             source.enrichment_status = "pending"
                             break
 
                         try:
-                            if await _enrich_summaries(source, wdb):
+                            if await asyncio.wait_for(_enrich_summaries(source, wdb), timeout=120):
                                 stats["summaries"] += 1
+                        except asyncio.TimeoutError:
+                            enrich_logger.warning("enrich-pipeline: summary timeout for %s", source.name)
                         except LLMProviderDead:
                             raise
                         except Exception:
                             enrich_logger.warning("enrich-pipeline: summary failed for %s", source.name)
                             await wdb.rollback()
 
-                        if _sync_status.get("enrich_cancel"):
+                        if _sync_status.get("enrich_cancel") or enrich_abort_event.is_set():
                             source.enrichment_status = "pending"
                             break
 
                         try:
-                            added = await _enrich_sync_skills(source, wdb)
+                            added = await asyncio.wait_for(_enrich_sync_skills(source, wdb), timeout=120)
                             if added > 0:
                                 stats["syncs"] += 1
+                        except asyncio.TimeoutError:
+                            enrich_logger.warning("enrich-pipeline: sync timeout for %s", source.name)
                         except LLMProviderDead:
                             raise
                         except Exception:
@@ -674,13 +678,17 @@ async def _run_index_skills_bg():
                         continue
 
                     try:
-                        updated = await _enrich_one_skill(skill, wdb)
+                        updated = await asyncio.wait_for(_enrich_one_skill(skill, wdb), timeout=120)
                         if updated:
                             stats["summaries"] += 1
                         else:
                             stats["unchanged"] += 1
                         skill.needs_summary = False
                         stats["done"] += 1
+                    except asyncio.TimeoutError:
+                        skills_logger.warning("index-skills: timeout for %s", skill.name)
+                        skill.needs_summary = False
+                        stats["failed"] += 1
                     except LLMProviderDead as e:
                         skills_logger.error(
                             "skills worker %d: LLM provider dead — aborting pipeline: %s",
