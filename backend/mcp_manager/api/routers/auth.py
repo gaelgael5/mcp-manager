@@ -22,15 +22,18 @@ JWT_EXPIRY_HOURS = 24 * 180  # 6 mois
 
 async def _upsert_user(email: str, name: str, picture: str) -> str:
     """Create or update user in DB. Returns user_id as string."""
+    import hashlib
     from mcp_manager.db.session import SessionLocal
     from mcp_manager.db.models import User
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
+    email_hash = hashlib.sha256(email.lower().strip().encode()).hexdigest()
+
     async with SessionLocal() as db:
         stmt = pg_insert(User.__table__).values(
-            email=email, name=name, picture=picture,
+            email_hash=email_hash, name=name, picture=picture,
         ).on_conflict_do_update(
-            index_elements=["email"],
+            index_elements=["email_hash"],
             set_={"name": name, "picture": picture},
         ).returning(User.__table__.c.id)
         result = await db.execute(stmt)
