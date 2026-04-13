@@ -98,8 +98,8 @@ async def list_skill_sources(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/skill-sources/{source_id}")
-async def get_skill_source(source_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(SkillSource).where(SkillSource.id == source_id))
+async def get_skill_source(source_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(SkillSource).where(SkillSource._id == source_id))
     source = result.scalar_one_or_none()
     if not source:
         raise HTTPException(status_code=404, detail="Skill source not found")
@@ -127,13 +127,13 @@ async def create_skill_source(
 
 @router.put("/skill-sources/{source_id}")
 async def update_skill_source(
-    source_id: uuid.UUID,
+    source_id: int,
     body: SkillSourceUpdate,
     request: Request,
     db: AsyncSession = Depends(get_db),
     admin: dict = Depends(require_admin),
 ):
-    result = await db.execute(select(SkillSource).where(SkillSource.id == source_id))
+    result = await db.execute(select(SkillSource).where(SkillSource._id == source_id))
     source = result.scalar_one_or_none()
     if not source:
         raise HTTPException(status_code=404, detail="Skill source not found")
@@ -154,12 +154,12 @@ async def update_skill_source(
 
 @router.delete("/skill-sources/{source_id}")
 async def delete_skill_source(
-    source_id: uuid.UUID,
+    source_id: int,
     request: Request,
     db: AsyncSession = Depends(get_db),
     admin: dict = Depends(require_admin),
 ):
-    result = await db.execute(select(SkillSource).where(SkillSource.id == source_id))
+    result = await db.execute(select(SkillSource).where(SkillSource._id == source_id))
     source = result.scalar_one_or_none()
     if not source:
         raise HTTPException(status_code=404, detail="Skill source not found")
@@ -170,7 +170,7 @@ async def delete_skill_source(
 
 @router.get("/skills")
 async def list_skills(
-    source_id: uuid.UUID | None = None,
+    source_id: int | None = None,
     target_type: str | None = None,
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
@@ -178,9 +178,8 @@ async def list_skills(
 ):
     query = select(Skill)
     if source_id:
-        source_pid_sq = select(SkillSource._id).where(SkillSource.id == source_id).scalar_subquery()
         query = query.join(skill_source_skills, skill_source_skills.c.skill_pid == Skill._id).where(
-            skill_source_skills.c.source_pid == source_pid_sq
+            skill_source_skills.c.source_pid == source_id
         )
     if target_type:
         query = query.where(Skill.target_type == target_type)
@@ -191,8 +190,8 @@ async def list_skills(
 
 
 @router.get("/skills/{skill_id}")
-async def get_skill(skill_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Skill).where(Skill.id == skill_id))
+async def get_skill(skill_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Skill).where(Skill._id == skill_id))
     skill = result.scalar_one_or_none()
     if not skill:
         raise HTTPException(status_code=404, detail="Skill not found")
@@ -201,7 +200,7 @@ async def get_skill(skill_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
 
 @router.post("/skills/{skill_id}/generate-summary")
 async def generate_skill_summary(
-    skill_id: uuid.UUID,
+    skill_id: int,
     request: Request,
     db: AsyncSession = Depends(get_db),
     admin: dict = Depends(require_admin),
@@ -211,7 +210,7 @@ async def generate_skill_summary(
     from mcp_manager.summarizer.ollama_client import ollama_generate
     from mcp_manager.connectors.github_readme import fetch_github_readme
 
-    result = await db.execute(select(Skill).where(Skill.id == skill_id))
+    result = await db.execute(select(Skill).where(Skill._id == skill_id))
     skill = result.scalar_one_or_none()
     if not skill:
         raise HTTPException(status_code=404, detail="Skill not found")
@@ -294,7 +293,7 @@ def _derive_repo_url(skills_sh_url: str) -> str | None:
 
 @router.post("/skill-sources/{source_id}/generate-summary")
 async def generate_source_summary(
-    source_id: uuid.UUID,
+    source_id: int,
     request: Request,
     db: AsyncSession = Depends(get_db),
     admin: dict = Depends(require_admin),
@@ -311,7 +310,7 @@ async def generate_source_summary(
 
     gen_logger = logging.getLogger(__name__)
 
-    result = await db.execute(select(SkillSource).where(SkillSource.id == source_id))
+    result = await db.execute(select(SkillSource).where(SkillSource._id == source_id))
     source = result.scalar_one_or_none()
     if not source:
         raise HTTPException(status_code=404, detail="Skill source not found")
@@ -362,7 +361,7 @@ async def generate_source_summary(
 
 @router.post("/skill-sources/{source_id}/sync")
 async def sync_skill_source(
-    source_id: uuid.UUID,
+    source_id: int,
     request: Request,
     db: AsyncSession = Depends(get_db),
     admin: dict = Depends(require_admin),
@@ -374,7 +373,7 @@ async def sync_skill_source(
     """
     from datetime import datetime, timezone
 
-    result = await db.execute(select(SkillSource).where(SkillSource.id == source_id))
+    result = await db.execute(select(SkillSource).where(SkillSource._id == source_id))
     source = result.scalar_one_or_none()
     if not source:
         raise HTTPException(status_code=404, detail="Skill source not found")
