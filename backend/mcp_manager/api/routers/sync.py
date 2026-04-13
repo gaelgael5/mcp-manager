@@ -578,8 +578,14 @@ async def _run_enrich_skills_bg():
                         enrich_logger.info("enrich-pipeline: %d/%d done", done, total)
                         _sync_status["enrich_progress"] = dict(stats)
 
-        workers = [asyncio.create_task(_worker(i, manager.drivers[i])) for i in range(num_workers)]
-        await asyncio.gather(*workers)
+        worker_tasks = [asyncio.create_task(_worker(i, manager.drivers[i])) for i in range(num_workers)]
+        while worker_tasks:
+            done_tasks, worker_tasks = await asyncio.wait(worker_tasks, timeout=5)
+            if _sync_status.get("enrich_cancel") and worker_tasks:
+                for task in worker_tasks:
+                    task.cancel()
+                await asyncio.gather(*worker_tasks, return_exceptions=True)
+                break
 
         _sync_status["enrich_progress"] = dict(stats)
 
@@ -716,8 +722,14 @@ async def _run_index_skills_bg():
                         skills_logger.info("index-skills: %d/%d done", done, total)
                         _sync_status["index_skills_progress"] = dict(stats)
 
-        workers = [asyncio.create_task(_worker(i, manager.drivers[i])) for i in range(num_workers)]
-        await asyncio.gather(*workers)
+        worker_tasks = [asyncio.create_task(_worker(i, manager.drivers[i])) for i in range(num_workers)]
+        while worker_tasks:
+            done_tasks, worker_tasks = await asyncio.wait(worker_tasks, timeout=5)
+            if _sync_status.get("index_skills_cancel") and worker_tasks:
+                for task in worker_tasks:
+                    task.cancel()
+                await asyncio.gather(*worker_tasks, return_exceptions=True)
+                break
 
         _sync_status["index_skills_progress"] = dict(stats)
 
