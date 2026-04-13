@@ -61,12 +61,26 @@ async def search_mcp(
     query = select(McpService)
 
     if q:
+        from sqlalchemy import exists as sa_exists
+        from mcp_manager.db.models import PreferenceGroup, preference_group_services as pgs_filter
         ts_query = func.plainto_tsquery("english", q)
         pattern = f"%{q}%"
+        group_match = sa_exists(
+            select(pgs_filter.c.mcp_service_id).where(
+                pgs_filter.c.mcp_service_id == McpService.id,
+                pgs_filter.c.group_id.in_(
+                    select(PreferenceGroup.id).where(
+                        PreferenceGroup.is_public == True,
+                        PreferenceGroup.name.ilike(pattern),
+                    )
+                ),
+            )
+        )
         query = query.where(
             McpService.search_vector.op("@@")(ts_query)
             | McpService.name.ilike(pattern)
             | McpService.source_url.ilike(pattern)
+            | group_match
         )
 
     query = _apply_filters(query, transport, category, source_type, repo_status, has_summaries)

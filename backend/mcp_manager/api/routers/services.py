@@ -53,12 +53,25 @@ async def list_services(
     if is_deprecated is not None:
         query = query.where(McpService.is_deprecated == is_deprecated)
     if search:
+        from sqlalchemy import exists as sa_exists
         ts_query = func.plainto_tsquery("english", search)
         pattern = f"%{search}%"
+        group_match = sa_exists(
+            select(preference_group_services.c.mcp_service_id).where(
+                preference_group_services.c.mcp_service_id == McpService.id,
+                preference_group_services.c.group_id.in_(
+                    select(PreferenceGroup.id).where(
+                        PreferenceGroup.is_public == True,
+                        PreferenceGroup.name.ilike(pattern),
+                    )
+                ),
+            )
+        )
         query = query.where(
             McpService.search_vector.op("@@")(ts_query)
             | McpService.name.ilike(pattern)
             | McpService.source_url.ilike(pattern)
+            | group_match
         )
 
     count_query = select(func.count()).select_from(query.subquery())
