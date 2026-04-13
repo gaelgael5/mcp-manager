@@ -1,0 +1,334 @@
+{
+  "common": {
+    "appName": "MCP Manager",
+    "buttons": {
+      "save": "Save",
+      "saved": "Saved!",
+      "create": "Create",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "add": "Add",
+      "remove": "Remove",
+      "copy": "Copy",
+      "copied": "Copied!",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "next": "Next",
+      "previous": "Previous",
+      "reset": "Reset",
+      "sync": "Sync",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "logout": "Logout",
+      "loginGoogle": "Login with Google",
+      "edit": "edit"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "inactive",
+      "loading": "Loading...",
+      "failed": "Failed",
+      "public": "public",
+      "private": "private",
+      "required": "required",
+      "secret": "secret",
+      "missing": "missing",
+      "admin": "admin",
+      "deprecated": "Deprecated"
+    },
+    "filters": {
+      "allSources": "All sources",
+      "allTypes": "All types",
+      "allTargets": "All targets",
+      "allCategories": "All categories",
+      "allTransports": "All transports",
+      "allGroups": "All groups"
+    },
+    "labels": {
+      "name": "Name",
+      "url": "URL",
+      "description": "Description"
+    }
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "services": "MCP Services",
+    "skills": "Skills",
+    "groups": "Groups",
+    "targets": "Targets",
+    "api": "API",
+    "sync": "Sync",
+    "skillSources": "Skill Sources",
+    "apiKeys": "Keys",
+    "community": "Community",
+    "settings": "Settings"
+  },
+  "pages": {
+    "dashboard": {
+      "title": "Dashboard",
+      "mcpIndexationTitle": "MCP Services Indexation Progress",
+      "skillSourcesEnrichmentTitle": "Skill Sources Enrichment Progress",
+      "skillsIndexationTitle": "Skills Indexation Progress",
+      "overallProcessing": "Overall processing",
+      "summaries": "Summaries",
+      "installations": "Installations",
+      "parameters": "Parameters",
+      "ragIndexed": "RAG Indexed",
+      "synced": "Synced",
+      "totalEmbeddings": "total embedding vectors",
+      "outdatedSummaries": "outdated summaries",
+      "ragPending": "RAG pending",
+      "mcpTranslations": "MCP services translations",
+      "skillSourcesTranslations": "Skill sources translations",
+      "skillsTranslations": "Skills translations",
+      "diskLabel": "Disk:",
+      "repositoryStatusTitle": "Repository Status"
+    },
+    "services": {
+      "title": "MCP Services",
+      "resultsCount": "{total} results",
+      "semanticSearchLabel": "Semantic search",
+      "semanticSearchHint": "Type a natural language query to use semantic search"
+    },
+    "serviceDetail": {
+      "noTransport": "no transport",
+      "transportStdioNote": "requires local runtime (npx/uvx/docker)",
+      "transportRemoteNote": "remote endpoint — no local runtime needed",
+      "noRepositoryUrl": "No repository URL",
+      "addUrlButton": "Add URL",
+      "summaryTitle": "Summary",
+      "generateSummaryButton": "Generate Summary",
+      "regenerateSummaryButton": "Regenerate Summary",
+      "summariesGenerated": "Summaries generated",
+      "failedToGenerateSummary": "Failed to generate summary",
+      "installationTitle": "Installation",
+      "noInstallationRecipes": "No installation recipes available.",
+      "generateRecipesButton": "Generate Recipes",
+      "regenerateRecipesButton": "Regenerate Recipes",
+      "recipesGenerated": "Recipes generated",
+      "failedToGenerateRecipes": "Failed to generate recipes"
+    },
+    "skillDetail": {
+      "noSummaryGenerated": "No summary generated yet.",
+      "generateSummaryButton": "Generate Summary",
+      "regenerateSummaryButton": "Regenerate Summary",
+      "summariesGenerated": "Summaries generated",
+      "licenseTitle": "License",
+      "viewLicenseFile": "View LICENSE file",
+      "descriptionTitle": "Trigger Description"
+    },
+    "skillSourceDetail": {
+      "breadcrumbSkillSources": "Skill Sources",
+      "noSummaryGenerated": "No summary generated yet.",
+      "generateSummaryButton": "Generate Summary",
+      "regenerateSummaryButton": "Regenerate Summary",
+      "summaryGenerated": "Summary generated",
+      "skillsTitle": "Skills",
+      "syncCompleted": "Sync completed: {added} added, {updated} updated",
+      "syncFailed": "Sync failed",
+      "noSkillsFound": "No skills found. Run a Sync to scan the repository."
+    },
+    "skills": {
+      "title": "Skills & Prompts",
+      "skillSourcesTab": "Skill Sources",
+      "searchPlaceholder": "Search sources...",
+      "sortByStars": "★ Stars",
+      "sortByName": "A-Z",
+      "sortByRecent": "Recent",
+      "filterSummarized": "summarized",
+      "filterNoSummary": "no summary",
+      "filterSynced": "synced",
+      "filterNeverSynced": "never synced",
+      "filterHasStars": "★ has stars",
+      "neverSynced": "Never synced",
+      "noSearchResults": "No sources match your search.",
+      "noSourcesConfigured": "No skill sources configured.",
+      "syncAllButton": "Sync All Sources",
+      "confirmDelete": "Delete \"{name}\"?"
+    },
+    "skillsCatalog": {
+      "title": "Skills Catalog",
+      "skillsCount": "{count} skills",
+      "searchPlaceholder": "Search skills...",
+      "noSkillsIndexed": "No skills indexed yet.",
+      "noSearchResults": "No skills match your search."
+    },
+    "groups": {
+      "title": "Groups",
+      "loginRequiredMessage": "Log in to access your groups.",
+      "groupNamePlaceholder": "Group name",
+      "noGroupsMessage": "No groups. Create your first group above.",
+      "servicesCount": "{count} service(s)",
+      "skillsCount": "{count} skill(s)"
+    },
+    "groupDetail": {
+      "notFoundMessage": "Group not found.",
+      "backToGroupsLink": "← Back to groups",
+      "makePublicButton": "Make public",
+      "makePrivateButton": "Make private",
+      "servicesTitle": "MCP Services",
+      "noServicesMessage": "No services in this group.",
+      "skillsTitle": "Skills",
+      "noSkillsMessage": "No skills in this group.",
+      "removeFromGroupTitle": "Remove from group",
+      "deleteGroupButton": "Delete this group"
+    },
+    "profile": {
+      "title": "Profile",
+      "loginRequiredMessage": "Log in to access your profile.",
+      "pseudoLabel": "Pseudo",
+      "pseudoPlaceholder": "Your pseudo",
+      "languageLabel": "Language",
+      "languageHint": "Descriptions and summaries will be displayed in this language when available.",
+      "avatarTitle": "Avatar",
+      "avatarUrlLabel": "Your avatar URL",
+      "avatarUrlHint": "Paste an avatar URL obtained from one of the platforms below",
+      "avatarPlatformsTitle": "Platforms to create your avatar:"
+    },
+    "apiDocs": {
+      "title": "API Documentation",
+      "openApiSpec": "OpenAPI Spec (JSON)"
+    },
+    "apiKeys": {
+      "title": "API Keys",
+      "newKeyMessage": "New API key created — copy it now, it won't be shown again:",
+      "noKeysYet": "No API keys yet.",
+      "createTitle": "Create API Key",
+      "keyNameLabel": "Key name",
+      "keyNamePlaceholder": "e.g. claude-code-agent",
+      "usageHint": "Usage: curl -H \"X-API-Key: mcp_xxx\" https://mcp.yoops.org/api/v1/search_mcp?q=playwright"
+    },
+    "targets": {
+      "title": "Install Targets",
+      "addTargetButton": "Add Target",
+      "compatibleModes": "Compatible modes:",
+      "noModesConfigured": "No modes configured — using defaults",
+      "addModeButton": "Add Mode"
+    },
+    "instances": {
+      "title": "MCP Manager Instances",
+      "description": "Connect to other MCP Manager instances to sync their catalog.",
+      "neverSynced": "Never synced",
+      "lastSync": "Last sync: {date} ({count} services)",
+      "noInstancesConfigured": "No instances configured. Add one to start federating.",
+      "addInstanceTitle": "Add Instance",
+      "namePlaceholder": "MCP Community Hub",
+      "urlPlaceholder": "https://mcp.other-org.com",
+      "apiKeyLabel": "API Key (optional)",
+      "apiKeyPlaceholder": "mcp_xxx...",
+      "addInstanceButton": "Add Instance"
+    },
+    "sync": {
+      "title": "Sync & Index",
+      "syncSourcesTitle": "Sync Sources",
+      "syncAllButton": "Sync All Sources",
+      "skillsEnrichmentTitle": "Skills.sh Enrichment",
+      "skillsEnrichmentDescription": "Enriches Skill Sources: repo URL, EN/FR summaries, sync skills from GitHub.",
+      "scrapeAllButton": "Scrape All",
+      "stopEnrichButton": "Stop Enrich",
+      "enrichSkillsButton": "Enrich Skills",
+      "ragIndexButton": "RAG Index",
+      "stopRagButton": "Stop RAG",
+      "enrichmentProgress": "Enrichment: {done}/{total}",
+      "scrapingInProgress": "Scraping in progress...",
+      "ragIndexProgress": "RAG Index: {done}/{total}",
+      "indexSkillsTitle": "Index Skills (Summary)",
+      "indexSkillsDescription": "Generates EN/FR summaries for skills with needs_summary=true.",
+      "stopIndexSkillsButton": "Stop Index Skills",
+      "indexSkillsButton": "Index Skills",
+      "indexMcpTitle": "Index MCP (Summary + Params + Recipes)",
+      "indexMcpDescription": "Indexes MCP services (summaries, params, recipes) and generates RAG embeddings.",
+      "stopIndexMcpButton": "Stop Index MCP",
+      "indexAllButton": "Index All",
+      "statsNew": "New",
+      "statsUpdated": "Updated",
+      "statsUnchanged": "Unchanged"
+    },
+    "settings": {
+      "title": "Settings",
+      "languagesTitle": "Languages",
+      "languagesHint": "Activating a language requires the three prompt files (summarize, skill_summary, source_summary) to exist under backend/prompts/<code>/.",
+      "promptsTitle": "Prompts",
+      "promptKindLabel": "Kind:",
+      "promptLanguageLabel": "Language:",
+      "noPromptFile": "(no prompt file)",
+      "promptMissingPlaceholder": "The template must contain the {content} placeholder.",
+      "environmentKeysTitle": "Environment Keys",
+      "saveKeysButton": "Save Keys",
+      "authFilesTitle": "Auth Files",
+      "authFilesPlaceholder": "Paste {label} content here...",
+      "apiTokensTitle": "API Tokens (Rate-Limited Pool)",
+      "concurrencyTitle": "Concurrency",
+      "noLlmProvidersConfigured": "No LLM providers configured. Add one in LLM Providers below.",
+      "instancesLabel": "instances",
+      "launchCommandLabel": "Launch command",
+      "llmProvidersTitle": "LLM Providers",
+      "addProviderButton": "Add Provider",
+      "testProvidersButton": "Test Providers",
+      "llmProviderTestsTitle": "LLM Provider Tests",
+      "providerLabel": "Provider #{id}"
+    },
+    "landing": {
+      "openSource": "Open Source",
+      "title": "MCP Manager",
+      "subtitle": "A unified registry of {total} MCP servers.\nAggregate, search, and install from {sources} sources.",
+      "githubButton": "★ GitHub",
+      "getStartedButton": "Get Started ↓",
+      "statsMcpServers": "MCP Servers",
+      "statsSources": "Sources",
+      "statsSkillSources": "Skill Sources",
+      "statsSkills": "Skills",
+      "statsSemanticSearch": "Semantic Search",
+      "installationTitle": "Installation",
+      "installStepClone": "Clone",
+      "installStepConfigure": "Configure",
+      "installStepBuild": "Build & Launch",
+      "footer": "Built with FastAPI + PostgreSQL + React"
+    }
+  },
+  "components": {
+    "syncStatusBar": {
+      "syncing": "Syncing...",
+      "idle": "Idle",
+      "lastRun": "Last: {date}",
+      "stats": "{new} new, {updated} updated"
+    },
+    "summaryView": {
+      "noSummaries": "No summaries available.",
+      "selectLanguage": "Select a language."
+    },
+    "filterPanel": {
+      "searchPlaceholder": "Search services...",
+      "repoOk": "Repo OK",
+      "repo404": "Repo 404",
+      "notChecked": "Not checked",
+      "hasSummary": "Has summary",
+      "noSummary": "No summary"
+    },
+    "parametersBlock": {
+      "title": "Parameters",
+      "noParameters": "No parameters identified.",
+      "variableNamePlaceholder": "VARIABLE_NAME",
+      "descriptionPlaceholder": "Description",
+      "requiredLabel": "Required",
+      "secretLabel": "Secret",
+      "detectButton": "Detect Parameters",
+      "addManuallyButton": "Add Manually"
+    },
+    "groupPicker": {
+      "addGroupButton": "+ Group",
+      "noGroupsAvailable": "No groups available",
+      "groupNamePlaceholder": "Group name",
+      "createGroupButton": "+ Create a group"
+    },
+    "serviceCard": {
+      "noRepo": "no repo",
+      "noSummary": "no summary"
+    },
+    "statusBadge": {
+      "deprecated": "Deprecated",
+      "active": "Active"
+    }
+  }
+}
