@@ -5,7 +5,6 @@ import {
   useUpdateGroup,
   useDeleteGroup,
   useRemoveServiceFromGroup,
-  useRemoveSkillFromGroup,
 } from "../api/preference-groups";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
@@ -20,7 +19,6 @@ export function GroupDetailPage() {
   const updateGroup = useUpdateGroup(id!);
   const deleteGroup = useDeleteGroup();
   const removeService = useRemoveServiceFromGroup();
-  const removeSkill = useRemoveSkillFromGroup();
 
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState("");
@@ -140,38 +138,6 @@ export function GroupDetailPage() {
                   {isOwner && (
                     <button
                       onClick={() => removeService.mutate({ groupId: group.id, serviceId: svc.id })}
-                      className="text-gray-400 hover:text-red-600 text-lg leading-none ml-2 flex-shrink-0"
-                      title={t("pages.groupDetail.removeFromGroupTitle")}
-                    >
-                      &times;
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card title={t("pages.groupDetail.skillsTitle")}>
-          {group.skills.length === 0 ? (
-            <p className="text-sm text-gray-400">{t("pages.groupDetail.noSkillsMessage")}</p>
-          ) : (
-            <ul className="divide-y divide-gray-100">
-              {group.skills.map((skill) => (
-                <li key={skill.id} className="flex items-center justify-between py-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Link
-                      to={`/skills-catalog/${skill.id}`}
-                      className="text-sm font-medium text-blue-600 hover:underline truncate"
-                    >
-                      {skill.name}
-                    </Link>
-                    <Badge color="purple">{skill.target_type}</Badge>
-                    {skill.category && <Badge color="gray">{skill.category}</Badge>}
-                  </div>
-                  {isOwner && (
-                    <button
-                      onClick={() => removeSkill.mutate({ groupId: group.id, skillId: skill.id })}
                       className="text-gray-400 hover:text-red-600 text-lg leading-none ml-2 flex-shrink-0"
                       title={t("pages.groupDetail.removeFromGroupTitle")}
                     >

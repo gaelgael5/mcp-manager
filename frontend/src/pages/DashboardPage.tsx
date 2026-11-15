@@ -56,8 +56,6 @@ function ETA({ processed, total, throughput }: { processed?: number; total?: num
 interface TranslationsProgress {
   languages: { code: string; name: string; is_baseline: boolean }[];
   mcp: Record<string, number>;
-  skill_sources: Record<string, number>;
-  skills: Record<string, number>;
 }
 
 function LanguageProgress({
@@ -155,74 +153,12 @@ export function DashboardPage() {
         </div>
       </Card>
 
-      {/* Skill Sources Progress */}
-      <Card title={
-        <span className="flex items-center gap-2">
-          {t("pages.dashboard.skillSourcesEnrichmentTitle")}
-          {(syncStatus as any)?.enriching && (<>
-            <span className="text-yellow-500 animate-pulse">⚡</span>
-            <Throughput value={(syncStatus as any)?.enriching_throughput} />
-            <ETA processed={(syncStatus as any)?.enrich_progress?.done} total={(syncStatus as any)?.enrich_progress?.total} throughput={(syncStatus as any)?.enriching_throughput} />
-          </>)}
-        </span>
-      }>
-        <div className="space-y-3">
-          <ProgressBar value={((stats as any)?.skill_sources?.by_enrichment?.done ?? 0)} max={(stats as any)?.skill_sources?.total ?? 0} label={t("pages.dashboard.overallProcessing")} color="green" />
-          <ProgressBar value={(stats as any)?.skill_sources?.with_summary_en ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label={t("pages.dashboard.summaries")} color="blue" />
-          <ProgressBar value={(stats as any)?.skill_sources?.synced ?? 0} max={(stats as any)?.skill_sources?.total ?? 0} label={t("pages.dashboard.synced")} color="yellow" />
-          <ProgressBar value={((stats as any)?.rag_pending?.sources_total ?? 0) - ((stats as any)?.rag_pending?.sources ?? 0)} max={(stats as any)?.rag_pending?.sources_total ?? 0} label={t("pages.dashboard.ragIndexed")} color="purple" />
-          <div className="flex gap-4 text-xs text-gray-400 pt-1">
-            {(stats as any)?.skill_sources?.by_enrichment && Object.entries((stats as any).skill_sources.by_enrichment).map(([k, v]) => (
-              <span key={k}>{k}: {(v as number).toLocaleString()}</span>
-            ))}
-            {((stats as any)?.rag_pending?.sources ?? 0) > 0 && (
-              <span className="text-yellow-500">{(stats as any).rag_pending.sources} {t("pages.dashboard.ragPending")}</span>
-            )}
-          </div>
-          <DriverChips batchId="enrich" syncStatus={syncStatus} />
-        </div>
-      </Card>
-
-      {/* Skills Progress */}
-      <Card title={
-        <span className="flex items-center gap-2">
-          {t("pages.dashboard.skillsIndexationTitle")}
-          {(syncStatus as any)?.indexing_skills && (<>
-            <span className="text-yellow-500 animate-pulse">⚡</span>
-            <Throughput value={(syncStatus as any)?.indexing_skills_throughput} />
-            <ETA processed={(syncStatus as any)?.index_skills_progress?.done} total={(syncStatus as any)?.index_skills_progress?.total} throughput={(syncStatus as any)?.indexing_skills_throughput} />
-          </>)}
-        </span>
-      }>
-        <div className="space-y-3">
-          <ProgressBar value={((stats as any)?.skills?.total ?? 0) - ((stats as any)?.skills?.needs_summary ?? 0)} max={(stats as any)?.skills?.total ?? 0} label={t("pages.dashboard.overallProcessing")} color="green" />
-          <ProgressBar value={(stats as any)?.skills?.with_summary ?? 0} max={(stats as any)?.skills?.total ?? 0} label={t("pages.dashboard.summaries")} color="blue" />
-          <ProgressBar value={((stats as any)?.rag_pending?.skills_total ?? 0) - ((stats as any)?.rag_pending?.skills ?? 0)} max={(stats as any)?.rag_pending?.skills_total ?? 0} label={t("pages.dashboard.ragIndexed")} color="purple" />
-          <div className="flex gap-4 text-xs text-gray-400 pt-1">
-            {((stats as any)?.rag_pending?.skills ?? 0) > 0 && (
-              <span className="text-yellow-500">{(stats as any).rag_pending.skills} {t("pages.dashboard.ragPending")}</span>
-            )}
-          </div>
-          <DriverChips batchId="skills" syncStatus={syncStatus} />
-        </div>
-      </Card>
-
       {/* Translations progress per language */}
       {progress && progress.languages.filter((l) => !l.is_baseline).length > 0 && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4">
           <LanguageProgress
             title={t("pages.dashboard.mcpTranslations")}
             counts={progress.mcp}
-            languages={progress.languages}
-          />
-          <LanguageProgress
-            title={t("pages.dashboard.skillSourcesTranslations")}
-            counts={progress.skill_sources}
-            languages={progress.languages}
-          />
-          <LanguageProgress
-            title={t("pages.dashboard.skillsTranslations")}
-            counts={progress.skills}
             languages={progress.languages}
           />
         </div>

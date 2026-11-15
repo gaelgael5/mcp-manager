@@ -14,7 +14,7 @@ DRIVER_TYPES = {
 }
 
 # Valid pipeline keys for the concurrency config block.
-PIPELINES = ("mcp", "skill_sources", "skills")
+PIPELINES = ("mcp",)
 
 
 class LLMManager:

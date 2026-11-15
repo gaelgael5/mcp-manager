@@ -39,47 +39,6 @@ export function useStopIndex() {
   });
 }
 
-export function useTriggerScrapeSkills() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (opts?: { limit?: number; skipSummaries?: boolean }) => {
-      const params = new URLSearchParams();
-      if (opts?.limit) params.set("limit", String(opts.limit));
-      if (opts?.skipSummaries) params.set("skip_summaries", "true");
-      const qs = params.toString() ? `?${params.toString()}` : "";
-      return apiFetch<{ status: string }>(`/services/scrape-skills${qs}`, { method: "POST" });
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
-  });
-}
-
-export function useEnrichSkills() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: () =>
-      apiFetch<{ status: string }>("/services/enrich-skills", { method: "POST" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
-  });
-}
-
-export function useStopEnrichSkills() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: () =>
-      apiFetch<{ status: string }>("/services/enrich-skills/stop", { method: "POST" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
-  });
-}
-
-export function useIndexSkills() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: () =>
-      apiFetch<{ status: string }>("/services/index-skills", { method: "POST" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
-  });
-}
-
 export function useRagIndex() {
   const qc = useQueryClient();
   return useMutation({
@@ -116,15 +75,6 @@ export function useStopAgents() {
       const qs = args.providerId != null ? `?provider_id=${args.providerId}` : "";
       return apiFetch<{ status: string }>(`/services/agents/${args.batchId}/stop${qs}`, { method: "POST" });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
-  });
-}
-
-export function useStopIndexSkills() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: () =>
-      apiFetch<{ status: string }>("/services/index-skills/stop", { method: "POST" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["sync-status"] }),
   });
 }

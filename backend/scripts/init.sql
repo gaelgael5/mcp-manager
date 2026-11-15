@@ -54,10 +54,6 @@ CREATE TABLE IF NOT EXISTS mcp_installations (
     CONSTRAINT uq_service_target UNIQUE (mcp_service_id, install_target_id)
 );
 
--- Note: skills table managed by SQLAlchemy, but for fresh installs ensure install_command column
--- ALTER TABLE skills ADD COLUMN IF NOT EXISTS install_command TEXT;
--- ALTER TABLE skills ADD COLUMN IF NOT EXISTS weekly_installs INTEGER DEFAULT 0;
-
 CREATE INDEX IF NOT EXISTS idx_services_source_type ON mcp_services(source_type);
 CREATE INDEX IF NOT EXISTS idx_summaries_culture ON mcp_summaries(culture);
 CREATE INDEX IF NOT EXISTS idx_installations_target ON mcp_installations(install_target_id);
@@ -103,11 +99,4 @@ CREATE TABLE IF NOT EXISTS preference_group_services (
     group_id        UUID NOT NULL REFERENCES preference_groups(id) ON DELETE CASCADE,
     mcp_service_id  UUID NOT NULL REFERENCES mcp_services(id) ON DELETE CASCADE,
     PRIMARY KEY (group_id, mcp_service_id)
-);
-
--- Junction: preference groups <-> skills
-CREATE TABLE IF NOT EXISTS preference_group_skills (
-    group_id        UUID NOT NULL REFERENCES preference_groups(id) ON DELETE CASCADE,
-    skill_id        UUID NOT NULL REFERENCES skills(id) ON DELETE CASCADE,
-    PRIMARY KEY (group_id, skill_id)
 );

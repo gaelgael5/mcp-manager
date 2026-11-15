@@ -91,7 +91,6 @@ export function GroupsPage() {
               <div className="flex gap-2 mt-3">
                 <Badge color={group.is_public ? "green" : "gray"}>{group.is_public ? t("common.status.public") : t("common.status.private")}</Badge>
                 <Badge color="blue">{t("pages.groups.servicesCount", { count: group.service_count })}</Badge>
-                <Badge color="purple">{t("pages.groups.skillsCount", { count: group.skill_count })}</Badge>
               </div>
             </Card>
           </Link>

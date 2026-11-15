@@ -9,7 +9,6 @@ export interface PreferenceGroup {
   is_owner: boolean;
   owner_pseudo: string | null;
   service_count: number;
-  skill_count: number;
   created_at: string;
 }
 
@@ -23,7 +22,6 @@ export interface PreferenceGroupDetail {
   created_at: string;
   updated_at: string;
   services: { id: string; name: string; source_type: string; category: string | null }[];
-  skills: { id: string; name: string; target_type: string; category: string | null }[];
 }
 
 export interface GroupRef {
@@ -106,42 +104,10 @@ export function useRemoveServiceFromGroup() {
   });
 }
 
-export function useAddSkillToGroup() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ groupId, skillId }: { groupId: string; skillId: string }) =>
-      apiFetch(`/preference-groups/${groupId}/skills/${skillId}`, { method: "POST" }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["preference-groups"] });
-      qc.invalidateQueries({ queryKey: ["skill-groups"] });
-    },
-  });
-}
-
-export function useRemoveSkillFromGroup() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ groupId, skillId }: { groupId: string; skillId: string }) =>
-      apiFetch(`/preference-groups/${groupId}/skills/${skillId}`, { method: "DELETE" }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["preference-groups"] });
-      qc.invalidateQueries({ queryKey: ["skill-groups"] });
-    },
-  });
-}
-
 export function useServiceGroups(serviceId: string | undefined) {
   return useQuery({
     queryKey: ["service-groups", serviceId],
     queryFn: () => apiFetch<GroupRef[]>(`/services/${serviceId}/groups`),
     enabled: !!serviceId,
-  });
-}
-
-export function useSkillGroups(skillId: string | undefined) {
-  return useQuery({
-    queryKey: ["skill-groups", skillId],
-    queryFn: () => apiFetch<GroupRef[]>(`/skills/${skillId}/groups`),
-    enabled: !!skillId,
   });
 }

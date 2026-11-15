@@ -7,7 +7,6 @@ const publicLinks = [
   { to: "/", labelKey: "navigation.home" },
   { to: "/dashboard", labelKey: "navigation.dashboard" },
   { to: "/services", labelKey: "navigation.services" },
-  { to: "/skills-catalog", labelKey: "navigation.skills" },
   { to: "/groups", labelKey: "navigation.groups" },
   { to: "/targets", labelKey: "navigation.targets" },
   { to: "/api-docs", labelKey: "navigation.api" },
@@ -15,7 +14,6 @@ const publicLinks = [
 
 const adminLinks = [
   { to: "/sync", labelKey: "navigation.sync" },
-  { to: "/skills", labelKey: "navigation.skillSources" },
   { to: "/api-keys", labelKey: "navigation.apiKeys" },
   { to: "/instances", labelKey: "navigation.community" },
   { to: "/settings", labelKey: "navigation.settings" },

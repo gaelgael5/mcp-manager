@@ -10,7 +10,7 @@ from mcp_manager.db.models import Language
 
 PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
 
-PROMPT_KINDS = ("summarize", "skill_summary", "source_summary")
+PROMPT_KINDS = ("summarize",)
 
 
 class PromptNotFound(FileNotFoundError):

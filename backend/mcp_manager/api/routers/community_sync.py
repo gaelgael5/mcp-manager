@@ -11,9 +11,8 @@ Design:
 - Response includes `server_time` so clients avoid clock skew when tracking
   the next `since` value.
 
-Tables exposed (8): mcp_services, mcp_summaries, mcp_parameters,
-mcp_installations, skill_sources, skill_sources_translations, skills,
-skills_translations.
+Tables exposed (4): mcp_services, mcp_summaries, mcp_parameters,
+mcp_installations.
 """
 import hashlib
 import logging
@@ -32,10 +31,6 @@ from mcp_manager.db.models import (
     McpParameter,
     McpService,
     McpSummary,
-    Skill,
-    SkillSource,
-    SkillSourceTranslation,
-    SkillTranslation,
 )
 
 router = APIRouter(tags=["community_sync"])
@@ -155,76 +150,6 @@ def _serialize_mcp_installation(row: McpInstallation) -> dict:
     }
 
 
-def _serialize_skill_source(row: SkillSource) -> dict:
-    return {
-        "_id": row._id,
-        "id": str(row.id),
-        "name": row.name,
-        "url": row.url,
-        "repo_url": row.repo_url,
-        "skills_path": row.skills_path,
-        "type": row.type,
-        "description": row.description,
-        "repo_format": row.repo_format,
-        "repo_status": row.repo_status,
-        "is_active": row.is_active,
-        "stars": row.stars,
-        "last_sync": _iso(row.last_sync),
-        "last_sync_count": row.last_sync_count,
-        "created_at": _iso(row.created_at),
-        "updated_at": _iso(row.updated_at),
-    }
-
-
-def _serialize_skill_source_translation(row: SkillSourceTranslation) -> dict:
-    return {
-        "_id": row._id,
-        "parent_id": row.parent_id,
-        "id": str(row.id),
-        "skill_source_id": str(row.parent_id),
-        "culture": row.culture,
-        "summary": row.summary,
-        "heuristic_quality": row.heuristic_quality,
-        "llm_quality": row.llm_quality,
-        "created_at": _iso(row.created_at),
-        "updated_at": _iso(row.updated_at),
-    }
-
-
-def _serialize_skill(row: Skill) -> dict:
-    return {
-        "_id": row._id,
-        "id": str(row.id),
-        "name": row.name,
-        "description": row.description,
-        "target_type": row.target_type,
-        "licence": row.licence,
-        "licence_url": row.licence_url,
-        "source_url": row.source_url,
-        "category": row.category,
-        "install_command": row.install_command,
-        "weekly_installs": row.weekly_installs,
-        "canonical_id": row.canonical_id,
-        "created_at": _iso(row.created_at),
-        "updated_at": _iso(row.updated_at),
-    }
-
-
-def _serialize_skill_translation(row: SkillTranslation) -> dict:
-    return {
-        "_id": row._id,
-        "parent_id": row.parent_id,
-        "id": str(row.id),
-        "skill_id": str(row.parent_id),
-        "culture": row.culture,
-        "summary": row.summary,
-        "heuristic_quality": row.heuristic_quality,
-        "llm_quality": row.llm_quality,
-        "created_at": _iso(row.created_at),
-        "updated_at": _iso(row.updated_at),
-    }
-
-
 # Whitelist of syncable tables: maps the table name to (ORM model, serializer).
 # Adding a table here is the only place where the exposed contract changes.
 TABLES: dict[str, tuple[type, Callable]] = {
@@ -232,10 +157,6 @@ TABLES: dict[str, tuple[type, Callable]] = {
     "mcp_summaries": (McpSummary, _serialize_mcp_summary),
     "mcp_parameters": (McpParameter, _serialize_mcp_parameter),
     "mcp_installations": (McpInstallation, _serialize_mcp_installation),
-    "skill_sources": (SkillSource, _serialize_skill_source),
-    "skill_sources_translations": (SkillSourceTranslation, _serialize_skill_source_translation),
-    "skills": (Skill, _serialize_skill),
-    "skills_translations": (SkillTranslation, _serialize_skill_translation),
 }
 
 

@@ -7,7 +7,7 @@ import httpx
 from mcp_manager.config import settings
 from mcp_manager.connectors.github_pool import get_github_headers
 from mcp_manager.db.session import SessionLocal
-from mcp_manager.db.models import McpService, SkillSource
+from mcp_manager.db.models import McpService
 from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
@@ -103,8 +103,8 @@ async def run_repo_check() -> dict[str, int]:
 
 
 async def run_stars_update() -> dict[str, int]:
-    """Re-fetch GitHub stars for services and skill sources with repo_status='ok'."""
-    stats = {"services": 0, "skill_sources": 0}
+    """Re-fetch GitHub stars for services with repo_status='ok'."""
+    stats = {"services": 0}
     batch_size = 50
 
     async with httpx.AsyncClient(timeout=10.0) as client:
@@ -141,34 +141,6 @@ async def run_stars_update() -> dict[str, int]:
 
                 await db.commit()
                 logger.info("Stars update (services): %d updated so far", stats["services"])
-
-        # --- SkillSource stars ---
-        async with SessionLocal() as db:
-            result = await db.execute(
-                select(SkillSource.id, SkillSource.repo_url)
-                .where(
-                    SkillSource.repo_url.isnot(None),
-                    SkillSource.stars.is_(None),
-                )
-            )
-            rows = result.all()
-
-            try:
-                for src_id, repo_url in rows:
-                    _, stars = await check_repo(client, repo_url)
-                    if stars is not None:
-                        await db.execute(
-                            SkillSource.__table__.update()
-                            .where(SkillSource.id == src_id)
-                            .values(stars=stars)
-                        )
-                        stats["skill_sources"] += 1
-            except RateLimitExhausted:
-                await db.commit()
-                logger.info("Stars update paused (rate limit): %s", stats)
-                return stats
-
-            await db.commit()
 
     logger.info("Stars update done: %s", stats)
     return stats

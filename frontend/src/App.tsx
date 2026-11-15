@@ -10,10 +10,6 @@ import { ApiDocsPage } from "./pages/ApiDocsPage";
 import { ApiKeysPage } from "./pages/ApiKeysPage";
 import { InstancesPage } from "./pages/InstancesPage";
 import { SettingsPage } from "./pages/SettingsPage";
-import { SkillsPage } from "./pages/SkillsPage";
-import { SkillsCatalogPage } from "./pages/SkillsCatalogPage";
-import { SkillDetailPage } from "./pages/SkillDetailPage";
-import { SkillSourceDetailPage } from "./pages/SkillSourceDetailPage";
 import { GroupsPage } from "./pages/GroupsPage";
 import { GroupDetailPage } from "./pages/GroupDetailPage";
 import { ProfilePage } from "./pages/ProfilePage";
@@ -42,10 +38,6 @@ function AppRoutes() {
           <Route path="/api-keys" element={<ApiKeysPage />} />
           <Route path="/instances" element={<InstancesPage />} />
           <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/skills" element={<SkillsPage />} />
-          <Route path="/skills/:id" element={<SkillSourceDetailPage />} />
-          <Route path="/skills-catalog" element={<SkillsCatalogPage />} />
-          <Route path="/skills-catalog/:id" element={<SkillDetailPage />} />
           <Route path="/groups" element={<GroupsPage />} />
           <Route path="/groups/:id" element={<GroupDetailPage />} />
           <Route path="/profile" element={<ProfilePage />} />

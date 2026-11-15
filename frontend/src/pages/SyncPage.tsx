@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSyncStatus, useTriggerSync, useTriggerIndex, useStopIndex, useTriggerScrapeSkills, useEnrichSkills, useStopEnrichSkills, useIndexSkills, useStopIndexSkills, useRagIndex, useStopRagIndex, useStartAgents, useStopAgents, useEvalHeuristic, useStopEvalHeuristic, useEvalLLM, useStopEvalLLM, useEvalStats } from "../api/sync";
+import { useSyncStatus, useTriggerSync, useTriggerIndex, useStopIndex, useRagIndex, useStopRagIndex, useStartAgents, useStopAgents, useEvalHeuristic, useStopEvalHeuristic, useEvalLLM, useStopEvalLLM, useEvalStats } from "../api/sync";
 import { useCurrentUser } from "../api/auth";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
@@ -7,7 +7,7 @@ import { Button } from "../components/ui/Button";
 import { SyncStatusBar } from "../components/domain/SyncStatusBar";
 import { apiFetch } from "../api/client";
 
-function RecentItems({ scope }: { scope: "mcp" | "enrich" | "skills" }) {
+function RecentItems({ scope }: { scope: "mcp" }) {
   const [items, setItems] = useState<{ id: number; name: string; url: string }[] | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -177,11 +177,6 @@ export function SyncPage() {
   const triggerSync = useTriggerSync();
   const triggerIndex = useTriggerIndex();
   const stopIndex = useStopIndex();
-  const scrapeSkills = useTriggerScrapeSkills();
-  const enrichSkills = useEnrichSkills();
-  const stopEnrich = useStopEnrichSkills();
-  const indexSkills = useIndexSkills();
-  const stopIndexSkills = useStopIndexSkills();
   const ragIndex = useRagIndex();
   const stopRag = useStopRagIndex();
   const { data: evalStats } = useEvalStats();
@@ -227,114 +222,6 @@ export function SyncPage() {
         )}
       </Card>
 
-      <Card title="Skills.sh Enrichment">
-        <p className="text-sm text-gray-500 mb-3">
-          Enrichit les Skill Sources : repo URL, summaries EN/FR, sync des skills depuis GitHub.
-        </p>
-        <div className="flex gap-3">
-          <Button variant="secondary" onClick={() => scrapeSkills.mutate({})} loading={scrapeSkills.isPending || (status as any)?.scraping} disabled={(status as any)?.scraping || (status as any)?.enriching}>
-            Scrape All
-          </Button>
-          {(status as any)?.enriching ? (
-            <Button variant="danger" onClick={() => stopEnrich.mutate()} loading={stopEnrich.isPending}>
-              Stop Enrich
-            </Button>
-          ) : (
-            <Button onClick={() => enrichSkills.mutate()} loading={enrichSkills.isPending} disabled={(status as any)?.scraping || (status as any)?.rag_indexing}>
-              Enrich Skills
-            </Button>
-          )}
-          {(status as any)?.rag_indexing && (status as any)?.rag_scope === "sources" ? (
-            <Button variant="danger" onClick={() => stopRag.mutate()} loading={stopRag.isPending}>
-              Stop RAG
-            </Button>
-          ) : (
-            <Button variant="secondary" onClick={() => ragIndex.mutate("sources")} loading={ragIndex.isPending} disabled={(status as any)?.enriching || (status as any)?.rag_indexing}>
-              RAG Index
-            </Button>
-          )}
-        </div>
-        {(status as any)?.enriching && (status as any)?.enrich_progress && (
-          <div className="mt-3 text-sm text-blue-600">
-            <p>Enrichissement : {(status as any).enrich_progress.done}/{(status as any).enrich_progress.total}</p>
-            <p className="text-xs text-gray-500">
-              Repos: {(status as any).enrich_progress.repos_filled} |
-              Summaries: {(status as any).enrich_progress.summaries} |
-              Syncs: {(status as any).enrich_progress.syncs} |
-              Failed: {(status as any).enrich_progress.failed}
-            </p>
-          </div>
-        )}
-        {(status as any)?.scraping && <p className="text-sm text-blue-600 mt-2">Scraping in progress...</p>}
-        {(status as any)?.rag_indexing && (status as any)?.rag_scope === "sources" && (status as any)?.rag_progress && (
-          <div className="mt-3 text-sm text-blue-600">
-            <p>RAG Index : {(status as any).rag_progress.done}/{(status as any).rag_progress.total}</p>
-            <p className="text-xs text-gray-500">Sources: {(status as any).rag_progress.sources} | Failed: {(status as any).rag_progress.failed}</p>
-          </div>
-        )}
-        {(status as any)?.last_enrich && (
-          <div className="mt-3 text-xs text-gray-500">
-            Last enrich: {(status as any).last_enrich.done} done, {(status as any).last_enrich.failed} failed,
-            {" "}{(status as any).last_enrich.repos_filled} repos, {(status as any).last_enrich.summaries} summaries,
-            {" "}{(status as any).last_enrich.syncs} syncs — {(status as any).last_enrich.time}
-          </div>
-        )}
-        <RecentItems scope="enrich" />
-        <DockerAgents batchId="enrich" status={status} />
-        <QualityEval scope="sources" evalStats={evalStats} />
-      </Card>
-
-      <Card title="Index Skills (Summary)">
-        <p className="text-sm text-gray-500 mb-3">
-          Genere les summaries EN/FR pour les skills avec needs_summary=true.
-        </p>
-        <div className="flex gap-3">
-          {(status as any)?.indexing_skills ? (
-            <Button variant="danger" onClick={() => stopIndexSkills.mutate()} loading={stopIndexSkills.isPending}>
-              Stop Index Skills
-            </Button>
-          ) : (
-            <Button onClick={() => indexSkills.mutate()} loading={indexSkills.isPending} disabled={(status as any)?.rag_indexing}>
-              Index Skills
-            </Button>
-          )}
-          {(status as any)?.rag_indexing && (status as any)?.rag_scope === "skills" ? (
-            <Button variant="danger" onClick={() => stopRag.mutate()} loading={stopRag.isPending}>
-              Stop RAG
-            </Button>
-          ) : (
-            <Button variant="secondary" onClick={() => ragIndex.mutate("skills")} loading={ragIndex.isPending} disabled={(status as any)?.indexing_skills || (status as any)?.rag_indexing}>
-              RAG Index
-            </Button>
-          )}
-        </div>
-        {(status as any)?.indexing_skills && (status as any)?.index_skills_progress && (
-          <div className="mt-3 text-sm text-blue-600">
-            <p>Index Skills : {(status as any).index_skills_progress.done}/{(status as any).index_skills_progress.total}</p>
-            <p className="text-xs text-gray-500">
-              Summaries: {(status as any).index_skills_progress.summaries} |
-              Unchanged: {(status as any).index_skills_progress.unchanged} |
-              Failed: {(status as any).index_skills_progress.failed}
-            </p>
-          </div>
-        )}
-        {(status as any)?.rag_indexing && (status as any)?.rag_scope === "skills" && (status as any)?.rag_progress && (
-          <div className="mt-3 text-sm text-blue-600">
-            <p>RAG Index : {(status as any).rag_progress.done}/{(status as any).rag_progress.total}</p>
-            <p className="text-xs text-gray-500">Skills: {(status as any).rag_progress.skills} | Failed: {(status as any).rag_progress.failed}</p>
-          </div>
-        )}
-        {(status as any)?.last_index_skills && (
-          <div className="mt-3 text-xs text-gray-500">
-            Last: {(status as any).last_index_skills.done} done, {(status as any).last_index_skills.summaries} summaries,
-            {" "}{(status as any).last_index_skills.failed} failed — {(status as any).last_index_skills.time}
-          </div>
-        )}
-        <RecentItems scope="skills" />
-        <DockerAgents batchId="skills" status={status} />
-        <QualityEval scope="skills" evalStats={evalStats} />
-      </Card>
-
       <Card title="Index MCP (Summary + Params + Recipes)">
         <p className="text-sm text-gray-500 mb-3">
           Indexe les MCP services (summaries, params, recettes) et genere les embeddings RAG.
@@ -375,8 +262,6 @@ export function SyncPage() {
             <p>RAG Index : {(status as any).rag_progress.done}/{(status as any).rag_progress.total}</p>
             <p className="text-xs text-gray-500">
               MCP Summaries: {(status as any).rag_progress.mcp_summaries} |
-              Sources: {(status as any).rag_progress.sources} |
-              Skills: {(status as any).rag_progress.skills} |
               Failed: {(status as any).rag_progress.failed}
             </p>
           </div>
@@ -389,8 +274,7 @@ export function SyncPage() {
         )}
         {(status as any)?.last_rag && (
           <div className="mt-3 text-xs text-gray-500">
-            Last RAG: {(status as any).last_rag.mcp_summaries} MCP, {(status as any).last_rag.sources} sources,
-            {" "}{(status as any).last_rag.skills} skills, {(status as any).last_rag.failed} failed — {(status as any).last_rag.time}
+            Last RAG: {(status as any).last_rag.mcp_summaries} MCP, {(status as any).last_rag.failed} failed — {(status as any).last_rag.time}
           </div>
         )}
         <RecentItems scope="mcp" />

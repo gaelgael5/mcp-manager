@@ -13,12 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from mcp_manager.api.deps import get_db
 from mcp_manager.api.routers.auth import require_admin
-from mcp_manager.db.models import (
-    Language,
-    McpSummary,
-    SkillSourceTranslation,
-    SkillTranslation,
-)
+from mcp_manager.db.models import Language, McpSummary
 from mcp_manager.llm.config import load_config, save_config
 from mcp_manager.prompts import (
     PROMPT_KINDS,
@@ -655,7 +650,7 @@ async def delete_language(
     db: AsyncSession = Depends(get_db),
     admin: dict = Depends(require_admin),
 ):
-    for model in (McpSummary, SkillSourceTranslation, SkillTranslation):
+    for model in (McpSummary,):
         n = (await db.execute(
             select(func.count()).select_from(model).where(model.culture == code)
         )).scalar() or 0

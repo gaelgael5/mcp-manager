@@ -31,7 +31,6 @@ def _structure_score(text: str) -> int:
 
 
 _MCP_KEYWORDS = ["tool", "capability", "server", "resource", "api", "protocol"]
-_SKILL_KEYWORDS = ["skill", "workflow", "automation", "command", "api", "tool"]
 _USECASE_KEYWORDS = ["use case", "typical", "example", "when to", "scenario"]
 
 
@@ -85,16 +84,3 @@ def score_mcp_summary(summary: str) -> int:
         + _corruption_score(summary)
     )
 
-
-def score_skill_summary(summary: str) -> int:
-    """Score 0-100 for a skill/skill_source summary."""
-    if not summary or not summary.strip():
-        return 0
-    return (
-        _length_score(summary)
-        + _structure_score(summary)
-        + _keyword_score(summary, _SKILL_KEYWORDS)
-        + _usecase_score(summary)
-        + _pollution_score(summary)
-        + _corruption_score(summary)
-    )

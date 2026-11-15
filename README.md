@@ -9,7 +9,6 @@ A unified registry of **18,000+ MCP servers** aggregated from 5 sources into one
 - **5 sources** — Glama, MCP Registry, Docker MCP Registry, PulseMCP, modelcontextprotocol/servers
 - **Semantic search** — RAG-powered search with pgvector embeddings (mxbai-embed-large)
 - **AI summaries** — EN/FR summaries generated via Ollama (llama3.1)
-- **Skills catalog** — Browse and manage Claude/Copilot/Gemini/Cursor skills
 - **Install recipes** — Auto-generated installation configs for 34+ targets (Claude Desktop, VS Code, Cursor, etc.)
 
 ## Quick Start

@@ -37,8 +37,7 @@ export function LanguagesSection() {
         ))}
       </div>
       <p className="mt-3 text-xs text-gray-500">
-        Activating a language requires the three prompt files
-        (<code>summarize</code>, <code>skill_summary</code>, <code>source_summary</code>) to exist
+        Activating a language requires the <code>summarize</code> prompt file to exist
         under <code>backend/prompts/&lt;code&gt;/</code>.
       </p>
       {updateLang.isError && (

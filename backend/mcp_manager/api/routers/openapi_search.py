@@ -42,74 +42,6 @@ SEARCH_OPENAPI_SPEC = {
                 },
             }
         },
-        "/search_skill_sources": {
-            "get": {
-                "summary": "Search skill sources",
-                "description": "Search skill source repositories (Claude, Copilot, Gemini, Cursor skills) with text filters and pagination. Returns sources sorted by GitHub stars.",
-                "operationId": "searchSkillSources",
-                "parameters": [
-                    {"name": "q", "in": "query", "schema": {"type": "string"}, "description": "Search in name, description, summaries, and repo URL"},
-                    {"name": "type", "in": "query", "schema": {"type": "string", "enum": ["claude", "copilot", "gemini", "cursor"]}, "description": "Filter by skill type"},
-                    {"name": "repo_status", "in": "query", "schema": {"type": "string", "enum": ["ok", "repo_404", "no_skills_dir"]}, "description": "Filter by repo status"},
-                    {"name": "has_summary", "in": "query", "schema": {"type": "boolean"}, "description": "Filter by summary availability"},
-                    {"name": "page", "in": "query", "schema": {"type": "integer", "default": 1, "minimum": 1, "maximum": 1000}},
-                    {"name": "per_page", "in": "query", "schema": {"type": "integer", "default": 20, "minimum": 1, "maximum": 50}},
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Search results",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "items": {"type": "array", "items": {"$ref": "#/components/schemas/SkillSourceResult"}},
-                                        "total": {"type": "integer"},
-                                        "page": {"type": "integer"},
-                                        "per_page": {"type": "integer"},
-                                    },
-                                },
-                            }
-                        },
-                    }
-                },
-            }
-        },
-        "/search_skills": {
-            "get": {
-                "summary": "Search skills",
-                "description": "Search skills (Claude, Copilot, Gemini, Cursor) with text filters and pagination. Returns skills sorted by weekly installs.",
-                "operationId": "searchSkills",
-                "parameters": [
-                    {"name": "q", "in": "query", "schema": {"type": "string"}, "description": "Search in name, description, and summaries"},
-                    {"name": "canonical_id", "in": "query", "schema": {"type": "string"}, "description": "Exact match on canonical_id (e.g. github:owner/repo:skill-name). Bypasses text search."},
-                    {"name": "target_type", "in": "query", "schema": {"type": "string", "enum": ["claude", "copilot", "gemini", "cursor"]}, "description": "Filter by target type"},
-                    {"name": "category", "in": "query", "schema": {"type": "string"}, "description": "Filter by category"},
-                    {"name": "has_summary", "in": "query", "schema": {"type": "boolean"}, "description": "Filter by summary availability"},
-                    {"name": "source_id", "in": "query", "schema": {"type": "integer"}, "description": "Filter by skill source ID"},
-                    {"name": "page", "in": "query", "schema": {"type": "integer", "default": 1, "minimum": 1, "maximum": 1000}},
-                    {"name": "per_page", "in": "query", "schema": {"type": "integer", "default": 20, "minimum": 1, "maximum": 50}},
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Search results",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "items": {"type": "array", "items": {"$ref": "#/components/schemas/SkillResult"}},
-                                        "total": {"type": "integer"},
-                                        "page": {"type": "integer"},
-                                        "per_page": {"type": "integer"},
-                                    },
-                                },
-                            }
-                        },
-                    }
-                },
-            }
-        },
         "/search_mcp": {
             "get": {
                 "summary": "Search MCP servers",
@@ -250,7 +182,7 @@ SEARCH_OPENAPI_SPEC = {
         "/preference-groups": {
             "get": {
                 "summary": "List my preference groups",
-                "description": "Returns all preference groups for the authenticated user, with service and skill counts. Requires Google login (JWT).",
+                "description": "Returns all preference groups for the authenticated user, with service counts. Requires Google login (JWT).",
                 "operationId": "listPreferenceGroups",
                 "tags": ["Preference Groups"],
                 "responses": {
@@ -278,7 +210,7 @@ SEARCH_OPENAPI_SPEC = {
         "/preference-groups/{group_id}": {
             "get": {
                 "summary": "Get preference group detail",
-                "description": "Returns group with its associated services and skills.",
+                "description": "Returns group with its associated services.",
                 "operationId": "getPreferenceGroup",
                 "tags": ["Preference Groups"],
                 "parameters": [{"name": "group_id", "in": "path", "required": True, "schema": {"type": "integer"}}],
@@ -327,28 +259,6 @@ SEARCH_OPENAPI_SPEC = {
                 "responses": {"200": {"description": "Removed"}},
             },
         },
-        "/preference-groups/{group_id}/skills/{skill_id}": {
-            "post": {
-                "summary": "Add a skill to a group",
-                "operationId": "addSkillToGroup",
-                "tags": ["Preference Groups"],
-                "parameters": [
-                    {"name": "group_id", "in": "path", "required": True, "schema": {"type": "integer"}},
-                    {"name": "skill_id", "in": "path", "required": True, "schema": {"type": "integer"}},
-                ],
-                "responses": {"200": {"description": "Added"}},
-            },
-            "delete": {
-                "summary": "Remove a skill from a group",
-                "operationId": "removeSkillFromGroup",
-                "tags": ["Preference Groups"],
-                "parameters": [
-                    {"name": "group_id", "in": "path", "required": True, "schema": {"type": "integer"}},
-                    {"name": "skill_id", "in": "path", "required": True, "schema": {"type": "integer"}},
-                ],
-                "responses": {"200": {"description": "Removed"}},
-            },
-        },
         "/services/{service_id}/groups": {
             "get": {
                 "summary": "List groups containing a service",
@@ -356,16 +266,6 @@ SEARCH_OPENAPI_SPEC = {
                 "operationId": "getServiceGroups",
                 "tags": ["Preference Groups"],
                 "parameters": [{"name": "service_id", "in": "path", "required": True, "schema": {"type": "integer"}}],
-                "responses": {"200": {"description": "List of groups", "content": {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/GroupRef"}}}}}},
-            },
-        },
-        "/skills/{skill_id}/groups": {
-            "get": {
-                "summary": "List groups containing a skill",
-                "description": "Returns the current user's groups that contain this skill.",
-                "operationId": "getSkillGroups",
-                "tags": ["Preference Groups"],
-                "parameters": [{"name": "skill_id", "in": "path", "required": True, "schema": {"type": "integer"}}],
                 "responses": {"200": {"description": "List of groups", "content": {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/GroupRef"}}}}}},
             },
         },
@@ -413,57 +313,6 @@ SEARCH_OPENAPI_SPEC = {
                     "description": {"type": "string", "nullable": True},
                     "is_required": {"type": "boolean"},
                     "is_secret": {"type": "boolean", "description": "True for tokens, keys, passwords"},
-                },
-            },
-            "Translation": {
-                "type": "object",
-                "description": "A summary translated into one culture",
-                "properties": {
-                    "culture": {"type": "string", "enum": ["en", "fr"]},
-                    "summary": {"type": "string"},
-                },
-            },
-            "SkillResult": {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "integer"},
-                    "name": {"type": "string"},
-                    "description": {"type": "string", "nullable": True},
-                    "translations": {
-                        "type": "array",
-                        "items": {"$ref": "#/components/schemas/Translation"},
-                        "description": "Summaries per culture",
-                    },
-                    "target_type": {"type": "string", "enum": ["claude", "copilot", "gemini", "cursor"]},
-                    "has_summary": {"type": "boolean"},
-                    "category": {"type": "string", "nullable": True},
-                    "licence": {"type": "string", "nullable": True},
-                    "source_url": {"type": "string", "nullable": True, "description": "GitHub source URL"},
-                    "canonical_id": {"type": "string", "nullable": True, "description": "Canonical identifier (e.g. github:owner/repo:skill-name)"},
-                    "install_command": {"type": "string", "nullable": True, "description": "Command to install this skill"},
-                    "weekly_installs": {"type": "integer", "description": "Number of weekly installs"},
-                    "created_at": {"type": "string", "format": "date-time", "nullable": True},
-                },
-            },
-            "SkillSourceResult": {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "integer"},
-                    "name": {"type": "string"},
-                    "url": {"type": "string", "description": "Source URL"},
-                    "repo_url": {"type": "string", "nullable": True, "description": "GitHub repository URL"},
-                    "type": {"type": "string", "enum": ["claude", "copilot", "gemini", "cursor"]},
-                    "description": {"type": "string", "nullable": True},
-                    "translations": {
-                        "type": "array",
-                        "items": {"$ref": "#/components/schemas/Translation"},
-                        "description": "Summaries per culture",
-                    },
-                    "has_summary": {"type": "boolean"},
-                    "repo_status": {"type": "string", "nullable": True},
-                    "stars": {"type": "integer", "nullable": True, "description": "GitHub stars"},
-                    "skills_count": {"type": "integer", "description": "Number of skills in this source"},
-                    "last_sync": {"type": "string", "format": "date-time", "nullable": True},
                 },
             },
             "Target": {
@@ -546,7 +395,6 @@ SEARCH_OPENAPI_SPEC = {
                     "name": {"type": "string"},
                     "description": {"type": "string", "nullable": True},
                     "service_count": {"type": "integer"},
-                    "skill_count": {"type": "integer"},
                     "created_at": {"type": "string", "format": "date-time"},
                 },
             },
@@ -566,18 +414,6 @@ SEARCH_OPENAPI_SPEC = {
                                 "id": {"type": "integer"},
                                 "name": {"type": "string"},
                                 "source_type": {"type": "string"},
-                                "category": {"type": "string", "nullable": True},
-                            },
-                        },
-                    },
-                    "skills": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "id": {"type": "integer"},
-                                "name": {"type": "string"},
-                                "target_type": {"type": "string"},
                                 "category": {"type": "string", "nullable": True},
                             },
                         },

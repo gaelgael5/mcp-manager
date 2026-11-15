@@ -4,8 +4,7 @@ from sqlalchemy import select, func, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 from mcp_manager.api.deps import get_db
 from mcp_manager.db.models import (
-    McpService, McpSummary, McpEmbedding, McpInstallation, McpParameter,
-    Skill, SkillSource, SkillSourceTranslation, SkillTranslation, Language,
+    McpService, McpSummary, McpEmbedding, McpInstallation, McpParameter, Language,
 )
 
 router = APIRouter(tags=["stats"])
@@ -80,50 +79,6 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
     )
     outdated = (await db.execute(outdated_query)).scalar() or 0
 
-    total_skills = (await db.execute(select(func.count()).select_from(Skill))).scalar() or 0
-    total_skill_sources = (await db.execute(select(func.count()).select_from(SkillSource))).scalar() or 0
-
-    # Skill Sources enrichment stats
-    ss_with_repo = (await db.execute(
-        select(func.count()).select_from(SkillSource).where(SkillSource.repo_url.isnot(None))
-    )).scalar() or 0
-    ss_with_summary_en = (await db.execute(
-        select(func.count(func.distinct(SkillSourceTranslation.parent_id)))
-        .where(SkillSourceTranslation.culture == "en")
-    )).scalar() or 0
-    ss_with_summary_fr = (await db.execute(
-        select(func.count(func.distinct(SkillSourceTranslation.parent_id)))
-        .where(SkillSourceTranslation.culture == "fr")
-    )).scalar() or 0
-    ss_synced = (await db.execute(
-        select(func.count()).select_from(SkillSource).where(SkillSource.last_sync.isnot(None))
-    )).scalar() or 0
-    ss_enrichment_result = await db.execute(
-        select(SkillSource.enrichment_status, func.count()).group_by(SkillSource.enrichment_status)
-    )
-    ss_by_enrichment = {(row[0] or "pending"): row[1] for row in ss_enrichment_result}
-    ss_with_rag = (await db.execute(
-        select(func.count(func.distinct(McpEmbedding.content)))
-        .where(McpEmbedding.chunk_type == "source_summary")
-    )).scalar() or 0
-
-    # Skills indexation stats
-    skills_with_summary = (await db.execute(
-        select(func.count(func.distinct(SkillTranslation.parent_id)))
-        .where(SkillTranslation.culture == "en")
-    )).scalar() or 0
-    skills_with_summary_fr = (await db.execute(
-        select(func.count(func.distinct(SkillTranslation.parent_id)))
-        .where(SkillTranslation.culture == "fr")
-    )).scalar() or 0
-    skills_needs_summary = (await db.execute(
-        select(func.count()).select_from(Skill).where(Skill.needs_summary == True)
-    )).scalar() or 0
-    skills_with_rag = (await db.execute(
-        select(func.count(func.distinct(McpEmbedding.skill_id)))
-        .where(McpEmbedding.chunk_type == "skill_summary")
-    )).scalar() or 0
-
     # RAG: count totals and pending
     from sqlalchemy import or_
     mcp_summaries_en = (await db.execute(
@@ -134,20 +89,6 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
         .where(McpSummary.culture == "en", or_(
             McpSummary.rag_indexed_at.is_(None),
             McpSummary.rag_indexed_at < McpSummary.updated_at,
-        ))
-    )).scalar() or 0
-    rag_pending_sources = (await db.execute(
-        select(func.count()).select_from(SkillSourceTranslation)
-        .where(SkillSourceTranslation.culture == "en", or_(
-            SkillSourceTranslation.rag_indexed_at.is_(None),
-            SkillSourceTranslation.rag_indexed_at < SkillSourceTranslation.updated_at,
-        ))
-    )).scalar() or 0
-    rag_pending_skills = (await db.execute(
-        select(func.count()).select_from(SkillTranslation)
-        .where(SkillTranslation.culture == "en", or_(
-            SkillTranslation.rag_indexed_at.is_(None),
-            SkillTranslation.rag_indexed_at < SkillTranslation.updated_at,
         ))
     )).scalar() or 0
 
@@ -172,22 +113,12 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
             for l in active_languages
         ],
         "mcp": {},
-        "skill_sources": {},
-        "skills": {},
     }
     for lang in active_languages:
         translations_progress["mcp"][lang.code] = await _count_nonempty(McpSummary, lang.code)
-        translations_progress["skill_sources"][lang.code] = await _count_nonempty(
-            SkillSourceTranslation, lang.code
-        )
-        translations_progress["skills"][lang.code] = await _count_nonempty(
-            SkillTranslation, lang.code
-        )
 
     return {
         "total_services": total_services,
-        "total_skills": total_skills,
-        "total_skill_sources": total_skill_sources,
         "by_source": by_source,
         "by_category": by_category,
         "by_repo_status": by_repo_status,
@@ -200,31 +131,10 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
             "needs_reindex": needs_reindex,
             "outdated_summaries": outdated,
         },
-        "skill_sources": {
-            "total": total_skill_sources,
-            "with_repo": ss_with_repo,
-            "with_summary_en": ss_with_summary_en,
-            "with_summary_fr": ss_with_summary_fr,
-            "synced": ss_synced,
-            "with_rag": ss_with_rag,
-            "by_enrichment": ss_by_enrichment,
-        },
-        "skills": {
-            "total": total_skills,
-            "with_summary": skills_with_summary,
-            "with_summary_en": skills_with_summary,
-            "with_summary_fr": skills_with_summary_fr,
-            "needs_summary": skills_needs_summary,
-            "with_rag": skills_with_rag,
-        },
         "rag_pending": {
             "mcp": rag_pending_mcp,
             "mcp_total": mcp_summaries_en,
-            "sources": rag_pending_sources,
-            "sources_total": ss_with_summary_en,
-            "skills": rag_pending_skills,
-            "skills_total": skills_with_summary,
-            "total": rag_pending_mcp + rag_pending_sources + rag_pending_skills,
+            "total": rag_pending_mcp,
         },
         "translations_progress": translations_progress,
         "disk": _get_disk_usage(),

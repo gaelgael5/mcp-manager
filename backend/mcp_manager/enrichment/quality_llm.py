@@ -24,34 +24,17 @@ Summary to evaluate:
 
 Reply with ONLY a JSON object: {{"score": <0-100>, "reason": "<one sentence>"}}"""
 
-_PROMPT_SKILL = """Rate the quality of this skill/tool description on a scale of 0-100.
-
-A good description should:
-- Clearly explain what the skill does
-- Explain when and why to use it
-- Be useful for someone deciding whether to install this skill
-- Be written in proper English
-
-Description to evaluate:
----
-{summary}
----
-
-Reply with ONLY a JSON object: {{"score": <0-100>, "reason": "<one sentence>"}}"""
-
-
-async def llm_score_summary(summary: str, entity_type: str = "mcp") -> int | None:
-    """Score 0-100 via LLM. entity_type = 'mcp' | 'skill'.
+async def llm_score_summary(summary: str) -> int | None:
+    """Score 0-100 via LLM for an MCP server summary.
 
     Returns None if LLM call fails or response can't be parsed.
     """
     if not summary or not summary.strip():
         return 0
 
-    template = _PROMPT_MCP if entity_type == "mcp" else _PROMPT_SKILL
     # Truncate very long summaries to avoid wasting tokens
     truncated = summary[:3000] if len(summary) > 3000 else summary
-    prompt = template.format(summary=truncated)
+    prompt = _PROMPT_MCP.format(summary=truncated)
 
     try:
         response = await ollama_generate(prompt)

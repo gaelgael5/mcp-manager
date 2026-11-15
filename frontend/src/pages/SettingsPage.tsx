@@ -24,8 +24,6 @@ interface LLMConfig {
 
 const CONCURRENCY_PIPELINES: { key: string; label: string }[] = [
   { key: "mcp", label: "MCP" },
-  { key: "skill_sources", label: "Skill Sources" },
-  { key: "skills", label: "Skills" },
 ];
 
 function useLLMConfig() {

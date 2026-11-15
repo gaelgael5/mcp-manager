@@ -11,8 +11,6 @@ import { Button } from "../../components/ui/Button";
 
 const KINDS: { value: PromptKind; label: string }[] = [
   { value: "summarize", label: "MCP service summary" },
-  { value: "skill_summary", label: "Skill summary" },
-  { value: "source_summary", label: "Skill source summary" },
 ];
 
 export function PromptsSection() {

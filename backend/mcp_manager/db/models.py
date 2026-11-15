@@ -103,7 +103,6 @@ class InstallTarget(Base):
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     modes: Mapped[list] = mapped_column(JSONB, default=list)
-    skill_modes: Mapped[list] = mapped_column(JSONB, default=list)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -178,187 +177,6 @@ class McpParameter(Base):
     )
 
     service: Mapped["McpService"] = relationship(back_populates="parameters")
-
-
-skill_source_skills = Table(
-    "skill_source_skills",
-    Base.metadata,
-    Column("source_pid", BigInteger, ForeignKey("skill_sources._id", ondelete="CASCADE"), primary_key=True),
-    Column("skill_pid", BigInteger, ForeignKey("skills._id", ondelete="CASCADE"), primary_key=True),
-)
-
-
-class SkillSource(Base):
-    __tablename__ = "skill_sources"
-    __table_args__ = (
-        Index("ix_skill_sources_repo_url", "repo_url",
-              postgresql_where=text("repo_url IS NOT NULL")),
-    )
-
-    _id: Mapped[int] = mapped_column(
-        BigInteger,
-        server_default=text("nextval('skill_sources__id_seq')"),
-        nullable=False,
-        unique=True,
-    )
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
-    url: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
-    repo_url: Mapped[str | None] = mapped_column(Text)  # GitHub repo URL
-    skills_path: Mapped[str] = mapped_column(String(255), default="")  # directory in the repo (empty = root)
-    type: Mapped[str] = mapped_column(String(200), nullable=False)  # pipe-separated: opencode|codex|gemini-cli|github-copilot|amp|claude|cursor
-    description: Mapped[str | None] = mapped_column(Text)
-    repo_format: Mapped[str] = mapped_column(
-        String(20), nullable=False, default="skills", server_default="skills"
-    )  # "skills" (flat skills.sh layout) or "plugin" (wshobson/agents-style plugins/*/skills/*)
-    repo_status: Mapped[str | None] = mapped_column(String(20))  # "ok", "no_skills_dir", "repo_404", etc.
-    branch_hash: Mapped[str | None] = mapped_column(String(64))
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    last_sync: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    last_sync_count: Mapped[int] = mapped_column(default=0)
-    stars: Mapped[int | None] = mapped_column(nullable=True)
-    enrichment_status: Mapped[str] = mapped_column(
-        String(20), default="pending", server_default="pending"
-    )  # pending, enriching, done, failed
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-    )
-
-    skills: Mapped[list["Skill"]] = relationship(secondary=skill_source_skills, back_populates="sources")
-    translations: Mapped[list["SkillSourceTranslation"]] = relationship(
-        back_populates="source",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
-        lazy="selectin",
-        foreign_keys="[SkillSourceTranslation.parent_id]",
-        primaryjoin="SkillSource._id == SkillSourceTranslation.parent_id",
-    )
-
-
-class Skill(Base):
-    __tablename__ = "skills"
-
-    _id: Mapped[int] = mapped_column(
-        BigInteger,
-        server_default=text("nextval('skills__id_seq')"),
-        nullable=False,
-        unique=True,
-    )
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str | None] = mapped_column(Text)
-    target_type: Mapped[str] = mapped_column(String(200), nullable=False)  # pipe-separated: opencode|codex|gemini-cli|github-copilot|amp|claude|cursor
-    licence: Mapped[str | None] = mapped_column(String(255))
-    licence_url: Mapped[str | None] = mapped_column(Text)
-    source_url: Mapped[str | None] = mapped_column(Text)
-    category: Mapped[str | None] = mapped_column(String(100))
-    install_command: Mapped[str | None] = mapped_column(Text)
-    weekly_installs: Mapped[int] = mapped_column(default=0)
-    canonical_id: Mapped[str | None] = mapped_column(String(500), index=True)
-    needs_summary: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-    )
-
-    sources: Mapped[list["SkillSource"]] = relationship(secondary=skill_source_skills, back_populates="skills")
-    translations: Mapped[list["SkillTranslation"]] = relationship(
-        back_populates="skill",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
-        lazy="selectin",
-        foreign_keys="[SkillTranslation.parent_id]",
-        primaryjoin="Skill._id == SkillTranslation.parent_id",
-    )
-
-
-class SkillSourceTranslation(Base):
-    __tablename__ = "skill_sources_translations"
-    __table_args__ = (
-        UniqueConstraint("parent_id", "culture", name="uq_skill_source_culture"),
-        Index("idx_skill_sources_translations_culture", "culture"),
-    )
-
-    _id: Mapped[int] = mapped_column(
-        BigInteger,
-        server_default=text("nextval('skill_sources_translations__id_seq')"),
-        nullable=False,
-        unique=True,
-    )
-    parent_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("skill_sources._id", ondelete="CASCADE"), nullable=False
-    )
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
-    culture: Mapped[str] = mapped_column(String(5), nullable=False)
-    summary: Mapped[str] = mapped_column(Text, nullable=False)
-    source_hash: Mapped[str | None] = mapped_column(String(64))
-    llm: Mapped[str | None] = mapped_column(Text)
-    heuristic_quality: Mapped[int | None] = mapped_column(nullable=True)
-    llm_quality: Mapped[int | None] = mapped_column(nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-    )
-    rag_indexed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-
-    source: Mapped["SkillSource"] = relationship(
-        back_populates="translations",
-        foreign_keys=[parent_id],
-        primaryjoin="SkillSource._id == SkillSourceTranslation.parent_id",
-    )
-
-
-class SkillTranslation(Base):
-    __tablename__ = "skills_translations"
-    __table_args__ = (
-        UniqueConstraint("parent_id", "culture", name="uq_skill_culture"),
-        Index("idx_skills_translations_culture", "culture"),
-    )
-
-    _id: Mapped[int] = mapped_column(
-        BigInteger,
-        server_default=text("nextval('skills_translations__id_seq')"),
-        nullable=False,
-        unique=True,
-    )
-    parent_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("skills._id", ondelete="CASCADE"), nullable=False
-    )
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
-    culture: Mapped[str] = mapped_column(String(5), nullable=False)
-    summary: Mapped[str] = mapped_column(Text, nullable=False)
-    source_hash: Mapped[str | None] = mapped_column(String(64))
-    llm: Mapped[str | None] = mapped_column(Text)
-    heuristic_quality: Mapped[int | None] = mapped_column(nullable=True)
-    llm_quality: Mapped[int | None] = mapped_column(nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-    )
-    rag_indexed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-
-    skill: Mapped["Skill"] = relationship(
-        back_populates="translations",
-        foreign_keys=[parent_id],
-        primaryjoin="Skill._id == SkillTranslation.parent_id",
-    )
 
 
 class ApiToken(Base):
@@ -437,14 +255,6 @@ preference_group_services = Table(
 )
 
 
-preference_group_skills = Table(
-    "preference_group_skills",
-    Base.metadata,
-    Column("group_id", UUID(as_uuid=True), ForeignKey("preference_groups.id", ondelete="CASCADE"), primary_key=True),
-    Column("skill_id", UUID(as_uuid=True), ForeignKey("skills.id", ondelete="CASCADE"), primary_key=True),
-)
-
-
 class PreferenceGroup(Base):
     __tablename__ = "preference_groups"
 
@@ -465,7 +275,6 @@ class PreferenceGroup(Base):
     )
 
     services: Mapped[list["McpService"]] = relationship(secondary=preference_group_services)
-    skills: Mapped[list["Skill"]] = relationship(secondary=preference_group_skills)
     user: Mapped["User"] = relationship()
 
 
@@ -500,10 +309,7 @@ class McpEmbedding(Base):
     mcp_service_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("mcp_services.id", ondelete="CASCADE")
     )
-    skill_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("skills.id", ondelete="CASCADE")
-    )
-    chunk_type: Mapped[str] = mapped_column(String(20), nullable=False)  # "summary", "doc_chunk", "skill_summary"
+    chunk_type: Mapped[str] = mapped_column(String(20), nullable=False)  # "summary", "doc_chunk"
     chunk_index: Mapped[int] = mapped_column(default=0)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     embedding = mapped_column(Vector(EMBEDDING_DIM))

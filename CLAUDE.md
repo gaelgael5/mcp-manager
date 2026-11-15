@@ -63,7 +63,7 @@ backend/
       glama.py              # glama.ai API (14k+ servers)
       pulsemcp.py           # pulsemcp.com scraping (900+ servers)
     db/
-      models.py             # SQLAlchemy: McpService, McpSummary, SkillSource, SkillSourceTranslation, Skill, SkillTranslation, Language, InstallTarget, McpInstallation, McpParameter, McpEmbedding
+      models.py             # SQLAlchemy: McpService, McpSummary, Language, InstallTarget, McpInstallation, McpParameter, McpEmbedding
     prompts.py              # Helper central : load_prompt, write_prompt, get_active_language_codes
       session.py            # Engine + SessionLocal
     enrichment/             # Passes d'enrichissement
@@ -86,12 +86,8 @@ backend/
   prompts/                  # Prompts externalises, organises par langue
     en/
       summarize.md
-      skill_summary.md
-      source_summary.md
     fr/
       summarize.md
-      skill_summary.md
-      source_summary.md
   scripts/
     seed_targets.py         # Peuplement des 34 targets
     init.sql                # Schema initial PostgreSQL
@@ -110,12 +106,8 @@ frontend/
 ## Schema PostgreSQL
 
 - **mcp_services** — referentiel principal (name, source_url, transport, category, repo_status, needs_reindex, package_info)
-- **languages** — langues supportees (code PK, name natif, is_active, display_order). Les pipelines de trad iterent sur les langues avec is_active=true. FK depuis mcp_summaries / skill_sources_translations / skills_translations
+- **languages** — langues supportees (code PK, name natif, is_active, display_order). Les pipelines de trad iterent sur les langues avec is_active=true. FK depuis mcp_summaries
 - **mcp_summaries** — syntheses IA par culture, unique(mcp_service_id, culture), FK culture → languages.code
-- **skill_sources** — sources de skills (skills.sh, GitHub repos)
-- **skill_sources_translations** — traductions des skill_sources par culture, unique(skill_source_id, culture), FK culture → languages.code
-- **skills** — skills individuels (target_type, licence, install_command)
-- **skills_translations** — traductions des skills par culture, unique(skill_id, culture), FK culture → languages.code
 - **mcp_parameters** — parametres requis (env vars, secrets)
 - **mcp_installations** — recettes d'installation par target
 - **install_targets** — 34 cibles avec modes JSONB (runtime, action_type, template)

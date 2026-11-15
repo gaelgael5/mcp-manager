@@ -4,8 +4,6 @@ const REPO_URL = "https://github.com/gaelgael5/mcp-manager";
 
 interface Stats {
   total_services: number;
-  total_skills: number;
-  total_skill_sources: number;
   by_source: Record<string, number>;
 }
 
@@ -100,8 +98,6 @@ export default function LandingPage() {
         {[
           { value: stats ? stats.total_services.toLocaleString() : "—", label: "MCP Servers" },
           { value: stats ? String(sourceCount) : "—", label: "Sources" },
-          { value: stats ? String(stats.total_skill_sources) : "—", label: "Skill Sources" },
-          { value: stats ? String(stats.total_skills) : "—", label: "Skills" },
           { value: "RAG", label: "Semantic Search" },
         ].map((item, i, arr) => (
           <div

@@ -1,4 +1,4 @@
-"""Canonical ID computation for cross-source service and skill identity."""
+"""Canonical ID computation for cross-source service identity."""
 
 import logging
 import re
@@ -6,7 +6,7 @@ import re
 from sqlalchemy import select, or_
 
 from mcp_manager.db.session import SessionLocal
-from mcp_manager.db.models import McpService, Skill
+from mcp_manager.db.models import McpService
 
 logger = logging.getLogger(__name__)
 
@@ -98,45 +98,3 @@ def _extract_github_prefix(url: str | None) -> str | None:
     if m:
         return f"github:{m.group(1).lower()}"
     return None
-
-
-def compute_skill_canonical_id(source_url: str | None, name: str) -> str:
-    """Compute a canonical identifier for a skill: github:owner/repo:skill-name or raw:skill:name."""
-    prefix = _extract_github_prefix(source_url)
-    normalized_name = name.strip().lower()
-    if prefix:
-        return f"{prefix}:{normalized_name}"
-    return f"raw:skill:{normalized_name}"
-
-
-async def run_skill_canonical_backfill() -> dict[str, int]:
-    """Enrichment pass: recompute canonical_id for skills missing it or stuck on raw:."""
-    stats = {"updated": 0, "skipped": 0}
-
-    async with SessionLocal() as db:
-        result = await db.execute(
-            select(Skill).where(
-                or_(
-                    Skill.canonical_id.is_(None),
-                    Skill.canonical_id.startswith("raw:"),
-                )
-            )
-        )
-        skills = result.scalars().all()
-        logger.info("Skill canonical backfill: %d skills to process", len(skills))
-
-        for skill in skills:
-            new_cid = compute_skill_canonical_id(
-                source_url=skill.source_url,
-                name=skill.name,
-            )
-            if new_cid != skill.canonical_id:
-                skill.canonical_id = new_cid
-                stats["updated"] += 1
-            else:
-                stats["skipped"] += 1
-
-        await db.commit()
-
-    logger.info("Skill canonical backfill done: %d updated, %d skipped", stats["updated"], stats["skipped"])
-    return stats

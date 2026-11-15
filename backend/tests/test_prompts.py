@@ -13,7 +13,7 @@ from mcp_manager.prompts import (
 
 def test_prompt_kinds_is_tuple():
     assert isinstance(PROMPT_KINDS, tuple)
-    assert set(PROMPT_KINDS) == {"summarize", "skill_summary", "source_summary"}
+    assert set(PROMPT_KINDS) == {"summarize"}
 
 
 def test_prompt_path_rejects_unknown_kind():
@@ -22,8 +22,8 @@ def test_prompt_path_rejects_unknown_kind():
 
 
 def test_prompt_path_builds_expected_name():
-    path = prompt_path("skill_summary", "en")
-    assert path.name == "skill_summary.md"
+    path = prompt_path("summarize", "en")
+    assert path.name == "summarize.md"
     assert path.parent.name == "en"
 
 

@@ -20,9 +20,6 @@ TARGETS = [
             {"runtime": "python", "action_type": "cmd", "template": "claude mcp add {name} -- python -m {package}"},
             {"runtime": "node", "action_type": "cmd", "template": "claude mcp add {name} -- node {package}"},
         ],
-        "skill_modes": [
-            {"action_type": "cmd", "template": "claude skill add {source_url}"},
-        ],
     },
     {
         "name": "claude_desktop",
@@ -335,47 +332,6 @@ TARGETS = [
     },
 ]
 
-# Skill installation modes per target
-# Each entry has "compatible_skill_types" to filter which skills are shown
-# {source_url} = URL of the skill (GitHub folder URL)
-# {name} = skill name
-SKILL_MODES = {
-    "claude_code": [
-        {"action_type": "cmd", "template": "claude skill add {source_url}", "compatible_skill_types": ["claude"]},
-    ],
-    "OpenAI Codex CLI": [
-        {"action_type": "cmd", "template": "npx codex skills install {name}", "compatible_skill_types": ["claude"]},
-    ],
-    "Kiro": [
-        {"action_type": "cmd", "template": "npx skills add {source_url}", "compatible_skill_types": ["claude"]},
-    ],
-    "Cursor": [
-        {"action_type": "insert_in_file", "template": "Copy into .cursor/rules/{name}.mdc", "compatible_skill_types": ["cursor"]},
-    ],
-    "Windsurf": [
-        {"action_type": "insert_in_file", "template": "Copy into .windsurf/rules/{name}.md", "compatible_skill_types": ["windsurf"]},
-    ],
-    "Gemini CLI": [
-        {"action_type": "insert_in_file", "template": "Copy into .gemini/GEMINI.md", "compatible_skill_types": ["gemini"]},
-    ],
-    "Antigravity": [
-        {"action_type": "insert_in_file", "template": "Copy folder into ~/.gemini/antigravity/skills/{name}/SKILL.md", "compatible_skill_types": ["gemini"]},
-    ],
-    "GitHub Copilot": [
-        {"action_type": "insert_in_file", "template": "Copy into .github/copilot-instructions.md", "compatible_skill_types": ["copilot"]},
-    ],
-    "VS Code": [
-        {"action_type": "insert_in_file", "template": "Copy into .github/copilot-instructions.md", "compatible_skill_types": ["copilot"]},
-    ],
-    "Junie": [
-        {"action_type": "insert_in_file", "template": "Copy into .junie/guidelines.md", "compatible_skill_types": ["junie"]},
-    ],
-    "JetBrains": [
-        {"action_type": "insert_in_file", "template": "Copy into .junie/guidelines.md", "compatible_skill_types": ["junie"]},
-    ],
-}
-
-
 async def main():
     from sqlalchemy import select
     from mcp_manager.db.session import SessionLocal
@@ -383,7 +339,6 @@ async def main():
 
     async with SessionLocal() as db:
         for t in TARGETS:
-            skill_modes = t.get("skill_modes") or SKILL_MODES.get(t["name"], [])
             result = await db.execute(
                 select(InstallTarget).where(InstallTarget.name == t["name"])
             )
@@ -392,16 +347,14 @@ async def main():
             if existing:
                 existing.description = t["description"]
                 existing.modes = t["modes"]
-                existing.skill_modes = skill_modes
-                print(f"  Updated: {t['name']} ({len(t['modes'])} modes, {len(skill_modes)} skill modes)")
+                print(f"  Updated: {t['name']} ({len(t['modes'])} modes)")
             else:
                 db.add(InstallTarget(
                     name=t["name"],
                     description=t["description"],
                     modes=t["modes"],
-                    skill_modes=skill_modes,
                 ))
-                print(f"  Created: {t['name']} ({len(t['modes'])} modes, {len(skill_modes)} skill modes)")
+                print(f"  Created: {t['name']} ({len(t['modes'])} modes)")
 
         await db.commit()
 
