@@ -212,6 +212,9 @@ export function SyncPage() {
           <Button variant="secondary" onClick={() => triggerSync.mutate("mcp_servers_repo")} loading={status?.running} disabled={status?.running}>
             MCP Servers Repo
           </Button>
+          <Button variant="secondary" onClick={() => triggerSync.mutate("github_topics")} loading={status?.running} disabled={status?.running}>
+            GitHub Topics
+          </Button>
         </div>
         {status?.last_stats && (
           <div className="grid grid-cols-3 gap-4 text-center mt-4">

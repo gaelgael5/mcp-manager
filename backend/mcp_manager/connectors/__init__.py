@@ -4,3 +4,4 @@ import mcp_manager.connectors.mcp_registry  # noqa: F401
 import mcp_manager.connectors.mcp_servers_repo  # noqa: F401
 import mcp_manager.connectors.pulsemcp  # noqa: F401
 import mcp_manager.connectors.glama  # noqa: F401
+import mcp_manager.connectors.github_topics  # noqa: F401

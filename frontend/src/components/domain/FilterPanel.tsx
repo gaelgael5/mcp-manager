@@ -40,6 +40,7 @@ export function FilterPanel({
           <option value="glama">Glama</option>
           <option value="pulsemcp">PulseMCP</option>
           <option value="mcp_servers_repo">Reference</option>
+          <option value="github_topics">GitHub Topics</option>
         </select>
         <select value={transport} onChange={(e) => onTransportChange(e.target.value)} className="rounded-md border border-gray-300 px-2 py-1.5 text-xs">
           <option value="">{t("common.filters.allTransports")}</option>
