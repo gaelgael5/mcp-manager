@@ -6,9 +6,27 @@ import httpx
 logger = logging.getLogger(__name__)
 
 
+def _normalize_url(url: str) -> str:
+    """Retire un suffixe /v1 de l'URL d'Ollama.
+
+    Ollama expose deux surfaces : l'API native a la racine (/api/generate,
+    /api/embed), que ce driver utilise, et une surface compatible OpenAI sous
+    /v1. C'est /v1 que la plupart des interfaces affichent, donc ce qu'on colle
+    naturellement dans la configuration — on obtenait alors
+    /v1/api/generate et un 404 sans explication.
+    """
+    cleaned = url.strip().rstrip("/")
+    if cleaned.endswith("/v1"):
+        logger.info(
+            "Ollama: suffixe /v1 retire de %r, ce driver parle l'API native", url,
+        )
+        cleaned = cleaned[: -len("/v1")]
+    return cleaned
+
+
 class OllamaDriver:
     def __init__(self, args: dict):
-        self.url = args.get("url", "http://localhost:11434")
+        self.url = _normalize_url(args.get("url", "http://localhost:11434"))
         self.model = args.get("model", "llama3.1:8b")
         self.request_count = 0
 
