@@ -52,6 +52,24 @@ complete et inutile de dizaines de milliers de services.
 Les forks sont ecartes : ils dupliquent un depot deja couvert sans rien
 ajouter.
 
+### Echec franc plutot que collecte partielle
+
+Le 2026-11-16, un jeton refuse a fait importer 200 depots sur ~44 000, le sync
+se declarant reussi. Le 401 tombait dans la branche des codes inattendus, la
+fenetre etait abandonnee en silence et `fetch_services` rendait ce qui avait
+filtre.
+
+Desormais un 401, ou l'epuisement des tentatives sur une requete, leve
+`GithubSearchAborted` qui remonte jusqu'au sync. Rendre une liste partielle
+serait pire que rien : une fraction arbitraire du gisement, sans que rien ne la
+signale. Les fenetres abandonnees pour un code inattendu sont comptees et
+journalisees en `error` a la fin de la collecte.
+
+En consequence, chaque connecteur est desormais isole dans le sync : une source
+en panne ne peut plus emporter les cinq autres, son nom est ajoute a
+`failed_sources`, et `cli sync` sort en code non nul pour qu'un cron le
+detecte. Avant, aucun `try` n'entourait `fetch_services`.
+
 ### Exploitation
 
 ```bash

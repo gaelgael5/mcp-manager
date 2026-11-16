@@ -293,9 +293,17 @@ async def _run_sync_bg(source: str | None):
         else:
             connectors = get_all_connectors()
 
-        stats = {"new": 0, "updated": 0, "unchanged": 0}
+        stats = {"new": 0, "updated": 0, "unchanged": 0, "failed_sources": []}
         for conn in connectors:
-            services = await conn.fetch_services()
+            # Une source en panne ne doit pas emporter les autres, et son
+            # absence doit se voir dans le resultat : un sync qui se declare
+            # reussi avec une source muette est indiscernable d'un sync complet.
+            try:
+                services = await conn.fetch_services()
+            except Exception:
+                logger.exception("Sync: la source %s a echoue", conn.source_type())
+                stats["failed_sources"].append(conn.source_type())
+                continue
             async with SessionLocal() as db:
                 for raw in services:
                     result = await db.execute(

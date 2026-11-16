@@ -13,6 +13,13 @@ def sync(source: str | None = typer.Option(None, help="Sync a specific source on
     logging.basicConfig(level=logging.INFO)
     result = asyncio.run(_run_sync(source=source))
     typer.echo(f"Sync complete: {result['new']} new, {result['updated']} updated, {result['unchanged']} unchanged")
+    failed = result.get("failed_sources") or []
+    if failed:
+        # Sortie non nulle : un cron doit pouvoir detecter un sync
+        # partiellement muet, que le compte rendu ci-dessus ne distingue pas
+        # d'un sync complet.
+        typer.echo(f"ECHEC de {len(failed)} source(s) : {', '.join(failed)}", err=True)
+        raise typer.Exit(1)
 
 
 def _build_package_info(raw) -> dict:
@@ -44,9 +51,17 @@ async def _run_sync(source: str | None = None) -> dict[str, int]:
     else:
         connectors = get_all_connectors()
 
-    stats = {"new": 0, "updated": 0, "unchanged": 0}
+    stats = {"new": 0, "updated": 0, "unchanged": 0, "failed_sources": []}
     for conn in connectors:
-        services = await conn.fetch_services()
+        # Une source en panne ne doit pas emporter les autres, et son
+        # absence doit se voir dans le resultat : un sync qui se declare
+        # reussi avec une source muette est indiscernable d'un sync complet.
+        try:
+            services = await conn.fetch_services()
+        except Exception:
+            logger.exception("Sync: la source %s a echoue", conn.source_type())
+            stats["failed_sources"].append(conn.source_type())
+            continue
         async with SessionLocal() as db:
             for raw in services:
                 result = await db.execute(

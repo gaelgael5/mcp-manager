@@ -49,6 +49,16 @@ _pace_lock = asyncio.Lock()
 _last_search_at = 0.0
 
 
+class GithubSearchAborted(Exception):
+    """Panne systemique : jeton refuse, ou quota qui ne se libere pas.
+
+    Elle remonte jusqu'au sync pour qu'il echoue franchement. Rendre une liste
+    partielle serait pire que rien : le sync se declarerait reussi avec une
+    fraction arbitraire du gisement, sans que rien ne le signale. Constate le
+    2026-11-16, ou un jeton refuse a fait importer 200 depots sur ~44 000.
+    """
+
+
 async def _paced() -> None:
     """Espace les appels a la recherche, dont le quota est propre a l'endpoint."""
     global _last_search_at
@@ -61,6 +71,10 @@ async def _paced() -> None:
 
 @register_connector
 class GithubTopicsConnector(AbstractConnector):
+    # register_connector instancie par __new__, sans passer par __init__ :
+    # le compteur a besoin d'un defaut de classe.
+    _abandoned = 0
+
     def source_type(self) -> str:
         return "github_topics"
 
@@ -68,6 +82,7 @@ class GithubTopicsConnector(AbstractConnector):
         # Un depot peut porter plusieurs topics recherches : on dedoublonne sur
         # full_name avant de construire les services.
         found: dict[str, dict] = {}
+        self._abandoned = 0
 
         async with httpx.AsyncClient(timeout=30.0) as client:
             for topic in TOPICS:
@@ -80,6 +95,16 @@ class GithubTopicsConnector(AbstractConnector):
 
         services = [self._parse_repo(item) for item in found.values()]
         services = [s for s in services if s]
+
+        if self._abandoned:
+            # Une collecte incomplete qui se tait est indiscernable d'une
+            # collecte reussie : le sync afficherait "N nouveaux" sans que rien
+            # ne revele la lacune.
+            logger.error(
+                "GitHub topics: %d fenetre(s) abandonnee(s), la collecte est "
+                "incomplete — %d services ramenes",
+                self._abandoned, len(services),
+            )
         logger.info("GitHub topics: %d services au total", len(services))
         return services
 
@@ -96,6 +121,7 @@ class GithubTopicsConnector(AbstractConnector):
 
         page = await self._search(client, query, 1)
         if page is None:
+            self._abandoned += 1
             return
 
         total, items = page
@@ -126,6 +152,7 @@ class GithubTopicsConnector(AbstractConnector):
         for p in range(2, last_page + 1):
             page = await self._search(client, query, p)
             if page is None:
+                self._abandoned += 1
                 return
             self._absorb(page[1], found)
 
@@ -160,6 +187,12 @@ class GithubTopicsConnector(AbstractConnector):
                 data = resp.json()
                 return data.get("total_count", 0), data.get("items", [])
 
+            if resp.status_code == 401:
+                raise GithubSearchAborted(
+                    "GitHub refuse le jeton (401) — verifier le pool avec "
+                    "scripts/check_github_tokens.py"
+                )
+
             if resp.status_code in (403, 429):
                 delay = self._retry_delay(resp)
                 logger.warning(
@@ -168,13 +201,17 @@ class GithubTopicsConnector(AbstractConnector):
                 await asyncio.sleep(delay)
                 continue
 
+            # Code inattendu : propre a cette requete, on abandonne la fenetre
+            # et le compteur d'abandons le signalera a la fin.
             logger.warning(
                 "GitHub topics: la recherche a repondu %d pour %r", resp.status_code, query,
             )
             return None
 
-        logger.warning("GitHub topics: abandon de %r page %d", query, page)
-        return None
+        raise GithubSearchAborted(
+            f"{MAX_ATTEMPTS} tentatives infructueuses sur {query!r} page {page} — "
+            "quota ou reseau durablement indisponible"
+        )
 
     @staticmethod
     def _retry_delay(resp: httpx.Response) -> float:
