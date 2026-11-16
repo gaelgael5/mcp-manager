@@ -397,6 +397,22 @@ async def get_docker_run_cmd(
     return {"cmd": cmd}
 
 
+def _describe_driver(driver) -> str:
+    """Decrit ce que le driver va reellement contacter.
+
+    Le resultat du test remonte cette description parce qu'un echec ne dit
+    rien de ce qui a ete joint : l'URL affichee dans /settings vient du
+    fichier de configuration, l'URL reellement appelee vient du driver, qui
+    la normalise (suffixe /v1 retire pour ollama). Les deux ont diverge sans
+    que l'ecran ne permette de s'en apercevoir.
+    """
+    url = getattr(driver, "url", None)
+    model = getattr(driver, "model", None)
+    container = getattr(driver, "container_name", None)
+    parts = [str(x) for x in (url, model, container) if x]
+    return " \u00b7 ".join(parts) if parts else type(driver).__name__
+
+
 @router.post("/settings/llm-test")
 async def test_llm_providers(
     request: Request,
@@ -417,10 +433,14 @@ async def test_llm_providers(
         ptype = provider.get("type", "?")
 
         if i >= len(manager.drivers):
-            results.append({"id": pid, "type": ptype, "status": "error", "message": "No driver loaded"})
+            results.append({
+                "id": pid, "type": ptype, "target": "",
+                "status": "error", "message": "No driver loaded",
+            })
             continue
 
         driver = manager.drivers[i]
+        target = _describe_driver(driver)
         start = time.monotonic()
         try:
             response = await driver.generate("Reply with exactly: OK")
@@ -428,17 +448,22 @@ async def test_llm_providers(
             results.append({
                 "id": pid,
                 "type": ptype,
+                "target": target,
                 "status": "ok",
                 "response": response[:200],
                 "elapsed_seconds": elapsed,
             })
         except Exception as e:
             elapsed = round(time.monotonic() - start, 2)
+            # Message non tronque : un 404 d'ollama porte sa cause dans le
+            # corps de la reponse ("model ... not found"), que la troncature a
+            # 200 caracteres coupait juste apres l'URL.
             results.append({
                 "id": pid,
                 "type": ptype,
+                "target": target,
                 "status": "error",
-                "message": str(e)[:200],
+                "message": f"{type(e).__name__}: {e}",
                 "elapsed_seconds": elapsed,
             })
 

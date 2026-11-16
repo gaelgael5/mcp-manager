@@ -24,6 +24,10 @@ def _normalize_url(url: str) -> str:
     return cleaned
 
 
+class OllamaError(RuntimeError):
+    """Erreur d'appel a Ollama, porteuse du corps de la reponse."""
+
+
 class OllamaDriver:
     def __init__(self, args: dict):
         self.url = _normalize_url(args.get("url", "http://localhost:11434"))
@@ -36,7 +40,16 @@ class OllamaDriver:
         payload = {"model": self.model, "prompt": prompt, "stream": False}
         async with httpx.AsyncClient(timeout=300.0) as client:
             resp = await client.post(endpoint, json=payload)
-            resp.raise_for_status()
+            if resp.status_code >= 400:
+                # Le corps porte la cause reelle — typiquement
+                # {"error":"model 'x' not found"} — la ou le message de
+                # raise_for_status() ne cite que le code et l'URL. Un 404
+                # d'endpoint et un 404 de modele absent devenaient ainsi
+                # indistinguables depuis l'interface.
+                raise OllamaError(
+                    f"POST {endpoint} (model={self.model!r}) -> HTTP "
+                    f"{resp.status_code}: {resp.text[:500]}"
+                )
             text = resp.json().get("response", "").strip()
             return text.replace("\x00", "")
 

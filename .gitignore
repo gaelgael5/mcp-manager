@@ -34,3 +34,8 @@ node_modules/
 frontend/dist/
 .playwright-mcp/
 *.png
+# Etat d'execution monte en bind-mount et editable depuis l'app :
+# `deploy-mcp.sh` fait `git reset --hard`, donc tout fichier suivi sous
+# backend/config est ecrase a chaque livraison. Cf. docs/runtime-config.md
+backend/config/*.json
+!backend/config/*.example.json

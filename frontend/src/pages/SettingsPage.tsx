@@ -694,6 +694,8 @@ interface TestResult {
   id: number;
   type: string;
   status: string;
+  /** Ce que le driver a reellement contacte, URL normalisee comprise. */
+  target?: string;
   response?: string;
   message?: string;
   elapsed_seconds?: number;
@@ -719,16 +721,24 @@ function TestLLMButton() {
               <button onClick={() => setResults(null)} className="text-gray-400 hover:text-gray-600 text-lg px-2">&times;</button>
             </div>
             <div className="p-4 space-y-3 overflow-auto">
-              {results.map((r) => (
-                <div key={r.id} className="rounded border p-3">
+              {results.length === 0 && (
+                <p className="text-sm text-gray-500">
+                  Aucun provider configure : rien n'a ete teste.
+                </p>
+              )}
+              {results.map((r, i) => (
+                <div key={`${r.id}-${i}`} className="rounded border p-3">
                   <div className="flex items-center gap-2 mb-1">
                     <Badge color={r.type === "ollama" ? "blue" : "purple"}>{r.type}</Badge>
                     <span className="text-sm font-medium">Provider #{r.id}</span>
                     <Badge color={r.status === "ok" ? "green" : "red"}>{r.status}</Badge>
                     {r.elapsed_seconds != null && <span className="text-xs text-gray-400">{r.elapsed_seconds}s</span>}
                   </div>
-                  {r.response && <pre className="text-xs font-mono text-gray-600 mt-1">{r.response}</pre>}
-                  {r.message && <pre className="text-xs font-mono text-red-500 mt-1">{r.message}</pre>}
+                  {r.target && (
+                    <p className="text-xs font-mono text-gray-400 break-all">{r.target}</p>
+                  )}
+                  {r.response && <pre className="text-xs font-mono text-gray-600 mt-1 whitespace-pre-wrap break-all">{r.response}</pre>}
+                  {r.message && <pre className="text-xs font-mono text-red-500 mt-1 whitespace-pre-wrap break-all">{r.message}</pre>}
                 </div>
               ))}
             </div>
