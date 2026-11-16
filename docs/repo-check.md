@@ -67,6 +67,11 @@ Un incident laisse la ligne intacte. Une panne systemique (quota, jeton) rend
 la main au lieu de condamner des milliers de services : c'est tout l'inverse de
 l'ancien comportement.
 
+Des la premiere panne systemique, les taches concurrentes du lot renoncent sans
+emettre de requete, et les verdicts deja obtenus sont enregistres avant que la
+passe ne rende la main. Sans cela, un jeton refuse faisait consommer les 200
+requetes du lot avant que l'abandon ne soit remarque.
+
 Le compteur `MAX_CONSECUTIVE_UNDETERMINED` arrete aussi la passe apres 25
 indetermines d'affilee — a ce stade le probleme n'est plus "ce depot la".
 
@@ -89,6 +94,35 @@ faire dans une boucle asyncio — d'ou la requete condamnee d'origine. La versio
 asynchrone `get_headers_for_domain` attendait deja correctement ; tous les
 appelants l'utilisent desormais (`repo_checker`, `url_resolver`, `dedup`, et
 les connecteurs `docker_registry`, `mcp_registry`, `mcp_servers_repo`).
+
+## Un jeton refuse dans le pool
+
+C'est la panne la plus probable, et celle qui explique vraisemblablement les
+25 000 faux 404 historiques.
+
+Le pool distribue les jetons en tour de role. Si l'un des N jetons est revoque
+ou expire, une requete sur N repond 401 — sans aucune regularite apparente
+dans les journaux, puisque les appels concurrents s'entrelacent. Observe le
+2026-11-16 avec deux jetons en base : les `200 OK` et les `401 Unauthorized`
+alternaient dans une proportion proche de la moitie.
+
+L'ancien verificateur traduisait chacun de ces 401 en `repo_status='404'`. Le
+nouveau interrompt la passe, ce qui rend le probleme visible — mais pas son
+origine, le journal ne disant pas quel jeton a ete refuse. D'ou l'outil :
+
+```bash
+docker compose exec mcp-backend python scripts/check_github_tokens.py
+```
+
+Il interroge `/rate_limit` avec chaque jeton, ce qui ne consomme pas de quota,
+et affiche pour chacun son identifiant, son etat, ses quotas restants et ses
+scopes. Un jeton en clair n'est jamais affiche. Retirer un jeton refuse :
+
+```sql
+DELETE FROM api_tokens WHERE id = '<id>';
+```
+
+Tant qu'il reste dans le pool, il fait echouer une passe sur N.
 
 ## Exploitation
 

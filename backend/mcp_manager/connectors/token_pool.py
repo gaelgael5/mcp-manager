@@ -10,11 +10,29 @@ logger = logging.getLogger(__name__)
 _pools: dict[str, list[dict]] = {}
 _pool_index: dict[str, int] = defaultdict(int)
 _lock = asyncio.Lock()
+_load_lock = asyncio.Lock()
 _loaded = False
 
 
-async def load_tokens():
-    """Load tokens from database into memory."""
+async def load_tokens(force: bool = False):
+    """Load tokens from database into memory.
+
+    Idempotent et serialise : les appelants concurrents voyaient tous
+    `_loaded` a False et declenchaient chacun un chargement. Avec une passe a
+    dix coroutines, cela faisait dix lectures de la table au demarrage.
+    """
+    global _pools, _loaded
+
+    if _loaded and not force:
+        return
+
+    async with _load_lock:
+        if _loaded and not force:
+            return
+        await _load_tokens_locked()
+
+
+async def _load_tokens_locked():
     global _pools, _loaded
     from mcp_manager.db.session import SessionLocal
     from mcp_manager.db.models import ApiToken

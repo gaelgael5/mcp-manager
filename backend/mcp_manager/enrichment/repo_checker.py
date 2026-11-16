@@ -87,13 +87,29 @@ async def check_repo(
 
 async def _check_batch(
     client: httpx.AsyncClient, rows: list[tuple]
-) -> list[tuple[int, CheckOutcome, int | None]]:
-    """Check a batch concurrently. Raises CheckAborted if any check aborted."""
+) -> tuple[list[tuple[int, CheckOutcome, int | None]], CheckAborted | None]:
+    """Check a batch concurrently.
+
+    Renvoie les verdicts obtenus et la panne systemique eventuelle. Des la
+    premiere panne constatee, les taches restantes renoncent sans emettre de
+    requete : un jeton refuse faisait sinon consommer le lot entier avant que
+    l'abandon ne soit remarque. Les verdicts deja obtenus sont rendus pour que
+    l'appelant les enregistre au lieu de les perdre.
+    """
     sem = asyncio.Semaphore(CONCURRENCY)
+    aborted: list[CheckAborted] = []
 
     async def one(svc_id: int, url: str):
+        if aborted:
+            return None
         async with sem:
-            outcome, stars = await check_repo(client, url)
+            if aborted:
+                return None
+            try:
+                outcome, stars = await check_repo(client, url)
+            except CheckAborted as exc:
+                aborted.append(exc)
+                return None
             return svc_id, outcome, stars
 
     results = await asyncio.gather(
@@ -102,14 +118,14 @@ async def _check_batch(
 
     out: list[tuple[int, CheckOutcome, int | None]] = []
     for res in results:
-        if isinstance(res, CheckAborted):
-            raise res
+        if res is None:
+            continue
         if isinstance(res, BaseException):
             # Un imprevu sur un depot ne doit pas perdre le reste du lot.
             logger.warning("Repo check: erreur inattendue, ligne laissee a reprendre", exc_info=res)
             continue
         out.append(res)
-    return out
+    return out, (aborted[0] if aborted else None)
 
 
 async def run_repo_check(limit: int | None = None) -> dict[str, int]:
@@ -161,12 +177,9 @@ async def run_repo_check(limit: int | None = None) -> dict[str, int]:
                 if remaining is not None:
                     remaining -= len(rows)
 
-                try:
-                    results = await _check_batch(client, [(r[0], r[1]) for r in rows])
-                except CheckAborted as exc:
-                    logger.warning("Repo check interrompu (%s) : %s", phase_name, exc)
-                    logger.info("Repo check: %s", stats)
-                    return stats
+                results, aborted = await _check_batch(
+                    client, [(r[0], r[1]) for r in rows]
+                )
 
                 now = datetime.now(timezone.utc)
                 async with SessionLocal() as db:
@@ -198,6 +211,10 @@ async def run_repo_check(limit: int | None = None) -> dict[str, int]:
                     await db.commit()
 
                 logger.info("Repo check (%s): %s", phase_name, stats)
+
+                if aborted is not None:
+                    logger.warning("Repo check interrompu (%s) : %s", phase_name, aborted)
+                    return stats
 
                 if consecutive_undetermined >= MAX_CONSECUTIVE_UNDETERMINED:
                     logger.warning(
@@ -235,11 +252,7 @@ async def run_stars_update() -> dict[str, int]:
 
             cursor = rows[-1][0]
 
-            try:
-                results = await _check_batch(client, [(r[0], r[1]) for r in rows])
-            except CheckAborted as exc:
-                logger.warning("Stars update interrompu : %s", exc)
-                return stats
+            results, aborted = await _check_batch(client, [(r[0], r[1]) for r in rows])
 
             async with SessionLocal() as db:
                 for svc_id, _outcome, stars in results:
@@ -254,6 +267,10 @@ async def run_stars_update() -> dict[str, int]:
                 await db.commit()
 
             logger.info("Stars update: %d updated so far", stats["services"])
+
+            if aborted is not None:
+                logger.warning("Stars update interrompu : %s", aborted)
+                return stats
 
     logger.info("Stars update done: %s", stats)
     return stats
