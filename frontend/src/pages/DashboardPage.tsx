@@ -193,6 +193,38 @@ export function DashboardPage() {
           </div>
         ) : <p className="text-gray-400">-</p>}
       </Card>
+
+      {/* Indexing result — distinct from repo reachability */}
+      <Card title={t("pages.dashboard.indexStatusTitle")}>
+        {stats?.by_index_status && Object.keys(stats.by_index_status).length > 0 ? (
+          <div className="flex gap-6">
+            {Object.entries(stats.by_index_status)
+              .sort(([, a], [, b]) => b - a)
+              .map(([k, v]) => (
+                <div key={k} className="text-center">
+                  <p className="text-2xl font-bold">{v.toLocaleString()}</p>
+                  <Badge color="gray">{k}</Badge>
+                </div>
+              ))}
+          </div>
+        ) : <p className="text-gray-400">-</p>}
+      </Card>
+
+      {/* Repo check backlog */}
+      <Card title={t("pages.dashboard.repoBacklogTitle")}>
+        {stats?.repo_check_backlog ? (
+          <div className="flex gap-6">
+            <div className="text-center">
+              <p className="text-2xl font-bold">{stats.repo_check_backlog.checkable.toLocaleString()}</p>
+              <Badge color="gray">{t("pages.dashboard.repoBacklogCheckable")}</Badge>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold">{stats.repo_check_backlog.no_url.toLocaleString()}</p>
+              <Badge color="gray">{t("pages.dashboard.repoBacklogNoUrl")}</Badge>
+            </div>
+          </div>
+        ) : <p className="text-gray-400">-</p>}
+      </Card>
     </div>
   );
 }

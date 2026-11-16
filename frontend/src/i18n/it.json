@@ -77,7 +77,11 @@
       "ragPending": "RAG in attesa",
       "mcpTranslations": "Traduzioni servizi MCP",
       "diskLabel": "Disco:",
-      "repositoryStatusTitle": "Stato dei repository"
+      "repositoryStatusTitle": "Stato dei repository",
+      "indexStatusTitle": "Risultato dell'indicizzazione",
+      "repoBacklogTitle": "Controlli repository in attesa",
+      "repoBacklogCheckable": "Da verificare",
+      "repoBacklogNoUrl": "Senza URL del repository"
     },
     "services": {
       "title": "Servizi MCP",

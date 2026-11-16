@@ -7,7 +7,7 @@ import yaml
 from mcp_manager.connectors.base import AbstractConnector, RawMcpService
 from mcp_manager.connectors.registry import register_connector
 from mcp_manager.config import settings
-from mcp_manager.connectors.github_pool import get_github_headers
+from mcp_manager.connectors.github_pool import get_github_headers_async
 
 logger = logging.getLogger(__name__)
 
@@ -22,15 +22,15 @@ class DockerRegistryConnector(AbstractConnector):
     def source_type(self) -> str:
         return "docker_registry"
 
-    def _github_headers(self) -> dict[str, str]:
-        headers = get_github_headers()
+    async def _github_headers(self) -> dict[str, str]:
+        headers = await get_github_headers_async()
         return headers
 
     async def fetch_services(self) -> list[RawMcpService]:
         services: list[RawMcpService] = []
         async with httpx.AsyncClient(timeout=30.0) as client:
             url = f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/contents/{SERVERS_PATH}"
-            resp = await client.get(url, headers=self._github_headers())
+            resp = await client.get(url, headers=await self._github_headers())
             resp.raise_for_status()
             entries = resp.json()
 
@@ -55,7 +55,7 @@ class DockerRegistryConnector(AbstractConnector):
             f"https://raw.githubusercontent.com/{REPO_OWNER}/{REPO_NAME}"
             f"/main/{SERVERS_PATH}/{server_name}/server.yaml"
         )
-        resp = await client.get(url, headers=self._github_headers())
+        resp = await client.get(url, headers=await self._github_headers())
         if resp.status_code != 200:
             return None
         yaml_content = resp.text

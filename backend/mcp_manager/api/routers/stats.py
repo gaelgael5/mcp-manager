@@ -47,6 +47,15 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
         key = row[0] or "unchecked"
         by_repo_status[key] = row[1]
 
+    # Resultat de l'indexation : colonne distincte de repo_status depuis
+    # 20261116_repo_check_split, les deux etaient auparavant confondues.
+    index_result = await db.execute(
+        select(McpService.index_status, func.count())
+        .where(McpService.index_status.isnot(None))
+        .group_by(McpService.index_status)
+    )
+    by_index_status = {row[0]: row[1] for row in index_result}
+
     # Indexation stats
     with_summaries = (await db.execute(
         select(func.count(func.distinct(McpSummary.parent_id)))
@@ -92,6 +101,19 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
         ))
     )).scalar() or 0
 
+    unchecked_no_url = (await db.execute(
+        select(func.count()).select_from(McpService).where(
+            McpService.repo_checked_at.is_(None),
+            McpService.source_url == "",
+        )
+    )).scalar() or 0
+    unchecked_checkable = (await db.execute(
+        select(func.count()).select_from(McpService).where(
+            McpService.repo_checked_at.is_(None),
+            McpService.source_url != "",
+        )
+    )).scalar() or 0
+
     # Translations progress (per active language, 'en' is the baseline)
     active_langs_result = await db.execute(
         select(Language).where(Language.is_active.is_(True)).order_by(Language.display_order)
@@ -122,6 +144,7 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
         "by_source": by_source,
         "by_category": by_category,
         "by_repo_status": by_repo_status,
+        "by_index_status": by_index_status,
         "indexation": {
             "with_summaries": with_summaries,
             "with_embeddings": with_embeddings,
@@ -135,6 +158,10 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
             "mcp": rag_pending_mcp,
             "mcp_total": mcp_summaries_en,
             "total": rag_pending_mcp,
+        },
+        "repo_check_backlog": {
+            "checkable": unchecked_checkable,
+            "no_url": unchecked_no_url,
         },
         "translations_progress": translations_progress,
         "disk": _get_disk_usage(),

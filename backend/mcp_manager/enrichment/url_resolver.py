@@ -5,7 +5,7 @@ import re
 import httpx
 
 from mcp_manager.config import settings
-from mcp_manager.connectors.github_pool import get_github_headers
+from mcp_manager.connectors.github_pool import get_github_headers_async
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ def parse_reverse_dns_to_github_url(name: str) -> str | None:
 
 
 async def verify_github_url(client: httpx.AsyncClient, url: str) -> bool:
-    headers = get_github_headers()
+    headers = await get_github_headers_async()
     try:
         api_url = url.replace("https://github.com/", "https://api.github.com/repos/")
         resp = await client.get(api_url, headers=headers)

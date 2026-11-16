@@ -77,7 +77,11 @@
       "ragPending": "RAG قيد الانتظار",
       "mcpTranslations": "ترجمات خدمات MCP",
       "diskLabel": "القرص:",
-      "repositoryStatusTitle": "حالة المستودعات"
+      "repositoryStatusTitle": "حالة المستودعات",
+      "indexStatusTitle": "نتيجة الفهرسة",
+      "repoBacklogTitle": "فحوصات المستودعات المعلقة",
+      "repoBacklogCheckable": "للفحص",
+      "repoBacklogNoUrl": "بدون رابط مستودع"
     },
     "services": {
       "title": "خدمات MCP",

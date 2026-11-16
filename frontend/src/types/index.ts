@@ -76,6 +76,7 @@ export interface Stats {
   by_source: Record<string, number>;
   by_category: Record<string, number>;
   by_repo_status: Record<string, number>;
+  by_index_status: Record<string, number>;
   indexation: {
     with_summaries: number;
     with_embeddings: number;
@@ -84,6 +85,10 @@ export interface Stats {
     with_installations: number;
     needs_reindex: number;
     outdated_summaries: number;
+  };
+  repo_check_backlog: {
+    checkable: number;
+    no_url: number;
   };
 }
 

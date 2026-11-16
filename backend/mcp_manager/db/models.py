@@ -39,7 +39,13 @@ class McpService(Base):
     tags: Mapped[list[str] | None] = mapped_column(ARRAY(Text))
     package_info: Mapped[dict] = mapped_column(JSONB, default=dict)
     source_origins: Mapped[list[str] | None] = mapped_column(ARRAY(Text), default=list)
+    # Accessibilite du depot uniquement : "ok", "404", "unsupported", ou NULL
+    # tant qu'aucun verdict n'a ete obtenu. Le resultat de l'indexation vit
+    # dans index_status : les deux ont longtemps partage cette colonne, et
+    # l'indexeur ecrasait le verdict du depot.
     repo_status: Mapped[str | None] = mapped_column(String(20))
+    repo_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    index_status: Mapped[str | None] = mapped_column(String(20))
     needs_reindex: Mapped[bool] = mapped_column(Boolean, default=False)
     index_attempts: Mapped[int] = mapped_column(default=0)
     is_deprecated: Mapped[bool] = mapped_column(Boolean, default=False)

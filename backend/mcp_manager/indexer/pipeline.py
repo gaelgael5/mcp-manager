@@ -18,6 +18,7 @@ content hash is stored per-summary in `mcp_summaries.source_hash`.
 import asyncio
 import hashlib
 import logging
+from datetime import datetime, timezone
 
 from sqlalchemy import select, func
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -132,7 +133,7 @@ async def run_index(
                     indexed = await asyncio.wait_for(_index_one(wdb, service, stats), timeout=120)
                 except asyncio.TimeoutError:
                     logger.warning("Timeout indexing %s after 120s", service.name)
-                    service.repo_status = "index_failed"
+                    service.index_status = "index_failed"
                 except LLMProviderDead as e:
                     logger.error(
                         "mcp index worker %d: LLM provider dead — aborting pipeline: %s",
@@ -146,7 +147,7 @@ async def run_index(
                     break
                 except Exception:
                     logger.exception("Failed to index %s", service.name)
-                    service.repo_status = "index_failed"
+                    service.index_status = "index_failed"
 
                 service.needs_reindex = False
 
@@ -252,6 +253,7 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
         if new_branch_hash is not None and service.branch_hash != new_branch_hash:
             service.branch_hash = new_branch_hash
         service.repo_status = "ok"
+        service.repo_checked_at = datetime.now(timezone.utc)
         return True
 
     # --- Step 4: fetch README (only reached when there's real work) ----------
@@ -263,15 +265,13 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
 
     if not doc_content:
         stats["skipped_no_doc"] += 1
-        if service.repo_status not in ("404",):
-            service.repo_status = "no_doc"
+        service.index_status = "no_doc"
         return False
 
     cleaned = clean_markdown(doc_content)
     if not cleaned:
         stats["skipped_no_doc"] += 1
-        if service.repo_status not in ("404",):
-            service.repo_status = "no_doc"
+        service.index_status = "no_doc"
         return False
 
     new_doc_hash = hashlib.sha256(cleaned.encode("utf-8")).hexdigest()
@@ -395,4 +395,5 @@ async def _index_one(db, service: McpService, stats: dict) -> bool:
     if new_branch_hash is not None:
         service.branch_hash = new_branch_hash
     service.repo_status = "ok"
+    service.repo_checked_at = datetime.now(timezone.utc)
     return True

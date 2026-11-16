@@ -7,7 +7,7 @@ import httpx
 from mcp_manager.connectors.base import AbstractConnector, RawMcpService
 from mcp_manager.connectors.registry import register_connector
 from mcp_manager.config import settings
-from mcp_manager.connectors.github_pool import get_github_headers
+from mcp_manager.connectors.github_pool import get_github_headers_async
 
 logger = logging.getLogger(__name__)
 
@@ -22,15 +22,15 @@ class McpServersRepoConnector(AbstractConnector):
     def source_type(self) -> str:
         return "mcp_servers_repo"
 
-    def _github_headers(self) -> dict[str, str]:
-        headers = get_github_headers()
+    async def _github_headers(self) -> dict[str, str]:
+        headers = await get_github_headers_async()
         return headers
 
     async def fetch_services(self) -> list[RawMcpService]:
         services: list[RawMcpService] = []
         async with httpx.AsyncClient(timeout=30.0) as client:
             url = f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/contents/{SERVERS_PATH}"
-            resp = await client.get(url, headers=self._github_headers())
+            resp = await client.get(url, headers=await self._github_headers())
             resp.raise_for_status()
             entries = resp.json()
 
@@ -55,12 +55,12 @@ class McpServersRepoConnector(AbstractConnector):
         source_url = f"https://github.com/{REPO_OWNER}/{REPO_NAME}/tree/main/{SERVERS_PATH}/{server_name}"
 
         # Try pyproject.toml first (Python servers)
-        resp = await client.get(f"{base_raw}/pyproject.toml", headers=self._github_headers())
+        resp = await client.get(f"{base_raw}/pyproject.toml", headers=await self._github_headers())
         if resp.status_code == 200:
             return self._parse_pyproject(server_name, resp.text, source_url)
 
         # Then package.json (Node servers)
-        resp = await client.get(f"{base_raw}/package.json", headers=self._github_headers())
+        resp = await client.get(f"{base_raw}/package.json", headers=await self._github_headers())
         if resp.status_code == 200:
             return self._parse_package_json(server_name, resp.text, source_url)
 

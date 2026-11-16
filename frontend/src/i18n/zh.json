@@ -77,7 +77,11 @@
       "ragPending": "RAG 待处理",
       "mcpTranslations": "MCP 服务翻译",
       "diskLabel": "磁盘：",
-      "repositoryStatusTitle": "仓库状态"
+      "repositoryStatusTitle": "仓库状态",
+      "indexStatusTitle": "索引结果",
+      "repoBacklogTitle": "待检查的仓库",
+      "repoBacklogCheckable": "待检查",
+      "repoBacklogNoUrl": "无仓库地址"
     },
     "services": {
       "title": "MCP 服务",

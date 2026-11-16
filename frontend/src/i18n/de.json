@@ -77,7 +77,11 @@
       "ragPending": "RAG ausstehend",
       "mcpTranslations": "Übersetzungen der MCP-Dienste",
       "diskLabel": "Festplatte:",
-      "repositoryStatusTitle": "Repository-Status"
+      "repositoryStatusTitle": "Repository-Status",
+      "indexStatusTitle": "Indexierungsergebnis",
+      "repoBacklogTitle": "Ausstehende Repository-Prüfungen",
+      "repoBacklogCheckable": "Zu prüfen",
+      "repoBacklogNoUrl": "Keine Repository-URL"
     },
     "services": {
       "title": "MCP-Dienste",

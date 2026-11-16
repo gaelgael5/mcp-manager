@@ -266,13 +266,14 @@ async def _run_export(target: str) -> dict[str, int]:
 @app.command()
 def enrich(
     pass_name: str | None = typer.Option(None, "--pass", help="Run a specific pass: url-resolve, dedup, categorize"),
+    limit: int | None = typer.Option(None, "--limit", help="Max services to process (repo-check only)"),
 ):
     """Enrich service data: resolve URLs, deduplicate, auto-categorize."""
     logging.basicConfig(level=logging.INFO)
-    asyncio.run(_run_enrich(pass_name=pass_name))
+    asyncio.run(_run_enrich(pass_name=pass_name, limit=limit))
 
 
-async def _run_enrich(pass_name: str | None = None) -> None:
+async def _run_enrich(pass_name: str | None = None, limit: int | None = None) -> None:
     from mcp_manager.enrichment.url_resolver import run_url_resolve
     from mcp_manager.enrichment.dedup import run_dedup
     from mcp_manager.enrichment.categorizer import run_categorize
@@ -294,7 +295,10 @@ async def _run_enrich(pass_name: str | None = None) -> None:
             raise typer.Exit(1)
         label, func = passes[pass_name]
         typer.echo(f"Running {label}...")
-        result = await func()
+        # Seule repo-check sait borner son lot : le quota GitHub impose de
+        # pouvoir reprendre une verification de 130k services en plusieurs fois.
+        kwargs = {"limit": limit} if (limit is not None and pass_name == "repo-check") else {}
+        result = await func(**kwargs)
         typer.echo(f"{label} complete: {result}")
     else:
         for name, (label, func) in passes.items():

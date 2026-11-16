@@ -1,13 +1,21 @@
-"""GitHub token pool — uses token_pool for domain-based rate-limited tokens, with env var fallback."""
+"""GitHub token pool — uses token_pool for domain-based rate-limited tokens, with env var fallback.
+
+Il n'existe volontairement pas de variante synchrone. Respecter un quota
+suppose de pouvoir attendre, ce qu'une fonction synchrone ne sait pas faire
+dans une boucle asyncio. L'ancienne version envoyait a la place une requete
+qu'elle savait condamnee ("use first one anyway") ; GitHub repondait 403, et
+repo_checker interpretait tout code different de 200 comme un repo disparu.
+Resultat mesure le 2026-11-15 : 87% des services marques repo_status='404'
+avaient en realite un depot vivant. Cf. docs/repo-check.md.
+"""
 import os
-import time
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 async def get_github_headers_async() -> dict:
-    """Get HTTP headers with a GitHub token (async, uses token_pool with rate limiting)."""
+    """Get HTTP headers with a GitHub token (uses token_pool with rate limiting)."""
     from mcp_manager.connectors.token_pool import get_headers_for_domain, _loaded, _pools
     if not _loaded:
         from mcp_manager.connectors.token_pool import load_tokens
@@ -18,47 +26,6 @@ async def get_github_headers_async() -> dict:
 
     # Fallback to env var
     return _get_env_headers()
-
-
-def get_github_headers() -> dict:
-    """Get HTTP headers with a GitHub token (sync, uses pool if loaded, else env var)."""
-    from mcp_manager.connectors.token_pool import _loaded, _pools
-
-    if _loaded and "github.com" in _pools and _pools["github.com"]:
-        return _get_pool_headers_sync(_pools["github.com"])
-
-    return _get_env_headers()
-
-
-def _get_pool_headers_sync(pool: list[dict]) -> dict:
-    """Sync round-robin from in-memory pool with rate limiting."""
-    global _pool_sync_index
-    now = time.monotonic()
-    pool_size = len(pool)
-
-    for _ in range(pool_size):
-        idx = _pool_sync_index % pool_size
-        _pool_sync_index += 1
-        entry = pool[idx]
-
-        # Clean old timestamps
-        entry["timestamps"] = [ts for ts in entry["timestamps"] if ts > now - 60.0]
-
-        if len(entry["timestamps"]) < entry["rate_limit_per_min"]:
-            entry["timestamps"].append(now)
-            return {
-                "Accept": "application/vnd.github.v3+json",
-                "Authorization": f"token {entry['token']}",
-            }
-
-    # All exhausted — use first one anyway (will be rate limited by GitHub)
-    entry = pool[0]
-    entry["timestamps"].append(now)
-    logger.warning("GitHub token pool exhausted, using token anyway")
-    return {
-        "Accept": "application/vnd.github.v3+json",
-        "Authorization": f"token {entry['token']}",
-    }
 
 
 def _get_env_headers() -> dict:
@@ -75,4 +42,3 @@ def _get_env_headers() -> dict:
 
 
 _env_index = 0
-_pool_sync_index = 0
